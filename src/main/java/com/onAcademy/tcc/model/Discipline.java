@@ -23,8 +23,8 @@ public class Discipline {
 	private Long id;
 	private String nomeDisciplina;
 	
-	// @OneToMany(mappedBy = "discipline")
-	// private List<ClassDiscipline> turmaDisciplina;
+	@OneToMany(mappedBy = "discipline")
+	private List<ClassDiscipline> turmaDisciplina;
 	 
 	 
 	@OneToMany(mappedBy = "discipline")

@@ -1,6 +1,7 @@
 package com.onAcademy.tcc.model;
 
 import java.util.Date;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,5 +28,7 @@ public class Student {
 		private String emailAluno;
 		private String telefoneAluno;
 		private String matriculaAluno;
+		@OneToMany
+		private List<Note>notas;
 
 }

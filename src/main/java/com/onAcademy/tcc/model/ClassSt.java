@@ -8,7 +8,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import lombok.Data;
 @Entity
+@Data
 public class ClassSt {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,9 +19,15 @@ public class ClassSt {
 	private Date anoLetivoTurma;
 	private String periodoTurma;
 	private int capacidadeMaximaTurma;
-	private String salaTurma;
+	private int salaTurma;
+	
 	@OneToMany
 	private List<Student> alunos;
+	
 	@OneToMany(mappedBy = "classSt")
-    private List<ClassDiscipline> turmaDisciplinas;  // Relacionamento com a tabela intermediária
+    private List<ClassDiscipline> turmaDisciplinas;  
+	
+	
+	@OneToMany(mappedBy = "classSt")
+	private List<ClassTeacher> classTeachers;
 }

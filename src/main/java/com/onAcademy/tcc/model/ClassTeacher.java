@@ -4,18 +4,23 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import lombok.Data;
 
 @Entity
-public class Note {
+@Data
+public class ClassTeacher {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
 	@ManyToOne
-	private Student studentId;
-	private Double nota;
-	private String status;
+	@JoinColumn(name = "class_id")
+	private ClassSt classSt;
+	
 	@ManyToOne
-	private Discipline disciplineId;
+	@JoinColumn(name = "teacher_id")
+	private Teacher teacher;
+
 }

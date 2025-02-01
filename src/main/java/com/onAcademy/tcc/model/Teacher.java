@@ -8,7 +8,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import lombok.Data;
 @Entity
+@Data
+
 public class Teacher {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +21,9 @@ public class Teacher {
 	private String emailDocente;
 	private String telefoneDocente;
 	private String matriculaDocente;
-	private List<Class>turmas;
 	@OneToMany(mappedBy = "teacher")
-	private List<DisciplineTeacher> discipline_idteach;
+	private List<DisciplineTeacher> disciplineTeachers;
+	
+	@OneToMany(mappedBy = "teacher")
+	private List<ClassTeacher>classTeachers;
 }
