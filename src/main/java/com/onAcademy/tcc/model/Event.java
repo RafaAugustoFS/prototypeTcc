@@ -1,23 +1,23 @@
 package com.onAcademy.tcc.model;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.Data;
 
 @Entity
 @Data
-public class Note {
+public class Event {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@ManyToOne
-	private Student studentId;
-	private Double nota;
-	private String status;
-	@ManyToOne
-	private Discipline disciplineId;
+	private String tituloEvento;
+	private Date dataEvento;
+	private LocalDateTime horarioEvento;
+	private String localEvento;
+	private String descricaoEvento;
 }
