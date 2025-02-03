@@ -21,6 +21,7 @@ public class Teacher {
 	private String emailDocente;
 	private String telefoneDocente;
 	private String matriculaDocente;
+	private String senhaDocente;
 	@OneToMany(mappedBy = "teacher")
 	private List<DisciplineTeacher> disciplineTeachers;
 	

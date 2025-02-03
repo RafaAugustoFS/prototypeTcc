@@ -28,6 +28,7 @@ public class Student {
 		private String emailAluno;
 		private String telefoneAluno;
 		private String matriculaAluno;
+		private String senhaAluno;
 		@OneToMany
 		private List<Note>notas;
 		@OneToMany(mappedBy = "student")

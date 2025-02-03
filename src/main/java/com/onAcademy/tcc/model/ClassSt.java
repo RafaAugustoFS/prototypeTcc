@@ -24,6 +24,10 @@ public class ClassSt {
 	@OneToMany
 	private List<Student> alunos;
 	
+
+	@OneToMany(mappedBy = "classSt")
+	private List<Feedback> feedback ;
+	
 	@OneToMany(mappedBy = "classSt")
     private List<ClassDiscipline> turmaDisciplinas;  
 	
