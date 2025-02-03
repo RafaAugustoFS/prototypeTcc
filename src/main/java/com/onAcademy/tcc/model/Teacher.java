@@ -26,4 +26,7 @@ public class Teacher {
 	
 	@OneToMany(mappedBy = "teacher")
 	private List<ClassTeacher>classTeachers;
+	
+	@OneToMany(mappedBy = "teacher")
+	private List<FeedbackTeacher> feedbackProfessor;
 }

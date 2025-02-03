@@ -30,5 +30,6 @@ public class Student {
 		private String matriculaAluno;
 		@OneToMany
 		private List<Note>notas;
-
+		@OneToMany(mappedBy = "student")
+		private List<FeedbackStudent> feedbackAluno;
 }
