@@ -2,6 +2,8 @@ package com.onAcademy.tcc.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CalendarRepo extends JpaRepository<CalendarRepo, Long>{
+import com.onAcademy.tcc.model.Calendar;
+
+public interface CalendarRepo extends JpaRepository<Calendar, Long>{
 	
 }
