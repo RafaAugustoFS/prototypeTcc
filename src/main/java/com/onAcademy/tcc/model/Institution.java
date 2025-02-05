@@ -16,4 +16,5 @@ public class Institution {
 	private String nameInstitution;
 	private String cnpjInstitution;
 	private String unitInstitution;
+	private String senhaInstitution;
 }
