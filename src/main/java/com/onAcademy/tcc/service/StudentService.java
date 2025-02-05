@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.onAcademy.tcc.model.Student;
@@ -14,7 +15,14 @@ public class StudentService {
 	@Autowired
 	private StudentRepo studentRepo;
 	
+	@Autowired
+	private PasswordEncoder passworsEncoder;
+	
 	public Student criarEstudante(Student student) {
+		String endodedPassword = passworsEncoder.encode(student.getSenhaAluno());
+		
+		student.setSenhaAluno(endodedPassword);
+		
 		Student salvarEstudante = studentRepo.save(student);
 		return salvarEstudante;
 	}
