@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.onAcademy.tcc.model.Institution;
@@ -15,7 +16,16 @@ public class InstitutionService {
 	@Autowired
 	private InstitutionRepo institutionRepo;
 	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	
 	public Institution criarInstituicao(Institution institution) {
+		
+		String encoderPassword =  passwordEncoder.encode(institution.getSenhaInstitution());
+		
+		institution.setSenhaInstitution(encoderPassword);
+		
+		
 		Institution salvarInstituicao = institutionRepo.save(institution);
 		return salvarInstituicao;
 	}

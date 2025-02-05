@@ -11,7 +11,7 @@ import lombok.Data;
 
 @Entity
 @Data
-public class Calendar {
+public class Calendario {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
