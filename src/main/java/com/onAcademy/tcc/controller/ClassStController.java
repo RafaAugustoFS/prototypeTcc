@@ -34,7 +34,7 @@ public class ClassStController {
 		return new ResponseEntity<>(classSt, HttpStatus.OK);
 	}
 	@GetMapping("/class/{id}")
-	public ResponseEntity<ClassSt> buscarClasseUnica(@PathVariable Long id,@RequestBody ClassSt classSt){
+	public ResponseEntity<ClassSt> buscarClasseUnica(@PathVariable Long id){
 		ClassSt buscaClasse = classStService.buscarClasseUnica(id);
 		if(buscaClasse != null) {
 			return new ResponseEntity<>(buscaClasse, HttpStatus.OK);
