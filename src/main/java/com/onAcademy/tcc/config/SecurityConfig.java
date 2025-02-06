@@ -11,13 +11,19 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+	
+	private static final String [] PERMIT_ALL_LIST = {
+			"/swagger-ui/**",
+			"/v3/api-docs/**"
+	};
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // Configuração de segurança HTTP
         http.csrf().disable()  // Desabilita a proteção CSRF (para APIs REST, normalmente é desabilitado)
             .authorizeRequests()
-            .requestMatchers("/api/**").permitAll()  // Permite o acesso sem autenticação para as rotas /api/**
+            .requestMatchers("/api/**")  // Permite o acesso sem autenticação para as rotas /api/**
+            .permitAll().requestMatchers(PERMIT_ALL_LIST).permitAll() 
             .anyRequest().authenticated()      // Exige autenticação para outras rotas
             .and()
             .formLogin().disable();  // Desabilita o login padrão, se não for necessário
