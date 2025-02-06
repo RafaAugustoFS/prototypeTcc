@@ -2,12 +2,15 @@ package com.onAcademy.tcc.service;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.onAcademy.tcc.model.Note;
 import com.onAcademy.tcc.repository.NoteRepo;
 
 @Service
 public class NoteService {
+	@Autowired
 	private NoteRepo noteRepo;
 
 	public Note criarNotas(Note note) {
