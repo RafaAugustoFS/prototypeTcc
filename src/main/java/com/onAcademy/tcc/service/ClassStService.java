@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.repository.ClassStRepo;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class ClassStService {
 	@Autowired
@@ -18,6 +20,7 @@ public class ClassStService {
 		ClassSt criarClasse = classStRepo.save(classSt);
 		return criarClasse;
 	}
+	 @Transactional
 	public List<ClassSt> buscarTodasClasses(){
 		List<ClassSt> buscarClasses = classStRepo.findAll();
 		return buscarClasses;
