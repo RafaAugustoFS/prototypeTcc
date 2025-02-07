@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.onAcademy.tcc.model.Feedback;
 import com.onAcademy.tcc.service.FeedbackService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Feedback", description = "EndPoint de feedback")
 @RestController
 @RequestMapping("/api")
 public class FeedbackController {

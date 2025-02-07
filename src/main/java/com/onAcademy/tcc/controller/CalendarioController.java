@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.onAcademy.tcc.model.Calendario;
 import com.onAcademy.tcc.service.CalendarService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Calendar", description = "EndPoint de calendário")
 @RestController
 @RequestMapping("/api")
 public class CalendarioController {

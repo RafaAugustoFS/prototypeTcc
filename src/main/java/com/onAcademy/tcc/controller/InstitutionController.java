@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.onAcademy.tcc.model.Institution;
 import com.onAcademy.tcc.service.InstitutionService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Institution", description = "EndPoint de instituição")
 @RestController
 @RequestMapping("/api")
 public class InstitutionController {

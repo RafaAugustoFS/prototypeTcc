@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.service.TeacherService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Teacher", description = "EndPoint de professor")
 @RestController
 @RequestMapping("/api")
 public class TeacherController {

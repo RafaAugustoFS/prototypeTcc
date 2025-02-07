@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.service.StudentService;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 @Tag(name = "Student", description = "EndPoint de estudante")
 @RestController

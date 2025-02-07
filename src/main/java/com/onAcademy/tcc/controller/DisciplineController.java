@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.onAcademy.tcc.model.Discipline;
 import com.onAcademy.tcc.service.DisciplineService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Discipline", description = "EndPoint de disciplina")
 @RestController
 @RequestMapping("/api")
 public class DisciplineController {
