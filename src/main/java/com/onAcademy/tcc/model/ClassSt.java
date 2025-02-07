@@ -3,6 +3,8 @@ package com.onAcademy.tcc.model;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,8 +29,6 @@ public class ClassSt {
 	private int capacidadeMaximaTurma;
 	private int salaTurma;
 	
-	@OneToMany
-	private List<Student> alunos;
 
 	@OneToMany(mappedBy = "classSt")
 	private List<Feedback> feedback ;
@@ -39,4 +39,9 @@ public class ClassSt {
 	
 	@OneToMany(mappedBy = "classSt")
 	private List<ClassTeacher> classTeachers;
+	
+	@OneToMany(mappedBy = "classSt")
+	@JsonBackReference  
+	private List<Student> students;
+	
 }

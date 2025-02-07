@@ -24,3 +24,4 @@ public class Note {
 	@ManyToOne
 	private Discipline disciplineId;
 }
+		
