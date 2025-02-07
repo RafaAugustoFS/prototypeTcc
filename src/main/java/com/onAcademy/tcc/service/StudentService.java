@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.onAcademy.tcc.dto.StudentClassDTO;
+import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.Student;
+import com.onAcademy.tcc.repository.ClassStRepo;
 import com.onAcademy.tcc.repository.StudentRepo;
 
 @Service
@@ -16,15 +19,34 @@ public class StudentService {
 	private StudentRepo studentRepo;
 	
 	@Autowired
+	private ClassStRepo classStRepo;
+	
+	@Autowired
 	private PasswordEncoder passworsEncoder;
 	
-	public Student criarEstudante(Student student) {
-		String endodedPassword = passworsEncoder.encode(student.getSenhaAluno());
+	public Student criarEstudante(StudentClassDTO studentDTO) {
 		
-		student.setSenhaAluno(endodedPassword);
+		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
+			    .orElseThrow(() -> new RuntimeException("Turma não encontrada"));
+				
+		String endodedPassword = passworsEncoder.encode(studentDTO.getSenhaAluno());
+	
+		studentDTO.setSenhaAluno(endodedPassword);
 		
-		Student salvarEstudante = studentRepo.save(student);
-		return salvarEstudante;
+		Student student = new Student();
+		
+		student.setNomeAluno(studentDTO.getNomeAluno());
+		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
+		student.setEmailAluno(studentDTO.getEmailAluno());
+		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
+		student.setMatriculaAluno(studentDTO.getMatriculaAluno());
+		student.setSenhaAluno(studentDTO.getSenhaAluno());
+		
+		student.setClassSt(classSt);
+		
+		return studentRepo.save(student);
+	
+		
 	}
 	public List<Student> buscarTodosEstudantes(){
 		List<Student> buscarEstudantes = studentRepo.findAll();

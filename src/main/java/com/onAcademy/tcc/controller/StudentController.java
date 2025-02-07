@@ -14,21 +14,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.onAcademy.tcc.dto.StudentClassDTO;
 import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.service.StudentService;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-@Tag(name = "Student", description = "EndPoint de estudante")
 @RestController
 @RequestMapping("/api")
 public class StudentController {
 	@Autowired
 	private StudentService studentService;
 	
+
+	
 	@PostMapping("/student")
-	public ResponseEntity<Student> criarEstudante(@RequestBody Student student){
-		Student student1 = studentService.criarEstudante(student);
+	public ResponseEntity<Student> criarEstudante(@RequestBody StudentClassDTO studentDTO){
+		Student student1 = studentService.criarEstudante(studentDTO);
 		return new ResponseEntity<>(student1, HttpStatus.CREATED);
 	}
 	@GetMapping("/student")
