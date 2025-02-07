@@ -29,7 +29,9 @@ public class StudentController {
 	@Autowired
 	private StudentService studentService;
 	
-
+	record ClassDTO(String nomeTurma, Long idTUrma) {};
+	
+	record StudentDTO(String nome, ClassDTO turma) {}
 	
 	@PostMapping("/student")
 	public ResponseEntity<Student> criarEstudante(@RequestBody StudentClassDTO studentDTO){
@@ -39,14 +41,20 @@ public class StudentController {
 	@GetMapping("/student")
 	public ResponseEntity<List<Student>> buscarTodosEstudantes(){
 		List<Student> student = studentService.buscarTodosEstudantes();
+		
+		
 		return new ResponseEntity<>(student, HttpStatus.OK);
 	}
 	@GetMapping("/student/{id}")
-	public ResponseEntity<Student> buscarEstudanteUnico(@PathVariable Long id){
+	public ResponseEntity<StudentDTO> buscarEstudanteUnico(@PathVariable Long id){
 		Student buscaEstudante = studentService.buscarEstudanteUnico(id);
 		if(buscaEstudante != null) {
-			return new ResponseEntity<>(buscaEstudante, HttpStatus.OK);
+			var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());
+			var studentDTO = new StudentDTO(buscaEstudante.getNomeAluno(), turma);
+			return new ResponseEntity<>(studentDTO, HttpStatus.OK);
 		}
+		
+		
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 	@PutMapping("/student/{id}")
