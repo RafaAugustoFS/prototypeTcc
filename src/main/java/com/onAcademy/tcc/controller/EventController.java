@@ -18,6 +18,9 @@ import com.onAcademy.tcc.model.Event;
 
 import com.onAcademy.tcc.service.EventService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Event", description = "EndPoint de evento")
 @RestController
 @RequestMapping("/api")
 public class EventController {

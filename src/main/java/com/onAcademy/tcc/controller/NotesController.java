@@ -22,6 +22,9 @@ import com.onAcademy.tcc.repository.DisciplineRepo;
 import com.onAcademy.tcc.repository.StudentRepo;
 import com.onAcademy.tcc.service.NoteService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Notes", description = "EndPoint de boletim")
 @RestController
 @RequestMapping("/api")
 public class NotesController {
