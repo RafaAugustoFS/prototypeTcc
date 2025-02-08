@@ -22,6 +22,10 @@ public class Teacher {
 	private String telefoneDocente;
 	private String matriculaDocente;
 	private String senhaDocente;
+	
+	@OneToMany(mappedBy = "recipientTeacher")
+	private List<Feedback> feedback ;
+	
 	@OneToMany(mappedBy = "teacher")
 	private List<DisciplineTeacher> disciplineTeachers;
 	

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.onAcademy.tcc.dto.LoginDTO;
 import com.onAcademy.tcc.model.Institution;
 import com.onAcademy.tcc.service.InstitutionService;
 
@@ -24,6 +25,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class InstitutionController {
 	@Autowired
 	private InstitutionService institutionService;
+	
+	@PostMapping("/institution/login")
+	public ResponseEntity<String> loginInstituicao(@RequestBody LoginDTO loginDTO){
+		String token = institutionService.loginInstituicao(loginDTO.cnpjInstitution(), loginDTO.senhaInstitution());
+		return new ResponseEntity<>(token, HttpStatus.OK);
+	}
 	
 	@PostMapping("/institution")
 	public ResponseEntity<Institution> criarInstituicao(@RequestBody Institution institution){
