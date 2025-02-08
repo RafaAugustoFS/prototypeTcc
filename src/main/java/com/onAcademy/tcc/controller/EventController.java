@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,7 @@ public class EventController {
 	private EventService eventService;
 
 	@PostMapping("/event")
+	@PreAuthorize("hasRole('INSTITUTION')")
 	public ResponseEntity<Event> criarEvento(@RequestBody Event event) {
 		Event event1 = eventService.criarEvento(event);
 		return new ResponseEntity<>(event1, HttpStatus.CREATED);

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.onAcademy.tcc.config.TokenProvider;
 import com.onAcademy.tcc.model.Institution;
 import com.onAcademy.tcc.repository.InstitutionRepo;
 
@@ -18,6 +19,16 @@ public class InstitutionService {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private TokenProvider tokenProvider;
+	
+	public String loginInstituicao(String cnpjInstitution, String senhaInstituicao) {
+		Institution institution = institutionRepo.findBycnpjInstitution(cnpjInstitution)
+				.filter(i -> passwordEncoder.matches(senhaInstituicao, i.getSenhaInstitution()))
+				.orElseThrow(()->new RuntimeException("Email ou senha incorretos."));
+		return tokenProvider.generate(institution.getId().toString(),List.of("institution"));
+	}
 	
 	public Institution criarInstituicao(Institution institution) {
 		
