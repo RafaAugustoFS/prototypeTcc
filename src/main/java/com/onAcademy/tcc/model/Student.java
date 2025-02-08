@@ -33,9 +33,9 @@ public class Student {
 		private String telefoneAluno;
 		private String matriculaAluno;
 		private String senhaAluno;
-		
-		
-		
+
+		@OneToMany(mappedBy = "recipientStudent")
+		private List<Feedback> feedback;
 		
 		@OneToMany(mappedBy = "studentId")
 		@JsonManagedReference 

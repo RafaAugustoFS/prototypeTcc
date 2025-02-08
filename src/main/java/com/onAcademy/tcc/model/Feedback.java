@@ -19,11 +19,14 @@ public class Feedback {
 	private Long id;
 	private String titulo;
 	private String conteudo;
-	private Long CreatedBy;
-	@OneToMany(mappedBy = "feedback")
-	private List<FeedbackStudent> feedbackAluno;
-	@OneToMany(mappedBy = "feedback")
-	private List<FeedbackTeacher> feedbackProfessor;
+	private Long createdBy;
+	@ManyToOne
+	@JoinColumn(name = "feedback_id")
+	private Teacher recipientTeacher;
+	@ManyToOne
+	@JoinColumn(name = "student_id")
+	private Student recipientStudent;
+	
 	@ManyToOne
 	@JoinColumn(name = "classSt_id")
 	private ClassSt classSt;

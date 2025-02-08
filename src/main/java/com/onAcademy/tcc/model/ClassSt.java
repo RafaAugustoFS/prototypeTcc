@@ -23,9 +23,11 @@ public class ClassSt {
 	private int capacidadeMaximaTurma;
 	private int salaTurma;
 	
-
+//	@OneToMany(mappedBy = "recipientClassSt")
+//	private List<Feedback> feedback2;
+	
 	@OneToMany(mappedBy = "classSt")
-	private List<Feedback> feedback ;
+	private List<Feedback> feedback;
 	
 	@OneToMany(mappedBy = "classSt")
     private List<ClassDiscipline> turmaDisciplinas;  
