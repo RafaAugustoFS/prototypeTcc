@@ -57,8 +57,6 @@ public class StudentController {
 	@GetMapping("/student/{id}")
 	public ResponseEntity<StudentDTO> buscarEstudanteUnico(@PathVariable Long id) {
 		Student buscaEstudante = studentService.buscarEstudanteUnico(id);
-		if (buscaEstudante != null) {
-			var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());
 		if(buscaEstudante != null) {
          	var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());
 			var studentDTO = new StudentDTO(buscaEstudante.getNomeAluno(), turma);
