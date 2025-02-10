@@ -64,6 +64,7 @@ public class StudentService {
 		return studentRepo.save(student);
 	
 		
+		
 	}
 	public List<Student> buscarTodosEstudantes(){
 		List<Student> buscarEstudantes = studentRepo.findAll();

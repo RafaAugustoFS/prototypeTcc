@@ -1,6 +1,7 @@
 package com.onAcademy.tcc.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,10 +15,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.onAcademy.tcc.dto.LoginStudent;
 import com.onAcademy.tcc.dto.StudentClassDTO;
+import com.onAcademy.tcc.model.Discipline;
 import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.service.StudentService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Student", description = "EndPoint de estudante")
@@ -31,8 +35,13 @@ public class StudentController {
 	record ClassDTO(String nomeTurma, Long idTUrma) {
 	};
 
-	record StudentDTO(String nome, ClassDTO turma) {
-	}
+	record NoteDTO(Long idNota, Double nota, Discipline discipline) {};
+	
+//	record DisciplineDTO(String nomeDisciplina, Long idDiscipline)
+	
+	record StudentDTO(String nome, String dataNascimentoAluno,String telefoneAluno, String emailAluno, String matriculaAluno, ClassDTO turma, List<NoteDTO> notas) {}
+	
+
 
 	@PostMapping("/student/login")
 	public ResponseEntity<String> loginStudent(@RequestBody LoginStudent loginStudent) {
@@ -58,8 +67,17 @@ public class StudentController {
 	public ResponseEntity<StudentDTO> buscarEstudanteUnico(@PathVariable Long id) {
 		Student buscaEstudante = studentService.buscarEstudanteUnico(id);
 		if(buscaEstudante != null) {
+			 List<NoteDTO> notas = buscaEstudante.getNotas().stream()
+                     .map(nota -> new NoteDTO(nota.getId(),nota.getNota(), nota.getDisciplineId()))  // Mapeia as notas para NoteDTO
+                     .collect(Collectors.toList());
+			 
          	var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());
-			var studentDTO = new StudentDTO(buscaEstudante.getNomeAluno(), turma);
+			var studentDTO = new StudentDTO(buscaEstudante.getNomeAluno(), 
+					buscaEstudante.getDataNascimentoAluno().toString(), 
+					buscaEstudante.getTelefoneAluno(), 
+					buscaEstudante.getEmailAluno(), 
+					buscaEstudante.getMatriculaAluno(),
+					turma, notas);
 			return new ResponseEntity<>(studentDTO, HttpStatus.OK);
 		}
 
