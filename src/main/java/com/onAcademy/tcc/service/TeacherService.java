@@ -1,4 +1,4 @@
-package com.onAcademy.tcc.service;
+package com.onAcademy.tcc.service; 
 
 import java.util.List;
 import java.util.Optional;
@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.onAcademy.tcc.config.TokenProvider;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.TeacherRepo;
 
@@ -19,6 +20,15 @@ public class TeacherService {
 	@Autowired
     private PasswordEncoder passwordEncoder;
 	
+	@Autowired
+	private TokenProvider tokenProvider;
+	
+	public String loginTeacher(String matriculaDocente, String senhaDocente) {
+		Teacher teacher = teacherRepo.findBymatriculaDocente(matriculaDocente)
+				.filter(i -> passwordEncoder.matches(senhaDocente, i.getSenhaDocente()))
+				.orElseThrow(()-> new RuntimeException("Matricula ou senha incorretos"));
+		return tokenProvider.generate(teacher.getId().toString(),List.of("teacher"));
+	}
 	
 	public Teacher criarTeacher(Teacher teacher) {
 		

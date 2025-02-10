@@ -59,6 +59,8 @@ public class StudentController {
 		Student buscaEstudante = studentService.buscarEstudanteUnico(id);
 		if (buscaEstudante != null) {
 			var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());
+		if(buscaEstudante != null) {
+         	var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());
 			var studentDTO = new StudentDTO(buscaEstudante.getNomeAluno(), turma);
 			return new ResponseEntity<>(studentDTO, HttpStatus.OK);
 		}

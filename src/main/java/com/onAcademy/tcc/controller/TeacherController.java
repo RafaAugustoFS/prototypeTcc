@@ -1,11 +1,11 @@
 package com.onAcademy.tcc.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.onAcademy.tcc.dto.LoginTeacherDTO;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.service.TeacherService;
 
@@ -28,7 +29,15 @@ public class TeacherController {
 	@Autowired
 	private TeacherService teacherService;
 	
+	@PostMapping("/teacher/login")
+	public ResponseEntity<String> loginTeacher(@RequestBody LoginTeacherDTO loginTeacherDTO){
+		String token = teacherService.loginTeacher(loginTeacherDTO.matriculaDocente() , loginTeacherDTO.senhaDocente());
+		return new ResponseEntity<>(token, HttpStatus.OK);
+	}
+	
+	
 	@PostMapping("/teacher")
+	@PreAuthorize("hasRole('INSTITUTION')")
 	public ResponseEntity<Teacher> criarTeacher(@RequestBody Teacher teacher){
 		Teacher criarTeacher = teacherService.criarTeacher(teacher);
 		return new ResponseEntity<>(criarTeacher, HttpStatus.CREATED);
