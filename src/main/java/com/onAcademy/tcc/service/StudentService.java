@@ -4,14 +4,18 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.onAcademy.tcc.config.TokenProvider;
 import com.onAcademy.tcc.dto.StudentClassDTO;
 import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.repository.ClassStRepo;
 import com.onAcademy.tcc.repository.StudentRepo;
+
+import ch.qos.logback.core.subst.Token;
 
 @Service
 public class StudentService {
@@ -23,6 +27,19 @@ public class StudentService {
 	
 	@Autowired
 	private PasswordEncoder passworsEncoder;
+	
+	
+	@Autowired
+	private TokenProvider tokenProvider;
+	
+	
+	public String loginStudent(String matriculaAluno, String senhaAluno){
+		Student student = studentRepo.findBymatriculaAluno(matriculaAluno)
+				.filter(s -> passworsEncoder.matches(senhaAluno, s.getSenhaAluno()))
+				.orElseThrow(()->new RuntimeException("Revise os campos!!"));
+		return tokenProvider.generate(student.getId().toString(), List.of("student"));
+		
+	}
 	
 	public Student criarEstudante(StudentClassDTO studentDTO) {
 		
