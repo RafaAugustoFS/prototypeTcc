@@ -32,6 +32,6 @@ public class Teacher {
 	@OneToMany(mappedBy = "teacher")
 	private List<ClassTeacher>classTeachers;
 	
-	@OneToMany(mappedBy = "teacher")
+	@OneToMany(mappedBy = "createdBy")
 	private List<FeedbackByTeacher> feedbackProfessor;
 }
