@@ -1,6 +1,8 @@
 package com.onAcademy.tcc.controller;
 
+import java.sql.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,21 +28,46 @@ public class ClassStController {
 	@Autowired
 	private ClassStService classStService;
 	
+	record StudentDTO(String nomeAluno, String dataNascimentoAluno, Long id) {};
+	record ClassDTO(String nomeTurma, String periodoTurma,Long id, List<StudentDTO> students) {};
+	
 	@PostMapping("/class")
 	public ResponseEntity<ClassSt> criarClasse(@RequestBody ClassSt classSt){
 		ClassSt classSt1 = classStService.criarClasse(classSt);
 		return new ResponseEntity<>(classSt, HttpStatus.OK);
 	}
 	@GetMapping("/class")
-	public ResponseEntity<List<ClassSt>> buscarTodasClasses(){
+	public ResponseEntity<List<ClassDTO>> buscarTodasClasses(){
 		List<ClassSt> classSt = classStService.buscarTodasClasses();
-		return new ResponseEntity<>(classSt, HttpStatus.OK);
+		
+		
+			List<ClassDTO> classDTos = classSt.stream()
+					.map(turma -> {
+						List<StudentDTO> students = turma.getStudents().stream()
+			                     .map(student -> new StudentDTO(student.getNomeAluno(), student.getDataNascimentoAluno().toString(), student.getId()))
+			                     .collect(Collectors.toList());
+						
+						 return new ClassDTO(turma.getNomeTurma(), turma.getPeriodoTurma(), turma.getId(), students);
+					})
+					 .collect(Collectors.toList());
+			
+			   return ResponseEntity.ok(classDTos);
+		
 	}
+	
 	@GetMapping("/class/{id}")
-	public ResponseEntity<ClassSt> buscarClasseUnica(@PathVariable Long id){
+	public ResponseEntity<ClassDTO> buscarClasseUnica(@PathVariable Long id){
 		ClassSt buscaClasse = classStService.buscarClasseUnica(id);
 		if(buscaClasse != null) {
-			return new ResponseEntity<>(buscaClasse, HttpStatus.OK);
+			 List<StudentDTO> students = buscaClasse.getStudents().stream()
+                     .map(student -> new StudentDTO(student.getNomeAluno(), student.getDataNascimentoAluno().toString(), student.getId()))
+                     .collect(Collectors.toList());
+			 ClassDTO classDTO = new ClassDTO(
+		                buscaClasse.getNomeTurma(),
+		                buscaClasse.getPeriodoTurma(),
+		                buscaClasse.getId(),
+		                students);
+			return ResponseEntity.ok(classDTO);
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}

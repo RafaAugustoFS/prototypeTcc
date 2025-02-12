@@ -45,7 +45,9 @@ public class Student {
 		@OneToMany(mappedBy = "createdBy")
 		private List<FeedBackByStudent> feedbackAluno;
 		
-		@ManyToOne()
-		@JoinColumn(name = "turma_id", insertable = false, updatable = false)
+		private Long turmaId;
+		
+		@ManyToOne
+		@JoinColumn(name = "turmaId", insertable = false, updatable = false)
 		private ClassSt classSt;
 }
