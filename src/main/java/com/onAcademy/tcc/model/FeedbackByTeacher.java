@@ -8,19 +8,21 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
-@Entity
 @Data
-public class FeedbackStudent {
+@Entity
+public class FeedbackByTeacher {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+	private String titulo;
+	private String conteudo;
 	@ManyToOne
-	@JoinColumn(name = "feedbackId")
-	private Feedback feedback;
-
+	@JoinColumn(name = "teacher_id")
+	private Teacher createdBy;
 	@ManyToOne
-	@JoinColumn(name = "StudentId")
-	private Student student;
-
+	@JoinColumn(name = "student_id")
+	private Student recipientStudent;
+	@ManyToOne
+	@JoinColumn(name = "classSt_id")
+	private ClassSt classSt;
 }

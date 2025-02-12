@@ -36,14 +36,14 @@ public class Student {
 		private String senhaAluno;
 
 		@OneToMany(mappedBy = "recipientStudent")
-		private List<Feedback> feedback;
+		private List<FeedbackByTeacher> feedback;
 		
 		@OneToMany(mappedBy = "studentId")
 		@JsonManagedReference 
 		private List<Note>notas;
 		
-		@OneToMany(mappedBy = "student")
-		private List<FeedbackStudent> feedbackAluno;
+		@OneToMany(mappedBy = "createdBy")
+		private List<FeedBackByStudent> feedbackAluno;
 		
 		@ManyToOne()
 		@JoinColumn(name = "turma_id", insertable = false, updatable = false)
