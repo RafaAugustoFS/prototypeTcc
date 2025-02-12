@@ -1,6 +1,8 @@
 package com.onAcademy.tcc.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,9 +29,13 @@ public class InstitutionController {
 	private InstitutionService institutionService;
 	
 	@PostMapping("/institution/login")
-	public ResponseEntity<String> loginInstituicao(@RequestBody LoginDTO loginDTO){
+	public ResponseEntity<Map<String,String>> loginInstituicao(@RequestBody LoginDTO loginDTO){
 		String token = institutionService.loginInstituicao(loginDTO.cnpjInstitution(), loginDTO.senhaInstitution());
-		return new ResponseEntity<>(token, HttpStatus.OK);
+		
+		Map<String,String> response = new HashMap<>();
+        response.put("token", token);
+        
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
 	@PostMapping("/institution")
