@@ -1,8 +1,9 @@
 package com.onAcademy.tcc.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.onAcademy.tcc.dto.LoginStudent;
 import com.onAcademy.tcc.dto.StudentClassDTO;
 import com.onAcademy.tcc.model.Discipline;
@@ -44,9 +44,11 @@ public class StudentController {
 
 
 	@PostMapping("/student/login")
-	public ResponseEntity<String> loginStudent(@RequestBody LoginStudent loginStudent) {
+	public ResponseEntity<Map<String, String>> loginStudent(@RequestBody LoginStudent loginStudent) {
 		String token = studentService.loginStudent(loginStudent.matriculaAluno(), loginStudent.senhaAluno());
-		return new ResponseEntity<>(token, HttpStatus.OK);
+		 Map<String,String> response = new HashMap<>();
+	        response.put("token", token);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 
 	}
 	@PreAuthorize("hasRole('INSTITUTION')")
