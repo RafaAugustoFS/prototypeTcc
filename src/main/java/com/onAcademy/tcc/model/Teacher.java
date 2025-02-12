@@ -24,7 +24,7 @@ public class Teacher {
 	private String senhaDocente;
 	
 	@OneToMany(mappedBy = "recipientTeacher")
-	private List<Feedback> feedback ;
+	private List<FeedBackByStudent> feedback ;
 	
 	@OneToMany(mappedBy = "teacher")
 	private List<DisciplineTeacher> disciplineTeachers;
@@ -33,5 +33,5 @@ public class Teacher {
 	private List<ClassTeacher>classTeachers;
 	
 	@OneToMany(mappedBy = "teacher")
-	private List<FeedbackTeacher> feedbackProfessor;
+	private List<FeedbackByTeacher> feedbackProfessor;
 }

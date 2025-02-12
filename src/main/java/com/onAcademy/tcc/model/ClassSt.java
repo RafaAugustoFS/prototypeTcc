@@ -28,7 +28,7 @@ public class ClassSt {
 //	private List<Feedback> feedback2;
 	
 	@OneToMany(mappedBy = "classSt")
-	private List<Feedback> feedback;
+	private List<FeedbackByTeacher> feedback;
 	
 	@OneToMany(mappedBy = "classSt")
     private List<ClassDiscipline> turmaDisciplinas;  
