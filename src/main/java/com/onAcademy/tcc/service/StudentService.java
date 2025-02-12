@@ -48,7 +48,7 @@ public class StudentService {
 				
 		String endodedPassword = passworsEncoder.encode(studentDTO.getSenhaAluno());
 	
-		studentDTO.setSenhaAluno(endodedPassword);
+		
 		
 		Student student = new Student();
 		
@@ -57,10 +57,10 @@ public class StudentService {
 		student.setEmailAluno(studentDTO.getEmailAluno());
 		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
 		student.setMatriculaAluno(studentDTO.getMatriculaAluno());
-		student.setSenhaAluno(studentDTO.getSenhaAluno());
+		student.setSenhaAluno(endodedPassword);
+	
 		
-		student.setClassSt(classSt);
-		
+		student.setTurmaId(classSt.getId());
 		return studentRepo.save(student);
 	
 		

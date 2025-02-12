@@ -68,7 +68,7 @@ public class StudentController {
 		Student buscaEstudante = studentService.buscarEstudanteUnico(id);
 		if(buscaEstudante != null) {
 			 List<NoteDTO> notas = buscaEstudante.getNotas().stream()
-                     .map(nota -> new NoteDTO(nota.getId(),nota.getNota(), nota.getDisciplineId()))  // Mapeia as notas para NoteDTO
+                     .map(nota -> new NoteDTO(nota.getId(),nota.getNota(), nota.getDisciplineId()))
                      .collect(Collectors.toList());
 			 
          	var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());

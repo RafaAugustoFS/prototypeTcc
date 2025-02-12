@@ -37,7 +37,7 @@ public class ClassSt {
 	@OneToMany(mappedBy = "classSt")
 	private List<ClassTeacher> classTeachers;
 	
-	@OneToMany(mappedBy = "classSt", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "classSt")
 	private List<Student> students;
 	
 }
