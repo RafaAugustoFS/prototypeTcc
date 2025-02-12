@@ -1,6 +1,8 @@
 package com.onAcademy.tcc.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,10 +32,14 @@ public class TeacherController {
 	private TeacherService teacherService;
 	
 	@PostMapping("/teacher/login")
-	public ResponseEntity<String> loginTeacher(@RequestBody LoginTeacherDTO loginTeacherDTO){
-		String token = teacherService.loginTeacher(loginTeacherDTO.matriculaDocente() , loginTeacherDTO.senhaDocente());
-		return new ResponseEntity<>(token, HttpStatus.OK);
-	}
+    public ResponseEntity<Map<String,String>> loginTeacher(@RequestBody LoginTeacherDTO loginTeacherDTO) {
+        String token = teacherService.loginTeacher(loginTeacherDTO.matriculaDocente(), loginTeacherDTO.senhaDocente());
+        
+        Map<String,String> response = new HashMap<>();
+        response.put("token", token);
+        
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 	
 	
 	@PostMapping("/teacher")
