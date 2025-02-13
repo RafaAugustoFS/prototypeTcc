@@ -11,8 +11,8 @@ public class StudentClassDTO {
 	private Date dataNascimentoAluno;
 	private String emailAluno;
 	private String telefoneAluno;
-	private String matriculaAluno;
-	private String senhaAluno;
+	private String identifierCode;
+	private String password;
 	private Long turmaId;
 
 }

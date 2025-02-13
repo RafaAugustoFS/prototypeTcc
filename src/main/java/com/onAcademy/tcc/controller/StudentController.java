@@ -78,7 +78,7 @@ public class StudentController {
 					buscaEstudante.getDataNascimentoAluno().toString(), 
 					buscaEstudante.getTelefoneAluno(), 
 					buscaEstudante.getEmailAluno(), 
-					buscaEstudante.getMatriculaAluno(),
+					buscaEstudante.getIdentifierCode(),
 					turma, notas);
 			return new ResponseEntity<>(studentDTO, HttpStatus.OK);
 		}
