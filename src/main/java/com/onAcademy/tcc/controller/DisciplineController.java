@@ -1,5 +1,6 @@
 package com.onAcademy.tcc.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.onAcademy.tcc.dto.DisciplineDTO;
+import com.onAcademy.tcc.model.ClassDiscipline;
+import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.Discipline;
+import com.onAcademy.tcc.repository.ClassStRepo;
+import com.onAcademy.tcc.repository.DisciplineRepo;
 import com.onAcademy.tcc.service.DisciplineService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,11 +33,35 @@ public class DisciplineController {
 	@Autowired
 	private DisciplineService disciplineService;
 	
+	@Autowired 
+	private ClassStRepo classStRepo;
+	
+	@Autowired
+	private DisciplineRepo disciplineRepository;
+	
 	@PostMapping("/discipline")
-	public ResponseEntity<Discipline> criarDiscipline(@RequestBody Discipline discipline){
-		Discipline criarDiscipline = disciplineService.criarDiscipline(discipline);
-		return new ResponseEntity<>(criarDiscipline, HttpStatus.CREATED);
+	public ResponseEntity<Discipline> criarDiscipline(@RequestBody DisciplineDTO disciplineDTO){
+		ClassSt classSt = classStRepo.findById(disciplineDTO.getTurmaId())
+				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 		
+		 Discipline discipline = new Discipline();
+		    discipline.setNomeDisciplina(disciplineDTO.getNomeDisciplina());
+
+		    
+		    if (discipline.getTurmaDisciplina() == null) {
+		        discipline.setTurmaDisciplina(new ArrayList<>());
+		    }
+
+		 
+		    ClassDiscipline classDiscipline = new ClassDiscipline();
+		    classDiscipline.setClassSt(classSt);
+		    classDiscipline.setDiscipline(discipline);
+
+		    discipline.getTurmaDisciplina().add(classDiscipline);
+
+		    
+		    disciplineRepository.save(discipline);
+		 return new ResponseEntity<>(discipline, HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/discipline")

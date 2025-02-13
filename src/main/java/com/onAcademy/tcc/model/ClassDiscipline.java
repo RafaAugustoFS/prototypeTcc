@@ -6,8 +6,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.Data;
 
 @Entity
+@Data
 public class ClassDiscipline {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,4 +22,6 @@ public class ClassDiscipline {
 	@ManyToOne
 	@JoinColumn(name = "discipline_id")
 	private Discipline discipline;
+	
+	
 }

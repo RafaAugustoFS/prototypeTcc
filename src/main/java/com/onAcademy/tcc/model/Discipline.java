@@ -2,10 +2,13 @@ package com.onAcademy.tcc.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
 import lombok.Getter;
@@ -23,11 +26,15 @@ public class Discipline {
 	private Long id;
 	private String nomeDisciplina;
 	
-	@OneToMany(mappedBy = "discipline")
+	
+	
+	@ManyToMany(mappedBy = "discipline")
 	private List<ClassDiscipline> turmaDisciplina;
 	 
 	 
 	@OneToMany(mappedBy = "discipline")
 	private List<DisciplineTeacher> disciplinaProfessor;
+	
+	
 	
 }

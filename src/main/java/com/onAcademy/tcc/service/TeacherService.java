@@ -8,7 +8,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.onAcademy.tcc.config.TokenProvider;
+import com.onAcademy.tcc.model.Discipline;
 import com.onAcademy.tcc.model.Teacher;
+import com.onAcademy.tcc.repository.DisciplineRepo;
 import com.onAcademy.tcc.repository.TeacherRepo;
 
 @Service
@@ -16,6 +18,9 @@ public class TeacherService {
 	
 	@Autowired
 	private TeacherRepo teacherRepo;
+	
+//	@Autowired
+//	private DisciplineRepo disciplineRepo;
 	
 	@Autowired
     private PasswordEncoder passwordEncoder;
@@ -32,9 +37,15 @@ public class TeacherService {
 	
 	public Teacher criarTeacher(Teacher teacher) {
 		
+//		Discipline discipline = disciplineRepo.findById(teacher.getDisciplinaId())
+//			    .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
+		
 		String encodedPassword = passwordEncoder.encode(teacher.getSenhaDocente());
 		
 		teacher.setSenhaDocente(encodedPassword);
+		
+//		teacher.setDisciplinaId(discipline.getId());
+		
 		
 		Teacher salvarTeacher = teacherRepo.save(teacher);
 		return salvarTeacher;
