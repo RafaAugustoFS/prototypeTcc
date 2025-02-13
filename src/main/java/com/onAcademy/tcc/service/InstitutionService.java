@@ -23,18 +23,18 @@ public class InstitutionService {
 	@Autowired
 	private TokenProvider tokenProvider;
 	
-	public String loginInstituicao(String cnpjInstitution, String senhaInstituicao) {
-		Institution institution = institutionRepo.findBycnpjInstitution(cnpjInstitution)
-				.filter(i -> passwordEncoder.matches(senhaInstituicao, i.getSenhaInstitution()))
+	public String loginInstituicao(String identifierCode, String password) {
+		Institution institution = institutionRepo.findByidentifierCode(identifierCode)
+				.filter(i -> passwordEncoder.matches(password, i.getPassword()))
 				.orElseThrow(()->new RuntimeException("Email ou senha incorretos."));
 		return tokenProvider.generate(institution.getId().toString(),List.of("institution"));
 	}
 	
 	public Institution criarInstituicao(Institution institution) {
 		
-		String encoderPassword =  passwordEncoder.encode(institution.getSenhaInstitution());
+		String encoderPassword =  passwordEncoder.encode(institution.getPassword());
 		
-		institution.setSenhaInstitution(encoderPassword);
+		institution.setPassword(encoderPassword);
 		
 		
 		Institution salvarInstituicao = institutionRepo.save(institution);

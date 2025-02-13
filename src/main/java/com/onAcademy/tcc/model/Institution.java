@@ -14,7 +14,7 @@ public class Institution {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String nameInstitution;
-	private String cnpjInstitution;
+	private String identifierCode;
 	private String unitInstitution;
-	private String senhaInstitution;
+	private String password;
 }
