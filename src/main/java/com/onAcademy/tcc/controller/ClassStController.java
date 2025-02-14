@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.onAcademy.tcc.model.ClassDiscipline;
 import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.service.ClassStService;
 

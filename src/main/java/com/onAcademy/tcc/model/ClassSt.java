@@ -3,13 +3,14 @@ package com.onAcademy.tcc.model;
 import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
 @Entity
@@ -24,18 +25,20 @@ public class ClassSt {
 	private int capacidadeMaximaTurma;
 	private int salaTurma;
 	
-//	@OneToMany(mappedBy = "recipientClassSt")
-//	private List<Feedback> feedback2;
-	
 	@OneToMany(mappedBy = "classSt")
 	private List<FeedbackByTeacher> feedback;
 	
-	@OneToMany(mappedBy = "classSt")
-    private List<ClassDiscipline> turmaDisciplinas;  
+	@ManyToMany(mappedBy = "turmaDisciplinas")
+    private List<Discipline> turmaDisciplinas;  
 	
-	
-	@OneToMany(mappedBy = "classSt")
-	private List<ClassTeacher> classTeachers;
+	// @OneToMany(mappedBy = "classSt")
+	@ManyToMany()
+	@JoinTable(
+	        name = "class_teacher", 
+	        joinColumns = { @JoinColumn(name = "classSt_id") }, 
+	        inverseJoinColumns = { @JoinColumn(name = "teacher_id" ) }
+	    )
+	private List<Teacher> classTeacher;
 	
 	@OneToMany(mappedBy = "classSt")
 	private List<Student> students;
