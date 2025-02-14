@@ -45,7 +45,7 @@ public class StudentController {
 
 	@PostMapping("/student/login")
 	public ResponseEntity<Map<String, String>> loginStudent(@RequestBody LoginStudent loginStudent) {
-		String token = studentService.loginStudent(loginStudent.matriculaAluno(), loginStudent.senhaAluno());
+		String token = studentService.loginStudent(loginStudent.identifierCode(), loginStudent.password());
 		 Map<String,String> response = new HashMap<>();
 	        response.put("token", token);
 		return new ResponseEntity<>(response, HttpStatus.OK);

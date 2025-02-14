@@ -28,9 +28,9 @@ public class TeacherService {
 	@Autowired
 	private TokenProvider tokenProvider;
 	
-	public String loginTeacher(String matriculaDocente, String senhaDocente) {
-		Teacher teacher = teacherRepo.findBymatriculaDocente(matriculaDocente)
-				.filter(i -> passwordEncoder.matches(senhaDocente, i.getSenhaDocente()))
+	public String loginTeacher(String identifierCode, String password) {
+		Teacher teacher = teacherRepo.findByidentifierCode(identifierCode)
+				.filter(i -> passwordEncoder.matches(password, i.getPassword()))
 				.orElseThrow(()-> new RuntimeException("Matricula ou senha incorretos"));
 		return tokenProvider.generate(teacher.getId().toString(),List.of("teacher"));
 	}
@@ -40,9 +40,9 @@ public class TeacherService {
 //		Discipline discipline = disciplineRepo.findById(teacher.getDisciplinaId())
 //			    .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
 		
-		String encodedPassword = passwordEncoder.encode(teacher.getSenhaDocente());
+		String encodedPassword = passwordEncoder.encode(teacher.getPassword());
 		
-		teacher.setSenhaDocente(encodedPassword);
+		teacher.setPassword(encodedPassword);
 		
 //		teacher.setDisciplinaId(discipline.getId());
 		
@@ -66,7 +66,7 @@ public class TeacherService {
 			//atualizarTeacher.setClassTeachers(teacher.getDisciplineTeachers());
 			atualizarTeacher.setEmailDocente(teacher.getEmailDocente());
 			atualizarTeacher.setTelefoneDocente(teacher.getTelefoneDocente());
-			atualizarTeacher.setSenhaDocente(teacher.getSenhaDocente());
+			atualizarTeacher.setPassword(teacher.getPassword());
 			teacherRepo.save(atualizarTeacher);
 			return atualizarTeacher;
 		}

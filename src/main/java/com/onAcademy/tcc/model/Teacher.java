@@ -20,8 +20,8 @@ public class Teacher {
 	private Date dataNascimentoDocente;
 	private String emailDocente;
 	private String telefoneDocente;
-	private String matriculaDocente;
-	private String senhaDocente;
+	private String identifierCode;
+	private String password;
 	
 	@OneToMany(mappedBy = "recipientTeacher")
 	private List<FeedBackByStudent> feedback ;
