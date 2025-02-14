@@ -18,7 +18,7 @@ public class NoteService {
 		return criarNota;
 	}
 
-	// Listar Eventos
+	
 	public List<Note> buscarNotas() {
 		List<Note> buscarNotas = noteRepo.findAll();
 		return buscarNotas;
@@ -56,5 +56,10 @@ public class NoteService {
 
 		return null;
 	}
+	
+
+
+	
+	
 
 }
