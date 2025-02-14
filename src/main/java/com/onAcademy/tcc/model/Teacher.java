@@ -29,8 +29,8 @@ public class Teacher {
 	@OneToMany(mappedBy = "teacher")
 	private List<DisciplineTeacher> disciplineTeachers;
 	
-	@OneToMany(mappedBy = "teacher")
-	private List<ClassTeacher>classTeachers;
+	@OneToMany(mappedBy = "classTeacher")
+	private List<ClassSt>classTeacher;
 	
 	@OneToMany(mappedBy = "createdBy")
 	private List<FeedbackByTeacher> feedbackProfessor;

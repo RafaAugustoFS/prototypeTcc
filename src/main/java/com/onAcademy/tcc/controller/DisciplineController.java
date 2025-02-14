@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.onAcademy.tcc.dto.DisciplineDTO;
-import com.onAcademy.tcc.model.ClassDiscipline;
 import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.Discipline;
 import com.onAcademy.tcc.repository.ClassStRepo;
@@ -48,16 +47,12 @@ public class DisciplineController {
 		    discipline.setNomeDisciplina(disciplineDTO.getNomeDisciplina());
 
 		    
-		    if (discipline.getTurmaDisciplina() == null) {
-		        discipline.setTurmaDisciplina(new ArrayList<>());
+		    if (discipline.getTurmaDisciplinas() == null) {
+		        discipline.setTurmaDisciplinas(new ArrayList<>());
 		    }
 
-		 
-		    ClassDiscipline classDiscipline = new ClassDiscipline();
-		    classDiscipline.setClassSt(classSt);
-		    classDiscipline.setDiscipline(discipline);
 
-		    discipline.getTurmaDisciplina().add(classDiscipline);
+		    discipline.getTurmaDisciplinas().add(classSt);
 
 		    
 		    disciplineRepository.save(discipline);
