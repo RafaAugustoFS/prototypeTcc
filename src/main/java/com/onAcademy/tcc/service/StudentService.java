@@ -33,9 +33,9 @@ public class StudentService {
 	private TokenProvider tokenProvider;
 	
 	
-	public String loginStudent(String matriculaAluno, String senhaAluno){
-		Student student = studentRepo.findBymatriculaAluno(matriculaAluno)
-				.filter(s -> passworsEncoder.matches(senhaAluno, s.getSenhaAluno()))
+	public String loginStudent(String identifierCode, String password){
+		Student student = studentRepo.findByidentifierCode(identifierCode)
+				.filter(s -> passworsEncoder.matches(password, s.getPassword()))
 				.orElseThrow(()->new RuntimeException("Revise os campos!!"));
 		return tokenProvider.generate(student.getId().toString(), List.of("student"));
 		
@@ -46,7 +46,7 @@ public class StudentService {
 		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
 			    .orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 				
-		String endodedPassword = passworsEncoder.encode(studentDTO.getSenhaAluno());
+		String endodedPassword = passworsEncoder.encode(studentDTO.getPassword());
 	
 		
 		
@@ -56,8 +56,8 @@ public class StudentService {
 		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
 		student.setEmailAluno(studentDTO.getEmailAluno());
 		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
-		student.setMatriculaAluno(studentDTO.getMatriculaAluno());
-		student.setSenhaAluno(endodedPassword);
+		student.setIdentifierCode(studentDTO.getIdentifierCode());
+		student.setPassword(endodedPassword);
 	
 		
 		student.setTurmaId(classSt.getId());
@@ -78,7 +78,7 @@ public class StudentService {
 			atualizarEstudante.setEmailAluno(student.getEmailAluno());
 			atualizarEstudante.setDataNascimentoAluno(student.getDataNascimentoAluno());
 			atualizarEstudante.setTelefoneAluno(student.getTelefoneAluno());
-			atualizarEstudante.setSenhaAluno(student.getSenhaAluno());
+			atualizarEstudante.setPassword(student.getPassword());
 			studentRepo.save(atualizarEstudante);
 			return atualizarEstudante;
 		}

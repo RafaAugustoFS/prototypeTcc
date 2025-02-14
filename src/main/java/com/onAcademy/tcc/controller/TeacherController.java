@@ -33,7 +33,7 @@ public class TeacherController {
 	
 	@PostMapping("/teacher/login")
     public ResponseEntity<Map<String,String>> loginTeacher(@RequestBody LoginTeacherDTO loginTeacherDTO) {
-        String token = teacherService.loginTeacher(loginTeacherDTO.matriculaDocente(), loginTeacherDTO.senhaDocente());
+        String token = teacherService.loginTeacher(loginTeacherDTO.identifierCode(), loginTeacherDTO.password());
         
         Map<String,String> response = new HashMap<>();
         response.put("token", token);

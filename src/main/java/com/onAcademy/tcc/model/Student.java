@@ -32,8 +32,8 @@ public class Student {
 		private Date dataNascimentoAluno;
 		private String emailAluno;
 		private String telefoneAluno;
-		private String matriculaAluno;
-		private String senhaAluno;
+		private String identifierCode;
+		private String password;
 
 		@OneToMany(mappedBy = "recipientStudent")
 		private List<FeedbackByTeacher> feedback;

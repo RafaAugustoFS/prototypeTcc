@@ -45,7 +45,7 @@ public class StudentController {
 
 	@PostMapping("/student/login")
 	public ResponseEntity<Map<String, String>> loginStudent(@RequestBody LoginStudent loginStudent) {
-		String token = studentService.loginStudent(loginStudent.matriculaAluno(), loginStudent.senhaAluno());
+		String token = studentService.loginStudent(loginStudent.identifierCode(), loginStudent.password());
 		 Map<String,String> response = new HashMap<>();
 	        response.put("token", token);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -78,7 +78,7 @@ public class StudentController {
 					buscaEstudante.getDataNascimentoAluno().toString(), 
 					buscaEstudante.getTelefoneAluno(), 
 					buscaEstudante.getEmailAluno(), 
-					buscaEstudante.getMatriculaAluno(),
+					buscaEstudante.getIdentifierCode(),
 					turma, notas);
 			return new ResponseEntity<>(studentDTO, HttpStatus.OK);
 		}

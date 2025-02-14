@@ -30,7 +30,7 @@ public class InstitutionController {
 	
 	@PostMapping("/institution/login")
 	public ResponseEntity<Map<String,String>> loginInstituicao(@RequestBody LoginDTO loginDTO){
-		String token = institutionService.loginInstituicao(loginDTO.cnpjInstitution(), loginDTO.senhaInstitution());
+		String token = institutionService.loginInstituicao(loginDTO.identifierCode(), loginDTO.password());
 		
 		Map<String,String> response = new HashMap<>();
         response.put("token", token);
