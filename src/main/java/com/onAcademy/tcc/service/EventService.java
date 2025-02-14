@@ -42,9 +42,8 @@ public class EventService {
 			Event atualizarEvento = existEvent.get();
 			atualizarEvento.setTituloEvento(event.getTituloEvento());
 			atualizarEvento.setLocalEvento(event.getLocalEvento());
-			atualizarEvento.setHorarioEvento(event.getHorarioEvento());
+			atualizarEvento.setDataHorarioEvento(event.getDataHorarioEvento());
 			atualizarEvento.setDescricaoEvento(event.getDescricaoEvento());
-			atualizarEvento.setHorarioEvento(event.getHorarioEvento());
 			eventRepo.save(atualizarEvento);
 			return atualizarEvento;
 		}

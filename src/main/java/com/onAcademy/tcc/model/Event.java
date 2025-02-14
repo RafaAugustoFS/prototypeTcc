@@ -1,7 +1,7 @@
 package com.onAcademy.tcc.model;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.LocalTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,8 +16,7 @@ public class Event {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String tituloEvento;
-	private Date dataEvento;
-	private LocalDateTime horarioEvento;
+	private LocalDateTime dataHorarioEvento;
 	private String localEvento;
 	private String descricaoEvento;
 }
