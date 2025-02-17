@@ -20,8 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.onAcademy.tcc.dto.LoginTeacherDTO;
 import com.onAcademy.tcc.model.ClassSt;
+import com.onAcademy.tcc.model.Discipline;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.ClassStRepo;
+import com.onAcademy.tcc.repository.DisciplineRepo;
 import com.onAcademy.tcc.repository.TeacherRepo;
 import com.onAcademy.tcc.service.TeacherService;
 
@@ -31,78 +33,91 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api")
 public class TeacherController {
-	record ClassTeacherDTO(String nomeTurma, Long turmaId ){}
-	record TeacherDTO(Long turmaId, String nomeDocente, List<ClassTeacherDTO> ClassTeacherDTO){}
-	
-	
+	record ClassTeacherDTO(String nomeTurma, Long turmaId) {
+	}
+
+	record DisciplineDTO(String nomeDisiciplina, Long discipline_id) {
+	}
+
+	record TeacherDTO(Long discipline_id, Long turmaId, String nomeDocente, List<ClassTeacherDTO> classTeacherDTO,
+			List<DisciplineDTO> DisciplineDTO) {
+	}
+
+	@Autowired
+	private DisciplineRepo disciplineRepo;
+
 	@Autowired
 	private ClassStRepo classStRepo;
-	
-	
+
 	@Autowired
-	private  TeacherRepo teacherRepo;
-	
+	private TeacherRepo teacherRepo;
+
 	@Autowired
 	private TeacherService teacherService;
-	
+
 	@PostMapping("/teacher/login")
-    public ResponseEntity<Map<String,String>> loginTeacher(@RequestBody LoginTeacherDTO loginTeacherDTO) {
-        String token = teacherService.loginTeacher(loginTeacherDTO.identifierCode(), loginTeacherDTO.password());
-        
-        Map<String,String> response = new HashMap<>();
-        response.put("token", token);
-        
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-	
-	
-	@PostMapping("/teacher")	
+	public ResponseEntity<Map<String, String>> loginTeacher(@RequestBody LoginTeacherDTO loginTeacherDTO) {
+		String token = teacherService.loginTeacher(loginTeacherDTO.identifierCode(), loginTeacherDTO.password());
+
+		Map<String, String> response = new HashMap<>();
+		response.put("token", token);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/teacher")
 	@PreAuthorize("hasRole('INSTITUTION')")
-	public ResponseEntity<Teacher> criarTeacher(@RequestBody TeacherDTO teacherDTO){
+	public ResponseEntity<Teacher> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
 		ClassSt classSt = classStRepo.findById(teacherDTO.turmaId())
 				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
+
+		Discipline disciplines = disciplineRepo.findById(teacherDTO.discipline_id())
+				.orElseThrow(() -> new RuntimeException("Dicisplina não encontrada"));
+
 		Teacher teacher = new Teacher();
 		teacher.setNomeDocente(teacherDTO.nomeDocente());
-		
-		
+
 		if (teacher.getClasses() == null) {
-		    teacher.setClasses(new ArrayList<>()); // Inicializa a lista
+			teacher.setClasses(new ArrayList<>()); // Inicializa a lista
 		}
 		teacher.getClasses().add(classSt);
+	
 
+		if (teacher.getDisciplines() == null) {
+			teacher.setDisciplines(new ArrayList<>());// Inicializa a lista
+		}
+		teacher.getDisciplines().add(disciplines);
 		teacherRepo.save(teacher);
 
-		
 		return new ResponseEntity<>(teacher, HttpStatus.CREATED);
 	}
-	
+
 	@GetMapping("/teacher")
-	public ResponseEntity<List<Teacher>> buscarTeachers(){
+	public ResponseEntity<List<Teacher>> buscarTeachers() {
 		List<Teacher> teachers = teacherService.buscarTeachers();
 		return new ResponseEntity<>(teachers, HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/teacher/{id}")
-	public ResponseEntity<Teacher> editarTeacher(@PathVariable Long id, @RequestBody Teacher teacher ){
+	public ResponseEntity<Teacher> editarTeacher(@PathVariable Long id, @RequestBody Teacher teacher) {
 		Teacher atualizarTeachers = teacherService.atualizarTeacher(id, teacher);
-		
-		if(atualizarTeachers != null) {
+
+		if (atualizarTeachers != null) {
 			return new ResponseEntity<>(atualizarTeachers, HttpStatus.OK);
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
-	
+
 	@GetMapping("/teacher/{id}")
-	public ResponseEntity<Teacher> buscarTeacherUnico (@PathVariable Long id){
+	public ResponseEntity<Teacher> buscarTeacherUnico(@PathVariable Long id) {
 		Teacher buscarUnico = teacherService.buscarUnicoTeacher(id);
 		return new ResponseEntity<>(buscarUnico, HttpStatus.OK);
 	}
-	
+
 	@DeleteMapping("/teacher/{id}")
-	public ResponseEntity<Teacher> deletarTeacher(@PathVariable Long id){
+	public ResponseEntity<Teacher> deletarTeacher(@PathVariable Long id) {
 		Teacher deletarTeacher = teacherService.deletarTeacher(id);
 		return new ResponseEntity<>(deletarTeacher, HttpStatus.OK);
 	}
-	
 
 }

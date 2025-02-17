@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,8 +25,7 @@ public class Discipline {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String nomeDisciplina;
-	
-	
+
 	
 	@ManyToMany()
 	@JoinTable(
@@ -40,6 +38,7 @@ public class Discipline {
 	 
 	@ManyToMany(mappedBy = "disciplines")
 	private List<Teacher> teachers;
+	
 	
 	
 	
