@@ -19,6 +19,7 @@ public class Note {
 	@ManyToOne
 	@JsonBackReference  
 	private Student studentId;
+	private int bimestre;
 	private Double nota;
 	private String status;
 	@ManyToOne

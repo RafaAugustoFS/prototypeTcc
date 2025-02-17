@@ -35,7 +35,7 @@ public class StudentController {
 	record ClassDTO(String nomeTurma, Long idTUrma) {
 	};
 
-	record NoteDTO(Long idNota, Double nota, String status ,String NomeDiscipline) {};
+	record NoteDTO(Long idNota, Double nota, int bimestre, String status ,String NomeDiscipline) {};
 	
 //	record DisciplineDTO(String nomeDisciplina, Long idDiscipline)
 	
@@ -70,7 +70,7 @@ public class StudentController {
 		Student buscaEstudante = studentService.buscarEstudanteUnico(id);
 		if(buscaEstudante != null) {
 			 List<NoteDTO> notas = buscaEstudante.getNotas().stream()
-                     .map(nota -> new NoteDTO(nota.getId(),nota.getNota(), nota.getStatus(),nota.getDisciplineId().getNomeDisciplina()))
+                     .map(nota -> new NoteDTO(nota.getId(),nota.getNota(), nota.getBimestre(), nota.getStatus(),nota.getDisciplineId().getNomeDisciplina()))
                      .collect(Collectors.toList());
 			 
 			

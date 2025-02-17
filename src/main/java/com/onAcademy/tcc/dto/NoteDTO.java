@@ -6,6 +6,7 @@ import lombok.Data;
 public class NoteDTO {
 	private Long studentId;
 	private Double nota;
+	private int bimestre;
 	private String status;
 	private Long disciplineId;
 }
