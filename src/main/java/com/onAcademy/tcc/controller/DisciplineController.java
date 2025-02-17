@@ -42,28 +42,15 @@ public class DisciplineController {
 	@Autowired
 	private DisciplineRepo disciplineRepository;
 
-	record TurmaDisciplinaDTO(String nomeTurma, Long idTurma) {
-	}
-
-	record DisciplineDTO(String nomeDisciplina, Long turmaId, List<TurmaDisciplinaDTO> turmas) {
-	}
+	record DisciplineDTO(String nomeDisciplina) {};
 
 	@PostMapping("/discipline")
-	public ResponseEntity<Discipline> criarDiscipline(@RequestBody DisciplineDTO disciplineDTO) {
-		ClassSt classSt = classStRepo.findById(disciplineDTO.turmaId())
-				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
-
-		Discipline discipline = new Discipline();
-		discipline.setNomeDisciplina(disciplineDTO.nomeDisciplina());
-
-		if (discipline.getTurmaDisciplinas() == null) {
-			discipline.setTurmaDisciplinas(new ArrayList<>());
+	public ResponseEntity<Discipline> criarDiscipline(@RequestBody Discipline discipline) {
+		Discipline disciplineUnica = disciplineService.criarDiscipline(discipline);
+		if (disciplineUnica != null) {
+			return new ResponseEntity<>(disciplineUnica, HttpStatus.CREATED);
 		}
-
-		discipline.getTurmaDisciplinas().add(classSt);
-
-		disciplineRepository.save(discipline);
-		return new ResponseEntity<>(discipline, HttpStatus.CREATED);
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 
 	@GetMapping("/discipline")
@@ -82,18 +69,11 @@ public class DisciplineController {
 	}
 
 	@GetMapping("/discipline/{id}")
-	public ResponseEntity<DisciplineDTO> buscarUnica(@PathVariable Long id) {
+	public ResponseEntity<Discipline> buscarUnica(@PathVariable Long id) {
 		Discipline buscarUnica = disciplineService.buscarUnicaDisciplina(id);
 		if (buscarUnica != null) {
 
-			List<TurmaDisciplinaDTO> turmas = buscarUnica.getTurmaDisciplinas().stream()
-					.map(turma -> new TurmaDisciplinaDTO(turma.getNomeTurma(), turma.getId()))
-					.collect(Collectors.toList());
-
-			DisciplineDTO disciplineDTO = new DisciplineDTO(buscarUnica.getNomeDisciplina(),
-					buscarUnica.getTurmaDisciplinas().get(0).getId(), turmas);
-
-			return new ResponseEntity<>(disciplineDTO, HttpStatus.OK);
+			return new ResponseEntity<>(buscarUnica, HttpStatus.OK);
 		}
 
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
