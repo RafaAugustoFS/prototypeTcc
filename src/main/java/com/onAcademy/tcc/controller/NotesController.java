@@ -49,7 +49,7 @@ public class NotesController {
 
 		note.setNota(noteDTO.getNota()); // Define a nota
 		note.setStatus(noteDTO.getStatus()); // Define o status
-		if (note.getNota() < 5) {
+		if (note.getNota() > 5) {
 			note.setStatus("Aprovado");
 		} else {
 			note.setStatus("Reprovado");

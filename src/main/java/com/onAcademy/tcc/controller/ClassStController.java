@@ -31,11 +31,14 @@ public class ClassStController {
 
 	record DisciplineDTO(String nomeDiscipline, Long id) {
 	};
-
+	
 	record StudentDTO(String nomeAluno, String dataNascimentoAluno, Long id) {
 	};
 
-	record ClassDTO(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
+	record ClassDTO(String nomeTurma, String periodoTurma, Long id, List<DisciplineDTO> turmas) {
+	};
+	
+	record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
 	};
 
 	@PostMapping("/class")
@@ -44,32 +47,37 @@ public class ClassStController {
 		return new ResponseEntity<>(classSt, HttpStatus.OK);
 	}
 
-	@GetMapping("/class")
-	public ResponseEntity<List<ClassDTO>> buscarTodasClasses() {
+	@GetMapping("/class/discipline")
+	public ResponseEntity<List<ClassDTO>> buscarTodasClassesDisciplines() {
 		List<ClassSt> classSt = classStService.buscarTodasClasses();
 
 		List<ClassDTO> classDTos = classSt.stream().map(turma -> {
-			List<StudentDTO> students = turma.getStudents().stream()
-					.map(student -> new StudentDTO(student.getNomeAluno(), student.getDataNascimentoAluno().toString(),
-							student.getId()))
-					.collect(Collectors.toList());
+			List<DisciplineDTO> disciplines = turma.getTurmaDisciplinas().stream()
+                    .map(disciplina -> new DisciplineDTO(disciplina.getNomeDisciplina(), disciplina.getId()))
+                    .collect(Collectors.toList());
 
-			return new ClassDTO(turma.getNomeTurma(), turma.getPeriodoTurma(), turma.getId(), students);
+			return new ClassDTO(turma.getNomeTurma(), turma.getPeriodoTurma(), turma.getId(), disciplines);
 		}).collect(Collectors.toList());
 
 		return ResponseEntity.ok(classDTos);
 
 	}
+	
+	@GetMapping("/class")
+	public ResponseEntity<List<ClassSt>> buscarTodasClasses() {
+		List<ClassSt> classSt = classStService.buscarTodasClasses();
+		return new ResponseEntity<>(classSt, HttpStatus.OK);
+	}
 
 	@GetMapping("/class/{id}")
-	public ResponseEntity<ClassDTO> buscarClasseUnica(@PathVariable Long id) {
+	public ResponseEntity<ClassDTOTwo> buscarClasseUnica(@PathVariable Long id) {
 		ClassSt buscaClasse = classStService.buscarClasseUnica(id);
 		if (buscaClasse != null) {
 			List<StudentDTO> students = buscaClasse.getStudents().stream()
 					.map(student -> new StudentDTO(student.getNomeAluno(), student.getDataNascimentoAluno().toString(),
 							student.getId()))
 					.collect(Collectors.toList());
-			ClassDTO classDTO = new ClassDTO(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(),
+			ClassDTOTwo classDTO = new ClassDTOTwo(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(),
 					buscaClasse.getId(), students);
 			return ResponseEntity.ok(classDTO);
 		}
