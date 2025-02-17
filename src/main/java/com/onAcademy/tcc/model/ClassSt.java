@@ -8,8 +8,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
@@ -31,14 +29,9 @@ public class ClassSt {
 	@ManyToMany(mappedBy = "turmaDisciplinas")
     private List<Discipline> turmaDisciplinas;  
 	
-	// @OneToMany(mappedBy = "classSt")
-	@ManyToMany()
-	@JoinTable(
-	        name = "class_teacher", 
-	        joinColumns = { @JoinColumn(name = "classSt_id") }, 
-	        inverseJoinColumns = { @JoinColumn(name = "teacher_id" ) }
-	    )
-	private List<Teacher> classTeacher;
+	@ManyToMany(mappedBy = "classes") 
+	private List<Teacher> teachers;
+
 	
 	@OneToMany(mappedBy = "classSt")
 	private List<Student> students;

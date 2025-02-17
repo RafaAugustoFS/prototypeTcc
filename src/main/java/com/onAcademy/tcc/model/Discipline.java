@@ -38,8 +38,8 @@ public class Discipline {
 	private List<ClassSt> turmaDisciplinas;
 	 
 	 
-	@OneToMany(mappedBy = "discipline")
-	private List<DisciplineTeacher> disciplinaProfessor;
+	@ManyToMany(mappedBy = "disciplines")
+	private List<Teacher> teachers;
 	
 	
 	

@@ -1,5 +1,6 @@
 package com.onAcademy.tcc.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.onAcademy.tcc.dto.LoginTeacherDTO;
+import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.Teacher;
+import com.onAcademy.tcc.repository.ClassStRepo;
+import com.onAcademy.tcc.repository.TeacherRepo;
 import com.onAcademy.tcc.service.TeacherService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +31,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api")
 public class TeacherController {
+	record ClassTeacherDTO(String nomeTurma, Long turmaId ){}
+	record TeacherDTO(Long turmaId, String nomeDocente, List<ClassTeacherDTO> ClassTeacherDTO){}
+	
+	
+	@Autowired
+	private ClassStRepo classStRepo;
+	
+	
+	@Autowired
+	private  TeacherRepo teacherRepo;
 	
 	@Autowired
 	private TeacherService teacherService;
@@ -42,11 +56,24 @@ public class TeacherController {
     }
 	
 	
-	@PostMapping("/teacher")
+	@PostMapping("/teacher")	
 	@PreAuthorize("hasRole('INSTITUTION')")
-	public ResponseEntity<Teacher> criarTeacher(@RequestBody Teacher teacher){
-		Teacher criarTeacher = teacherService.criarTeacher(teacher);
-		return new ResponseEntity<>(criarTeacher, HttpStatus.CREATED);
+	public ResponseEntity<Teacher> criarTeacher(@RequestBody TeacherDTO teacherDTO){
+		ClassSt classSt = classStRepo.findById(teacherDTO.turmaId())
+				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
+		Teacher teacher = new Teacher();
+		teacher.setNomeDocente(teacherDTO.nomeDocente());
+		
+		
+		if (teacher.getClasses() == null) {
+		    teacher.setClasses(new ArrayList<>()); // Inicializa a lista
+		}
+		teacher.getClasses().add(classSt);
+
+		teacherRepo.save(teacher);
+
+		
+		return new ResponseEntity<>(teacher, HttpStatus.CREATED);
 	}
 	
 	@GetMapping("/teacher")
