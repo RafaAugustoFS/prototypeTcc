@@ -11,6 +11,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
+
 @Entity
 @Data
 
@@ -24,8 +25,6 @@ public class Teacher {
 	private String telefoneDocente;
 	private String identifierCode;
 	private String password;
-	
-	
 	
 	
 	@OneToMany(mappedBy = "recipientTeacher")
@@ -50,4 +49,9 @@ public class Teacher {
 	
 	@OneToMany(mappedBy = "createdBy")
 	private List<FeedbackByTeacher> feedbackProfessor;
+	
+	
+	
+	
+	
 }
