@@ -43,7 +43,6 @@ public class NotesController {
 				.orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
 		Discipline discipline = disciplineRepo.findById(noteDTO.getDisciplineId())
 				.orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
-
 		Note note = new Note();
 		note.setStudentId(student); // Associa o aluno
 
@@ -54,7 +53,12 @@ public class NotesController {
 		} else {
 			note.setStatus("Reprovado");
 		}
-
+		
+		note.setBimestre(noteDTO.getBimestre());
+		if(note.getBimestre() > 4 || note.getBimestre() < 1) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
 		note.setDisciplineId(discipline);
 
 		Note notaCriada = noteService.criarNotas(note);
