@@ -15,26 +15,29 @@ import jakarta.transaction.Transactional;
 public class ClassStService {
 	@Autowired
 	private ClassStRepo classStRepo;
-	
+
 	public ClassSt criarClasse(ClassSt classSt) {
 		ClassSt criarClasse = classStRepo.save(classSt);
 		return criarClasse;
 	}
-	 @Transactional
-	public List<ClassSt> buscarTodasClasses(){
+
+	@Transactional
+	public List<ClassSt> buscarTodasClasses() {
 		List<ClassSt> buscarClasses = classStRepo.findAll();
 		return buscarClasses;
 	}
+
 	public ClassSt buscarClasseUnica(Long id) {
 		Optional<ClassSt> existClass = classStRepo.findById(id);
-		if(existClass.isPresent()) {
+		if (existClass.isPresent()) {
 			return existClass.get();
 		}
 		return null;
 	}
+
 	public ClassSt atualizarClasse(Long id, ClassSt classSt) {
 		Optional<ClassSt> existClass = classStRepo.findById(id);
-		if(existClass.isPresent()) {
+		if (existClass.isPresent()) {
 			ClassSt atualizarClassSt = existClass.get();
 			atualizarClassSt.setNomeTurma(classSt.getNomeTurma());
 			atualizarClassSt.setAnoLetivoTurma(classSt.getAnoLetivoTurma());
@@ -46,9 +49,10 @@ public class ClassStService {
 		}
 		return null;
 	}
+
 	public ClassSt deletarClasse(Long id) {
 		Optional<ClassSt> existClass = classStRepo.findById(id);
-		if(existClass.isPresent()) {
+		if (existClass.isPresent()) {
 			ClassSt deletarClass = existClass.get();
 			classStRepo.delete(deletarClass);
 			return deletarClass;
