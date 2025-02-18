@@ -13,33 +13,28 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
-	
+
 	@Autowired
 	private SecurityFilter securityFilter;
-	
-	private static final String [] PERMIT_ALL_LIST = {
-			"/swagger-ui/**",
-			"/v3/api-docs/**"
-	};
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Configuração de segurança HTTP
-        http.csrf(csrf -> csrf.disable())  // Desabilita a proteção CSRF (para APIs REST, normalmente é desabilitado)
-            .authorizeHttpRequests(authorizedRequests -> {
-            	authorizedRequests.requestMatchers("/api/**")  // Permite o acesso sem autenticação para as rotas /api/**
-                .permitAll().requestMatchers(PERMIT_ALL_LIST).permitAll()
-            	.anyRequest().authenticated();
-            }).addFilterBefore(securityFilter, BasicAuthenticationFilter.class);
+	private static final String[] PERMIT_ALL_LIST = { "/swagger-ui/**", "/v3/api-docs/**" };
 
-        return http.build();  // Necessário para configurar o filtro de segurança no Spring Boot 3.x
-    }
-    
 	@Bean
-	public PasswordEncoder  passwordEncoder() {
-		  return new BCryptPasswordEncoder();
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		// Configuração de segurança HTTP
+		http.csrf(csrf -> csrf.disable()) // Desabilita a proteção CSRF (para APIs REST)
+				.authorizeHttpRequests(authorizedRequests -> {
+					authorizedRequests.requestMatchers("/api/**") // Permite o acesso sem autenticação para as rotas
+																	// /api/**
+							.permitAll().requestMatchers(PERMIT_ALL_LIST).permitAll().anyRequest().authenticated();
+				}).addFilterBefore(securityFilter, BasicAuthenticationFilter.class);
+
+		return http.build(); // Necessário para configurar o filtro de segurança no Spring Boot 3.x
 	}
-	
-	
-	
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
 }

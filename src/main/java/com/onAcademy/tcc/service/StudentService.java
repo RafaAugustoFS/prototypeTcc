@@ -2,12 +2,9 @@ package com.onAcademy.tcc.service;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.onAcademy.tcc.config.TokenProvider;
 import com.onAcademy.tcc.dto.StudentClassDTO;
 import com.onAcademy.tcc.model.ClassSt;
@@ -15,64 +12,58 @@ import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.repository.ClassStRepo;
 import com.onAcademy.tcc.repository.StudentRepo;
 
-import ch.qos.logback.core.subst.Token;
 
 @Service
 public class StudentService {
 	@Autowired
 	private StudentRepo studentRepo;
-	
+
 	@Autowired
 	private ClassStRepo classStRepo;
-	
+
 	@Autowired
 	private PasswordEncoder passworsEncoder;
-	
-	
+
 	@Autowired
 	private TokenProvider tokenProvider;
-	
-	
-	public String loginStudent(String identifierCode, String password){
+
+	public String loginStudent(String identifierCode, String password) {
 		Student student = studentRepo.findByidentifierCode(identifierCode)
 				.filter(s -> passworsEncoder.matches(password, s.getPassword()))
-				.orElseThrow(()->new RuntimeException("Revise os campos!!"));
+				.orElseThrow(() -> new RuntimeException("Revise os campos!!"));
 		return tokenProvider.generate(student.getId().toString(), List.of("student"));
-		
+
 	}
-	
+
 	public Student criarEstudante(StudentClassDTO studentDTO) {
-		
+
 		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
-			    .orElseThrow(() -> new RuntimeException("Turma não encontrada"));
-				
+				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
+
 		String endodedPassword = passworsEncoder.encode(studentDTO.getPassword());
-	
-		
-		
+
 		Student student = new Student();
-		
+
 		student.setNomeAluno(studentDTO.getNomeAluno());
 		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
 		student.setEmailAluno(studentDTO.getEmailAluno());
 		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
 		student.setIdentifierCode(studentDTO.getIdentifierCode());
 		student.setPassword(endodedPassword);
-	
-		
+
 		student.setTurmaId(classSt.getId());
 		return studentRepo.save(student);
-	
-		
-		
+
 	}
-	public List<Student> buscarTodosEstudantes(){
+
+	public List<Student> buscarTodosEstudantes() {
 		List<Student> buscarEstudantes = studentRepo.findAll();
 		return buscarEstudantes;
 	}
+
 	public Student atualizarEstudante(Long id, Student student) {
 		Optional<Student> existStudent = studentRepo.findById(id);
-		if(existStudent.isPresent()) {
+		if (existStudent.isPresent()) {
 			Student atualizarEstudante = existStudent.get();
 			atualizarEstudante.setNomeAluno(student.getNomeAluno());
 			atualizarEstudante.setEmailAluno(student.getEmailAluno());
@@ -84,16 +75,18 @@ public class StudentService {
 		}
 		return null;
 	}
+
 	public Student buscarEstudanteUnico(Long id) {
 		Optional<Student> existStudent = studentRepo.findById(id);
-		if(existStudent.isPresent()) {
+		if (existStudent.isPresent()) {
 			return existStudent.get();
 		}
 		return null;
 	}
+
 	public Student deletarEstudante(Long id) {
 		Optional<Student> existStudent = studentRepo.findById(id);
-		if(existStudent.isPresent()) {
+		if (existStudent.isPresent()) {
 			Student deletarEstudante = existStudent.get();
 			studentRepo.delete(deletarEstudante);
 			return deletarEstudante;

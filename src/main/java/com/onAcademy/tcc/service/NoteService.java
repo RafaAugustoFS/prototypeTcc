@@ -18,7 +18,6 @@ public class NoteService {
 		return criarNota;
 	}
 
-	
 	public List<Note> buscarNotas() {
 		List<Note> buscarNotas = noteRepo.findAll();
 		return buscarNotas;
@@ -45,7 +44,6 @@ public class NoteService {
 		return null;
 	}
 
-	// Deletar Evento
 	public Note deletarNota(Long id) {
 		Optional<Note> existNote = noteRepo.findById(id);
 		if (existNote.isPresent()) {
@@ -56,10 +54,5 @@ public class NoteService {
 
 		return null;
 	}
-	
-
-
-	
-	
 
 }

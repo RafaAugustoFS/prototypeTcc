@@ -2,10 +2,8 @@ package com.onAcademy.tcc.service;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.onAcademy.tcc.model.Event;
 import com.onAcademy.tcc.repository.EventRepo;
 
@@ -14,19 +12,19 @@ public class EventService {
 	@Autowired
 	private EventRepo eventRepo;
 
-	// Criar Evento
+	
 	public Event criarEvento(Event event) {
 		Event criarEvento = eventRepo.save(event);
 		return criarEvento;
 	}
 
-	// Listar Eventos
+	
 	public List<Event> buscarEventos() {
 		List<Event> buscarEventos = eventRepo.findAll();
 		return buscarEventos;
 	}
 
-	// Listar Evento Único
+	
 	public Event buscarEventoUnico(Long id) {
 		Optional<Event> existEvent = eventRepo.findById(id);
 		if (existEvent.isPresent()) {
@@ -35,7 +33,7 @@ public class EventService {
 		return null;
 	}
 
-	// Atualizar Envento
+	
 	public Event atualizarEvento(Long id, Event event) {
 		Optional<Event> existEvent = eventRepo.findById(id);
 		if (existEvent.isPresent()) {
@@ -51,7 +49,7 @@ public class EventService {
 		return null;
 	}
 
-	// Deletar Evento
+	
 	public Event deletarEvent(Long id) {
 		Optional<Event> existEvent = eventRepo.findById(id);
 		if (existEvent.isPresent()) {
