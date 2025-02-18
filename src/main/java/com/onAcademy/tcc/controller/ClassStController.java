@@ -68,11 +68,11 @@ public class ClassStController {
 		classSt.setNomeTurma(classDTO.nomeTurma);
 		classSt.setPeriodoTurma(classDTO.periodoTurma);
 
-		if (classSt.getClasses() == null) {
-			classSt.setClasses(new ArrayList<>());
+		if (classSt.getTeachers() == null) {
+			classSt.setTeachers(new ArrayList<>());
 		}
 
-		classSt.getClasses().addAll(teacher);
+		classSt.getTeachers().addAll(teacher);
 
 		classStRepo.save(classSt);
 
@@ -85,12 +85,12 @@ public class ClassStController {
 
 		List<ClassDTO> classDTos = classSt.stream().map(turma -> {
 
-			List<TeacherDTO> teachers = turma.getClasses().stream()
+			List<TeacherDTO> teachers = turma.getTeachers().stream()
 					.map(teacher -> new TeacherDTO(teacher.getNomeDocente(), teacher.getId()))
 					.collect(Collectors.toList());
 
 			return new ClassDTO(turma.getNomeTurma(), turma.getPeriodoTurma(),
-					turma.getClasses().stream().map(Teacher::getId).collect(Collectors.toList()), teachers);
+					turma.getTeachers().stream().map(Teacher::getId).collect(Collectors.toList()), teachers);
 		}).collect(Collectors.toList());
 
 		return ResponseEntity.ok(classDTos);
@@ -122,7 +122,7 @@ public class ClassStController {
 	public ResponseEntity<ClassDTOTre> buscarClasseTeachersUnica(@PathVariable Long id) {
 		ClassSt buscaClasse = classStService.buscarClasseUnica(id);
 		if (buscaClasse != null) {
-			List<TeacherTurmaDTO> teachers = buscaClasse.getClasses().stream()
+			List<TeacherTurmaDTO> teachers = buscaClasse.getTeachers().stream()
 					.map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
 					.collect(Collectors.toList());
 			ClassDTOTre classDTO = new ClassDTOTre(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(),
