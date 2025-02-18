@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,6 +49,7 @@ public class ClassStController {
 	record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
 	};
 
+	@PreAuthorize("hasRole('INSTITUTION')")
 	@PostMapping("/class")
 	public ResponseEntity<ClassSt> criarClasse(@RequestBody ClassDTO classDTO) {
 	    List<Discipline> disciplines = disciplineRepo.findAllById(classDTO.disciplineId());
