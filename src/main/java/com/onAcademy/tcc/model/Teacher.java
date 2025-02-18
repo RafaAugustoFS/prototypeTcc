@@ -25,33 +25,21 @@ public class Teacher {
 	private String telefoneDocente;
 	private String identifierCode;
 	private String password;
-	
-	
+
 	@OneToMany(mappedBy = "recipientTeacher")
-	private List<FeedBackByStudent> feedback ;
-	
+	private List<FeedBackByStudent> feedback;
+
 	@ManyToMany
-	@JoinTable(
-	    name = "teacher_discipline", 
-	    joinColumns = {@JoinColumn(name = "teacher_id")},
-	    inverseJoinColumns = {@JoinColumn(name = "discipline_id")}
-	)
+	@JoinTable(name = "teacher_discipline", joinColumns = { @JoinColumn(name = "teacher_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "discipline_id") })
 	private List<Discipline> disciplines;
 
-	
 	@ManyToMany
-	@JoinTable(
-	    name = "class_teacher",
-	    joinColumns = {@JoinColumn(name = "teacher_id")}, 
-	    inverseJoinColumns = {@JoinColumn(name = "classSt_id")}
-	)
+	@JoinTable(name = "class_teacher", joinColumns = { @JoinColumn(name = "teacher_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "classSt_id") })
 	private List<ClassSt> classes;
-	
+
 	@OneToMany(mappedBy = "createdBy")
 	private List<FeedbackByTeacher> feedbackProfessor;
-	
-	
-	
-	
-	
+
 }

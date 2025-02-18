@@ -40,11 +40,12 @@ public class TeacherController {
 	record DisciplineDTO(String nomeDisiciplina, Long discipline_id) {
 	}
 
-	record TeacherDTO(String nomeDocente, List<Long> turmaId,List<ClassTeacherDTO> classTeacherDTO, 
-			List<Long> disciplineId, 
-			List<DisciplineDTO> DisciplineDTO) {}
-	
-	record TeacherDTOTwo(String nomeDocente, Long id, List<ClassTeacherDTO> classes) {}
+	record TeacherDTO(String nomeDocente, List<Long> turmaId, List<ClassTeacherDTO> classTeacherDTO,
+			List<Long> disciplineId, List<DisciplineDTO> DisciplineDTO) {
+	}
+
+	record TeacherDTOTwo(String nomeDocente, Long id, List<ClassTeacherDTO> classes) {
+	}
 
 	@Autowired
 	private DisciplineRepo disciplineRepo;
@@ -85,7 +86,7 @@ public class TeacherController {
 		teacher.setNomeDocente(teacherDTO.nomeDocente());
 
 		if (teacher.getClasses() == null) {
-			teacher.setClasses(new ArrayList<>()); 
+			teacher.setClasses(new ArrayList<>());
 		}
 		teacher.getClasses().addAll(classSt);
 
@@ -97,7 +98,6 @@ public class TeacherController {
 		return new ResponseEntity<>(teacher, HttpStatus.CREATED);
 	}
 
-	
 	@GetMapping("/teacher")
 	public ResponseEntity<List<Teacher>> buscarTeachers() {
 		List<Teacher> teachers = teacherService.buscarTeachers();
@@ -117,18 +117,17 @@ public class TeacherController {
 	@GetMapping("/teacher/{id}")
 	public ResponseEntity<TeacherDTOTwo> buscarTeacherUnico(@PathVariable Long id) {
 		Teacher buscarUnico = teacherService.buscarUnicoTeacher(id);
-		
-		if(buscarUnico != null) {
+
+		if (buscarUnico != null) {
 			List<ClassTeacherDTO> classes = buscarUnico.getClasses().stream()
 					.map(classe -> new ClassTeacherDTO(classe.getNomeTurma(), classe.getId()))
 					.collect(Collectors.toList());
 			TeacherDTOTwo teacherDTOTwo = new TeacherDTOTwo(buscarUnico.getNomeDocente(), buscarUnico.getId(), classes);
 			return ResponseEntity.ok(teacherDTOTwo);
 		}
-		
+
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		
-		
+
 	}
 
 	@DeleteMapping("/teacher/{id}")

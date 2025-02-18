@@ -42,7 +42,8 @@ public class DisciplineController {
 	@Autowired
 	private DisciplineRepo disciplineRepository;
 
-	record DisciplineDTO(String nomeDisciplina) {};
+	record DisciplineDTO(String nomeDisciplina) {
+	};
 
 	@PostMapping("/discipline")
 	public ResponseEntity<Discipline> criarDiscipline(@RequestBody Discipline discipline) {

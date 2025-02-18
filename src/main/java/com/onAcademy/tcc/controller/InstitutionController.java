@@ -27,35 +27,36 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class InstitutionController {
 	@Autowired
 	private InstitutionService institutionService;
-	
+
 	@PostMapping("/institution/login")
-	public ResponseEntity<Map<String,String>> loginInstituicao(@RequestBody LoginDTO loginDTO){
+	public ResponseEntity<Map<String, String>> loginInstituicao(@RequestBody LoginDTO loginDTO) {
 		String token = institutionService.loginInstituicao(loginDTO.identifierCode(), loginDTO.password());
-		
-		Map<String,String> response = new HashMap<>();
-        response.put("token", token);
-        
+
+		Map<String, String> response = new HashMap<>();
+		response.put("token", token);
+
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+
 	@PostMapping("/institution")
-	public ResponseEntity<Institution> criarInstituicao(@RequestBody Institution institution){
+	public ResponseEntity<Institution> criarInstituicao(@RequestBody Institution institution) {
 		Institution institution1 = institutionService.criarInstituicao(institution);
 		return new ResponseEntity<>(institution1, HttpStatus.CREATED);
 	}
-	
+
 	@GetMapping("/institution")
-	public ResponseEntity<List<Institution>> buscarInstituicao(){
+	public ResponseEntity<List<Institution>> buscarInstituicao() {
 		List<Institution> institution = institutionService.buscarInstituicao();
 		return new ResponseEntity<>(institution, HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/institution/{id}")
-	public ResponseEntity<Institution> atualizarInstituicao(@PathVariable Long id, @RequestBody Institution institution){
-	 	Institution atualizarInstituicao = institutionService.atualizarInstituicao(id, institution);
-	 	if(atualizarInstituicao != null) {
-	 		return new ResponseEntity<>(atualizarInstituicao, HttpStatus.OK);
-	 	}
-	 	return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	public ResponseEntity<Institution> atualizarInstituicao(@PathVariable Long id,
+			@RequestBody Institution institution) {
+		Institution atualizarInstituicao = institutionService.atualizarInstituicao(id, institution);
+		if (atualizarInstituicao != null) {
+			return new ResponseEntity<>(atualizarInstituicao, HttpStatus.OK);
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 }

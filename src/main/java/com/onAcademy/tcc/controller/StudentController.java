@@ -35,22 +35,22 @@ public class StudentController {
 	record ClassDTO(String nomeTurma, Long idTUrma) {
 	};
 
-	record NoteDTO(Long idNota, Double nota, int bimestre, String status ,String NomeDiscipline) {};
-	
-//	record DisciplineDTO(String nomeDisciplina, Long idDiscipline)
-	
-	record StudentDTO(String nome, String dataNascimentoAluno,String telefoneAluno, String emailAluno, String matriculaAluno, ClassDTO turma, List<NoteDTO> notas) {}
-	
+	record NoteDTO(Long idNota, Double nota, int bimestre, String status, String NomeDiscipline) {
+	};
 
+	record StudentDTO(String nome, String dataNascimentoAluno, String telefoneAluno, String emailAluno,
+			String matriculaAluno, ClassDTO turma, List<NoteDTO> notas) {
+	};
 
 	@PostMapping("/student/login")
 	public ResponseEntity<Map<String, String>> loginStudent(@RequestBody LoginStudent loginStudent) {
 		String token = studentService.loginStudent(loginStudent.identifierCode(), loginStudent.password());
-		 Map<String,String> response = new HashMap<>();
-	        response.put("token", token);
+		Map<String, String> response = new HashMap<>();
+		response.put("token", token);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 
 	}
+
 	@PreAuthorize("hasRole('INSTITUTION')")
 	@PostMapping("/student")
 	public ResponseEntity<Student> criarEstudante(@RequestBody StudentClassDTO studentDTO) {
@@ -68,19 +68,15 @@ public class StudentController {
 	@GetMapping("/student/{id}")
 	public ResponseEntity<StudentDTO> buscarEstudanteUnico(@PathVariable Long id) {
 		Student buscaEstudante = studentService.buscarEstudanteUnico(id);
-		if(buscaEstudante != null) {
-			 List<NoteDTO> notas = buscaEstudante.getNotas().stream()
-                     .map(nota -> new NoteDTO(nota.getId(),nota.getNota(), nota.getBimestre(), nota.getStatus(),nota.getDisciplineId().getNomeDisciplina()))
-                     .collect(Collectors.toList());
-			 
-			
-         	var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());
-			var studentDTO = new StudentDTO(buscaEstudante.getNomeAluno(), 
-					buscaEstudante.getDataNascimentoAluno().toString(), 
-					buscaEstudante.getTelefoneAluno(), 
-					buscaEstudante.getEmailAluno(), 
-					buscaEstudante.getIdentifierCode(),
-					turma, notas);
+		if (buscaEstudante != null) {
+			List<NoteDTO> notas = buscaEstudante.getNotas().stream().map(nota -> new NoteDTO(nota.getId(),
+					nota.getNota(), nota.getBimestre(), nota.getStatus(), nota.getDisciplineId().getNomeDisciplina()))
+					.collect(Collectors.toList());
+
+			var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());
+			var studentDTO = new StudentDTO(buscaEstudante.getNomeAluno(),
+					buscaEstudante.getDataNascimentoAluno().toString(), buscaEstudante.getTelefoneAluno(),
+					buscaEstudante.getEmailAluno(), buscaEstudante.getIdentifierCode(), turma, notas);
 			return new ResponseEntity<>(studentDTO, HttpStatus.OK);
 		}
 

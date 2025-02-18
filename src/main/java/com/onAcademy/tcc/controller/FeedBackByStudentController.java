@@ -23,13 +23,13 @@ public class FeedBackByStudentController {
 	private FeedbackByStudentService feedbackByStudentService;
 
 	record TeacherDTO(String nomeDocente, Long id) {
-	}
+	};
 
 	record FeedbackDTO(String titulo, String conteudo, CreatedByDTO createdBy, TeacherDTO teacher) {
-	}
+	};
 
 	record CreatedByDTO(String nomeAluno, Long id) {
-	}
+	};
 
 	@PostMapping("/feedbackStudent")
 	public ResponseEntity<FeedBackByStudent> criarFeedback(@RequestBody FeedBackByStudent feedbackByStudent) {

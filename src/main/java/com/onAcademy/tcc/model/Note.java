@@ -15,9 +15,9 @@ public class Note {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@ManyToOne
-	@JsonBackReference  
+	@JsonBackReference
 	private Student studentId;
 	private int bimestre;
 	private Double nota;
@@ -25,4 +25,3 @@ public class Note {
 	@ManyToOne
 	private Discipline disciplineId;
 }
-		

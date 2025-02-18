@@ -38,64 +38,62 @@ public class ClassStController {
 	@Autowired
 	private DisciplineRepo disciplineRepo;
 
-	record DisciplineTurmaDTO(Long id, String nomeDiscipline) {};
-	
+	record DisciplineTurmaDTO(Long id, String nomeDiscipline) {
+	};
+
 	record StudentDTO(String nomeAluno, String dataNascimentoAluno, Long id) {
 	};
 
-	record ClassDTO(String nomeTurma, String periodoTurma, List<Long> disciplineId, List<DisciplineTurmaDTO> disciplinas) {
+	record ClassDTO(String nomeTurma, String periodoTurma, List<Long> disciplineId,
+			List<DisciplineTurmaDTO> disciplinas) {
 	};
-	
+
 	record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
 	};
 
 	@PreAuthorize("hasRole('INSTITUTION')")
 	@PostMapping("/class")
 	public ResponseEntity<ClassSt> criarClasse(@RequestBody ClassDTO classDTO) {
-	    List<Discipline> disciplines = disciplineRepo.findAllById(classDTO.disciplineId());
-	    
-	    
-	    if (disciplines.size() != classDTO.disciplineId().size()) {
-	        throw new RuntimeException("Algumas disciplinas não foram encontradas.");
-	    }
-	    
-	  
-	    ClassSt classSt = new ClassSt();
-	    classSt.setNomeTurma(classDTO.nomeTurma);
-	    classSt.setPeriodoTurma(classDTO.periodoTurma);
-	    
-	    
-	    if (classSt.getDisciplinaTurmas() == null) {
-	        classSt.setDisciplinaTurmas(new ArrayList<>());
-	    }
+		List<Discipline> disciplines = disciplineRepo.findAllById(classDTO.disciplineId());
 
-	    
-	    classSt.getDisciplinaTurmas().addAll(disciplines);
-	
-	    classStRepo.save(classSt);
-	    
-	    return new ResponseEntity<>(classSt, HttpStatus.CREATED);
+		if (disciplines.size() != classDTO.disciplineId().size()) {
+			throw new RuntimeException("Algumas disciplinas não foram encontradas.");
+		}
+
+		ClassSt classSt = new ClassSt();
+		classSt.setNomeTurma(classDTO.nomeTurma);
+		classSt.setPeriodoTurma(classDTO.periodoTurma);
+
+		if (classSt.getDisciplinaTurmas() == null) {
+			classSt.setDisciplinaTurmas(new ArrayList<>());
+		}
+
+		classSt.getDisciplinaTurmas().addAll(disciplines);
+
+		classStRepo.save(classSt);
+
+		return new ResponseEntity<>(classSt, HttpStatus.CREATED);
 	}
+
 	@GetMapping("/class/discipline")
 	public ResponseEntity<List<ClassDTO>> buscarTodasClassesDisciplines() {
 		List<ClassSt> classSt = classStService.buscarTodasClasses();
 
 		List<ClassDTO> classDTos = classSt.stream().map(turma -> {
-			
-			List<DisciplineTurmaDTO> disciplineDetails = turma.getDisciplinaTurmas().stream()
-		            .map(disciplina -> new DisciplineTurmaDTO(disciplina.getId(), disciplina.getNomeDisciplina())) // Criando o DisciplineTurmaDTO com ID e Nome
-		            .collect(Collectors.toList());
 
-		        // Retornando a ClassDTO com disciplina ID e nome
-		        return new ClassDTO(turma.getNomeTurma(), turma.getPeriodoTurma(), 
-		                            turma.getDisciplinaTurmas().stream().map(Discipline::getId).collect(Collectors.toList()), 
-		                            disciplineDetails);
+			List<DisciplineTurmaDTO> disciplineDetails = turma.getDisciplinaTurmas().stream()
+					.map(disciplina -> new DisciplineTurmaDTO(disciplina.getId(), disciplina.getNomeDisciplina()))
+					.collect(Collectors.toList());
+
+			return new ClassDTO(turma.getNomeTurma(), turma.getPeriodoTurma(),
+					turma.getDisciplinaTurmas().stream().map(Discipline::getId).collect(Collectors.toList()),
+					disciplineDetails);
 		}).collect(Collectors.toList());
 
 		return ResponseEntity.ok(classDTos);
 
 	}
-	
+
 	@GetMapping("/class")
 	public ResponseEntity<List<ClassSt>> buscarTodasClasses() {
 		List<ClassSt> classSt = classStService.buscarTodasClasses();
