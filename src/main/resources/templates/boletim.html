@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Boletim do Aluno</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: center; border: 1px solid #ddd; }
+        th { background-color: #0056b3; color: white; }
+        td { background-color: #f5f9ff; }
+    </style>
+</head>
+<body>
+    <h1>Boletim de Notas</h1>
+    <p>Aluno: <span th:text="${student.nomeAluno}"></span></p>
+    <p>Data: <span th:text="${dataAtual}"></span></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Matéria</th>
+                <th>1º Bim.</th>
+                <th>2º Bim.</th>
+                <th>3º Bim.</th>
+                <th>4º Bim.</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="disciplina : ${disciplinas}">
+                <td th:text="${disciplina.nome}"></td>
+                <td th:text="${disciplina.notas[0]}"></td>
+                <td th:text="${disciplina.notas[1]}"></td>
+                <td th:text="${disciplina.notas[2]}"></td>
+                <td th:text="${disciplina.notas[3]}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
