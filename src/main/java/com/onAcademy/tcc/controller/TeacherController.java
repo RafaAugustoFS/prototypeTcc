@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,11 +40,11 @@ public class TeacherController {
 	record DisciplineDTO(String nomeDisiciplina, Long discipline_id) {
 	}
 
-	record TeacherDTO(Long discipline_id, Long turma_Id, String nomeDocente, List<Long> turmaId,
-			List<ClassTeacherDTO> classTeacherDTO,
-
-			List<Long> disciplineId, List<DisciplineDTO> DisciplineDTO) {
-	}
+	record TeacherDTO(String nomeDocente, List<Long> turmaId,List<ClassTeacherDTO> classTeacherDTO, 
+			List<Long> disciplineId, 
+			List<DisciplineDTO> DisciplineDTO) {}
+	
+	record TeacherDTOTwo(String nomeDocente, Long id, List<ClassTeacherDTO> classes) {}
 
 	@Autowired
 	private DisciplineRepo disciplineRepo;
@@ -114,9 +115,20 @@ public class TeacherController {
 	}
 
 	@GetMapping("/teacher/{id}")
-	public ResponseEntity<Teacher> buscarTeacherUnico(@PathVariable Long id) {
+	public ResponseEntity<TeacherDTOTwo> buscarTeacherUnico(@PathVariable Long id) {
 		Teacher buscarUnico = teacherService.buscarUnicoTeacher(id);
-		return new ResponseEntity<>(buscarUnico, HttpStatus.OK);
+		
+		if(buscarUnico != null) {
+			List<ClassTeacherDTO> classes = buscarUnico.getClasses().stream()
+					.map(classe -> new ClassTeacherDTO(classe.getNomeTurma(), classe.getId()))
+					.collect(Collectors.toList());
+			TeacherDTOTwo teacherDTOTwo = new TeacherDTOTwo(buscarUnico.getNomeDocente(), buscarUnico.getId(), classes);
+			return ResponseEntity.ok(teacherDTOTwo);
+		}
+		
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		
+		
 	}
 
 	@DeleteMapping("/teacher/{id}")
