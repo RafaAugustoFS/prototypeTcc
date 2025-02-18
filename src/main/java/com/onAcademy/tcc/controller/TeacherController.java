@@ -1,6 +1,7 @@
 package com.onAcademy.tcc.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,18 +41,18 @@ public class TeacherController {
 	record DisciplineDTO(String nomeDisiciplina, Long discipline_id) {
 	}
 
-	record TeacherDTO(String nomeDocente, List<Long> turmaId, List<ClassTeacherDTO> classTeacherDTO,
-			List<Long> disciplineId, List<DisciplineDTO> DisciplineDTO) {
+	record TeacherDTO(String nomeDocente, Date dataNascimentoDocente,String emailDocente, String telefoneDocente, 
+			String identifierCode, 
+			String password, 
+			List<ClassTeacherDTO> classTeacherDTO, List<Long> disciplineId,
+			List<DisciplineDTO> DisciplineDTO) {
 	}
 
-	record TeacherDTOTwo(String nomeDocente, Long id, List<ClassTeacherDTO> classes) {
+	record TeacherDTOTwo(String nomeDocente, Long id, List<DisciplineDTO> disciplinas) {
 	}
 
 	@Autowired
 	private DisciplineRepo disciplineRepo;
-
-	@Autowired
-	private ClassStRepo classStRepo;
 
 	@Autowired
 	private TeacherRepo teacherRepo;
@@ -72,23 +73,19 @@ public class TeacherController {
 	@PostMapping("/teacher")
 	@PreAuthorize("hasRole('INSTITUTION')")
 	public ResponseEntity<Teacher> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
-
-		List<ClassSt> classSt = classStRepo.findAllById(teacherDTO.turmaId());
-		if (classSt.size() != teacherDTO.turmaId().size()) {
-			throw new RuntimeException("Algumas turmas não foram adicionadas");
-		}
-
 		List<Discipline> disciplines = disciplineRepo.findAllById(teacherDTO.disciplineId());
 		if (disciplines.size() != teacherDTO.disciplineId().size()) {
 			throw new RuntimeException("Algumas disciplinas não foram adicionadas");
 		}
 		Teacher teacher = new Teacher();
 		teacher.setNomeDocente(teacherDTO.nomeDocente());
-
-		if (teacher.getClasses() == null) {
-			teacher.setClasses(new ArrayList<>());
-		}
-		teacher.getClasses().addAll(classSt);
+		teacher.setDataNascimentoDocente(teacherDTO.dataNascimentoDocente());
+		teacher.setEmailDocente(teacherDTO.emailDocente());
+		teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
+		teacher.setIdentifierCode(teacherDTO.identifierCode());
+		teacher.setPassword(teacherDTO.password());
+		
+		
 
 		if (teacher.getDisciplines() == null) {
 			teacher.setDisciplines(new ArrayList<>());
@@ -119,8 +116,8 @@ public class TeacherController {
 		Teacher buscarUnico = teacherService.buscarUnicoTeacher(id);
 
 		if (buscarUnico != null) {
-			List<ClassTeacherDTO> classes = buscarUnico.getClasses().stream()
-					.map(classe -> new ClassTeacherDTO(classe.getNomeTurma(), classe.getId()))
+			List<DisciplineDTO> classes = buscarUnico.getDisciplines().stream()
+					.map(classe -> new DisciplineDTO(classe.getNomeDisciplina(), classe.getId()))
 					.collect(Collectors.toList());
 			TeacherDTOTwo teacherDTOTwo = new TeacherDTOTwo(buscarUnico.getNomeDocente(), buscarUnico.getId(), classes);
 			return ResponseEntity.ok(teacherDTOTwo);

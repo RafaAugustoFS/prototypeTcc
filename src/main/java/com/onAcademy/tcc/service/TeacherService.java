@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.onAcademy.tcc.config.TokenProvider;
 import com.onAcademy.tcc.model.Discipline;
@@ -59,13 +60,12 @@ public class TeacherService {
 
 		return null;
 	}
-
+	
 	public Teacher deletarTeacher(Long id) {
 		Optional<Teacher> existingTeacher = teacherRepo.findById(id);
 		if (existingTeacher.isPresent()) {
 			Teacher deletarTeacher = existingTeacher.get();
-			teacherRepo.deleteById(id);
-			teacherRepo.save(deletarTeacher);
+			teacherRepo.delete(deletarTeacher);
 			return deletarTeacher;
 
 		}

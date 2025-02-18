@@ -3,9 +3,9 @@ package com.onAcademy.tcc.model;
 import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,14 +36,14 @@ public class Student {
 	private String identifierCode;
 	private String password;
 
-	@OneToMany(mappedBy = "recipientStudent")
+	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
 	private List<FeedbackByTeacher> feedback;
 
-	@OneToMany(mappedBy = "studentId")
+	@OneToMany(mappedBy = "studentId", fetch = FetchType.EAGER)
 	@JsonManagedReference
 	private List<Note> notas;
 
-	@OneToMany(mappedBy = "createdBy")
+	@OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
 	private List<FeedBackByStudent> feedbackAluno;
 
 	private Long turmaId;
