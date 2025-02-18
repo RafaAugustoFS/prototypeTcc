@@ -16,11 +16,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.onAcademy.tcc.model.ClassSt;
-import com.onAcademy.tcc.model.Discipline;
+import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.ClassStRepo;
-import com.onAcademy.tcc.repository.DisciplineRepo;
+import com.onAcademy.tcc.repository.TeacherRepo;
 import com.onAcademy.tcc.service.ClassStService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,39 +35,44 @@ public class ClassStController {
 	private ClassStRepo classStRepo;
 
 	@Autowired
-	private DisciplineRepo disciplineRepo;
+	private TeacherRepo teacherRepo;
 
-	record DisciplineTurmaDTO(Long id, String nomeDiscipline) {
+	record TeacherTurmaDTO(Long id, String nomeDocente) {
 	};
 
 	record StudentDTO(String nomeAluno, String dataNascimentoAluno, Long id) {
 	};
 
-	record ClassDTO(String nomeTurma, String periodoTurma, List<Long> disciplineId,
-			List<DisciplineTurmaDTO> disciplinas) {
+	record TeacherDTO(String nome, Long id) {
+	};
+
+	record ClassDTO(String nomeTurma, String periodoTurma, List<Long> idTeacher, List<TeacherDTO> teachers) {
 	};
 
 	record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
 	};
 
+	record ClassDTOTre(String nomeTurma, String periodoTurma, Long id, List<TeacherTurmaDTO> teachers) {
+	};
+
 	@PreAuthorize("hasRole('INSTITUTION')")
 	@PostMapping("/class")
 	public ResponseEntity<ClassSt> criarClasse(@RequestBody ClassDTO classDTO) {
-		List<Discipline> disciplines = disciplineRepo.findAllById(classDTO.disciplineId());
+		List<Teacher> teacher = teacherRepo.findAllById(classDTO.idTeacher());
 
-		if (disciplines.size() != classDTO.disciplineId().size()) {
-			throw new RuntimeException("Algumas disciplinas não foram encontradas.");
+		if (teacher.size() != classDTO.idTeacher().size()) {
+			throw new RuntimeException("Professor não encontrado.");
 		}
 
 		ClassSt classSt = new ClassSt();
 		classSt.setNomeTurma(classDTO.nomeTurma);
 		classSt.setPeriodoTurma(classDTO.periodoTurma);
 
-		if (classSt.getDisciplinaTurmas() == null) {
-			classSt.setDisciplinaTurmas(new ArrayList<>());
+		if (classSt.getClasses() == null) {
+			classSt.setClasses(new ArrayList<>());
 		}
 
-		classSt.getDisciplinaTurmas().addAll(disciplines);
+		classSt.getClasses().addAll(teacher);
 
 		classStRepo.save(classSt);
 
@@ -81,13 +85,12 @@ public class ClassStController {
 
 		List<ClassDTO> classDTos = classSt.stream().map(turma -> {
 
-			List<DisciplineTurmaDTO> disciplineDetails = turma.getDisciplinaTurmas().stream()
-					.map(disciplina -> new DisciplineTurmaDTO(disciplina.getId(), disciplina.getNomeDisciplina()))
+			List<TeacherDTO> teachers = turma.getClasses().stream()
+					.map(teacher -> new TeacherDTO(teacher.getNomeDocente(), teacher.getId()))
 					.collect(Collectors.toList());
 
 			return new ClassDTO(turma.getNomeTurma(), turma.getPeriodoTurma(),
-					turma.getDisciplinaTurmas().stream().map(Discipline::getId).collect(Collectors.toList()),
-					disciplineDetails);
+					turma.getClasses().stream().map(Teacher::getId).collect(Collectors.toList()), teachers);
 		}).collect(Collectors.toList());
 
 		return ResponseEntity.ok(classDTos);
@@ -100,8 +103,8 @@ public class ClassStController {
 		return new ResponseEntity<>(classSt, HttpStatus.OK);
 	}
 
-	@GetMapping("/class/{id}")
-	public ResponseEntity<ClassDTOTwo> buscarClasseUnica(@PathVariable Long id) {
+	@GetMapping("/class/students/{id}")
+	public ResponseEntity<ClassDTOTwo> buscarClasseStudentsUnica(@PathVariable Long id) {
 		ClassSt buscaClasse = classStService.buscarClasseUnica(id);
 		if (buscaClasse != null) {
 			List<StudentDTO> students = buscaClasse.getStudents().stream()
@@ -110,6 +113,20 @@ public class ClassStController {
 					.collect(Collectors.toList());
 			ClassDTOTwo classDTO = new ClassDTOTwo(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(),
 					buscaClasse.getId(), students);
+			return ResponseEntity.ok(classDTO);
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
+
+	@GetMapping("/class/teacher/{id}")
+	public ResponseEntity<ClassDTOTre> buscarClasseTeachersUnica(@PathVariable Long id) {
+		ClassSt buscaClasse = classStService.buscarClasseUnica(id);
+		if (buscaClasse != null) {
+			List<TeacherTurmaDTO> teachers = buscaClasse.getClasses().stream()
+					.map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
+					.collect(Collectors.toList());
+			ClassDTOTre classDTO = new ClassDTOTre(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(),
+					buscaClasse.getId(), teachers);
 			return ResponseEntity.ok(classDTO);
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
