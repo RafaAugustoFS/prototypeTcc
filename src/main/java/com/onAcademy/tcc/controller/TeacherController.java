@@ -39,8 +39,10 @@ public class TeacherController {
 	record DisciplineDTO(String nomeDisiciplina, Long discipline_id) {
 	}
 
-	record TeacherDTO(Long discipline_id, Long turmaId, String nomeDocente, List<ClassTeacherDTO> classTeacherDTO,
-			List<DisciplineDTO> DisciplineDTO) {
+	record TeacherDTO(Long discipline_id, Long turma_Id, String nomeDocente, List<Long> turmaId,
+			List<ClassTeacherDTO> classTeacherDTO,
+
+			List<Long> disciplineId, List<DisciplineDTO> DisciplineDTO) {
 	}
 
 	@Autowired
@@ -68,30 +70,33 @@ public class TeacherController {
 	@PostMapping("/teacher")
 	@PreAuthorize("hasRole('INSTITUTION')")
 	public ResponseEntity<Teacher> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
-		ClassSt classSt = classStRepo.findById(teacherDTO.turmaId())
-				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 
-		Discipline disciplines = disciplineRepo.findById(teacherDTO.discipline_id())
-				.orElseThrow(() -> new RuntimeException("Dicisplina não encontrada"));
+		List<ClassSt> classSt = classStRepo.findAllById(teacherDTO.turmaId());
+		if (classSt.size() != teacherDTO.turmaId().size()) {
+			throw new RuntimeException("Algumas turmas não foram adicionadas");
+		}
 
+		List<Discipline> disciplines = disciplineRepo.findAllById(teacherDTO.disciplineId());
+		if (disciplines.size() != teacherDTO.disciplineId().size()) {
+			throw new RuntimeException("Algumas disciplinas não foram adicionadas");
+		}
 		Teacher teacher = new Teacher();
 		teacher.setNomeDocente(teacherDTO.nomeDocente());
 
 		if (teacher.getClasses() == null) {
-			teacher.setClasses(new ArrayList<>()); // Inicializa a lista
+			teacher.setClasses(new ArrayList<>()); 
 		}
-		teacher.getClasses().add(classSt);
-	
+		teacher.getClasses().addAll(classSt);
 
 		if (teacher.getDisciplines() == null) {
-			teacher.setDisciplines(new ArrayList<>());// Inicializa a lista
+			teacher.setDisciplines(new ArrayList<>());
 		}
-		teacher.getDisciplines().add(disciplines);
+		teacher.getDisciplines().addAll(disciplines);
 		teacherRepo.save(teacher);
-
 		return new ResponseEntity<>(teacher, HttpStatus.CREATED);
 	}
 
+	
 	@GetMapping("/teacher")
 	public ResponseEntity<List<Teacher>> buscarTeachers() {
 		List<Teacher> teachers = teacherService.buscarTeachers();
