@@ -18,36 +18,37 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 @Entity
 @Data
 @Getter
 @Setter
 @NoArgsConstructor
 public class Student {
-	
-		@Id
-		@GeneratedValue(strategy = GenerationType.IDENTITY)
-		private Long id;
-		private String nomeAluno;
-		private Date dataNascimentoAluno;
-		private String emailAluno;
-		private String telefoneAluno;
-		private String identifierCode;
-		private String password;
 
-		@OneToMany(mappedBy = "recipientStudent")
-		private List<FeedbackByTeacher> feedback;
-		
-		@OneToMany(mappedBy = "studentId")
-		@JsonManagedReference 
-		private List<Note>notas;
-		
-		@OneToMany(mappedBy = "createdBy")
-		private List<FeedBackByStudent> feedbackAluno;
-		
-		private Long turmaId;
-		
-		@ManyToOne
-		@JoinColumn(name = "turmaId", insertable = false, updatable = false)
-		private ClassSt classSt;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	private String nomeAluno;
+	private Date dataNascimentoAluno;
+	private String emailAluno;
+	private String telefoneAluno;
+	private String identifierCode;
+	private String password;
+
+	@OneToMany(mappedBy = "recipientStudent")
+	private List<FeedbackByTeacher> feedback;
+
+	@OneToMany(mappedBy = "studentId")
+	@JsonManagedReference
+	private List<Note> notas;
+
+	@OneToMany(mappedBy = "createdBy")
+	private List<FeedBackByStudent> feedbackAluno;
+
+	private Long turmaId;
+
+	@ManyToOne
+	@JoinColumn(name = "turmaId", insertable = false, updatable = false)
+	private ClassSt classSt;
 }
