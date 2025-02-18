@@ -37,15 +37,12 @@ public class ClassStController {
 	@Autowired
 	private DisciplineRepo disciplineRepo;
 
-	record DisciplineTurma(String nomeDiscipline, Long id) {};
+	record DisciplineTurmaDTO(Long id, String nomeDiscipline) {};
 	
 	record StudentDTO(String nomeAluno, String dataNascimentoAluno, Long id) {
 	};
 
-	record ClassDTO(String nomeTurma, String periodoTurma, List<Long> disciplineId) {
-	};
-	
-	record ClassDTO2(String nomeTurma, String periodoTurma, List<String> disciplineNames) {
+	record ClassDTO(String nomeTurma, String periodoTurma, List<Long> disciplineId, List<DisciplineTurmaDTO> disciplinas) {
 	};
 	
 	record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
@@ -82,12 +79,15 @@ public class ClassStController {
 		List<ClassSt> classSt = classStService.buscarTodasClasses();
 
 		List<ClassDTO> classDTos = classSt.stream().map(turma -> {
-	        List<Long> disciplineIds = turma.getDisciplinaTurmas().stream()
-	            .map(disciplina -> disciplina.getId()) 
-	            .collect(Collectors.toList()); 
+			
+			List<DisciplineTurmaDTO> disciplineDetails = turma.getDisciplinaTurmas().stream()
+		            .map(disciplina -> new DisciplineTurmaDTO(disciplina.getId(), disciplina.getNomeDisciplina())) // Criando o DisciplineTurmaDTO com ID e Nome
+		            .collect(Collectors.toList());
 
-	       
-	        return new ClassDTO(turma.getNomeTurma(), turma.getPeriodoTurma(), disciplineIds);
+		        // Retornando a ClassDTO com disciplina ID e nome
+		        return new ClassDTO(turma.getNomeTurma(), turma.getPeriodoTurma(), 
+		                            turma.getDisciplinaTurmas().stream().map(Discipline::getId).collect(Collectors.toList()), 
+		                            disciplineDetails);
 		}).collect(Collectors.toList());
 
 		return ResponseEntity.ok(classDTos);
