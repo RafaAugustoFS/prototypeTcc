@@ -42,13 +42,11 @@ public class DisciplineService {
 		}
 		return null;
 	}
-
 	public Discipline deleteDiscipline(Long id) {
 		Optional<Discipline> existingDiscipline = disciplineRepo.findById(id);
 		if (existingDiscipline.isPresent()) {
 			Discipline deleteDiscipline = existingDiscipline.get();
 			disciplineRepo.deleteById(id);
-			disciplineRepo.save(deleteDiscipline);
 			return deleteDiscipline;
 		}
 		return null;
