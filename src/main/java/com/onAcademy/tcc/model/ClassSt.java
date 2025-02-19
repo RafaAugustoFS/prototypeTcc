@@ -33,8 +33,10 @@ public class ClassSt {
 			@JoinColumn(name = "discipline_id") })
 	private List<Discipline> disciplinaTurmas;
 
-	@ManyToMany(mappedBy = "classes")
-	private List<Teacher> teachers;
+	@ManyToMany
+	@JoinTable(name = "class_teacher", joinColumns = { @JoinColumn(name = "classSt_id") }, inverseJoinColumns = {
+			@JoinColumn(name = "teacher_id") })
+	private List<Teacher> classes;
 
 	@OneToMany(mappedBy = "classSt")
 	private List<Student> students;

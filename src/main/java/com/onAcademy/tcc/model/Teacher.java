@@ -34,10 +34,8 @@ public class Teacher {
 			@JoinColumn(name = "discipline_id") })
 	private List<Discipline> disciplines;
 
-	@ManyToMany
-	@JoinTable(name = "class_teacher", joinColumns = { @JoinColumn(name = "teacher_id") }, inverseJoinColumns = {
-			@JoinColumn(name = "classSt_id") })
-	private List<ClassSt> classes;
+	@ManyToMany(mappedBy = "classes")
+	private List<ClassSt> teachers;
 
 	@OneToMany(mappedBy = "createdBy")
 	private List<FeedbackByTeacher> feedbackProfessor;

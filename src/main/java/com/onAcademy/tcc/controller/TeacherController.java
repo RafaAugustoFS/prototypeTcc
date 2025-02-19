@@ -35,21 +35,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api")
 public class TeacherController {
-	record ClassTeacherDTO(String nomeTurma, Long turmaId) {
-	}
 
 	record DisciplineDTO(String nomeDisiciplina, Long discipline_id) {
 	}
 
-	record TeacherDTO(String nomeDocente, Date dataNascimentoDocente,String emailDocente, String telefoneDocente, 
-			String identifierCode, 
-			String password, 
-			List<ClassTeacherDTO> classTeacherDTO, List<Long> disciplineId,
-			List<DisciplineDTO> DisciplineDTO) {
+	record ClassDTO(String nomeTurma, Long id) {
+	}
+
+	record TeacherDTO(String nomeDocente, Date dataNascimentoDocente, String emailDocente, String telefoneDocente,
+			String identifierCode, String password, List<Long> disciplineId, List<DisciplineDTO> DisciplineDTO) {
 	}
 
 	record TeacherDTOTwo(String nomeDocente, Long id, List<DisciplineDTO> disciplinas) {
 	}
+
+	record TeacherDTOTre(String nomeDocente, Long id, List<ClassDTO> classes) {
+	};
 
 	@Autowired
 	private DisciplineRepo disciplineRepo;
@@ -84,8 +85,6 @@ public class TeacherController {
 		teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
 		teacher.setIdentifierCode(teacherDTO.identifierCode());
 		teacher.setPassword(teacherDTO.password());
-		
-		
 
 		if (teacher.getDisciplines() == null) {
 			teacher.setDisciplines(new ArrayList<>());
@@ -123,6 +122,20 @@ public class TeacherController {
 			return ResponseEntity.ok(teacherDTOTwo);
 		}
 
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+	}
+
+	@GetMapping("/teacher/classes/{id}")
+	public ResponseEntity<TeacherDTOTre> buscarTeacherClassUnico(@PathVariable Long id) {
+		Teacher buscarUnico = teacherService.buscarUnicoTeacher(id);
+
+		if (buscarUnico != null) {
+			List<ClassDTO> classes = buscarUnico.getTeachers().stream()
+					.map(classe -> new ClassDTO(classe.getNomeTurma(), classe.getId())).collect(Collectors.toList());
+			TeacherDTOTre teacherTree = new TeacherDTOTre(buscarUnico.getNomeDocente(), buscarUnico.getId(), classes);
+			return ResponseEntity.ok(teacherTree);
+		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
 	}
