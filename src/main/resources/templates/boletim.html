@@ -5,10 +5,27 @@
     <title>Boletim do Aluno</title>
     <style>
         body { font-family: Arial, sans-serif; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; text-align: center; border: 1px solid #ddd; }
-        th { background-color: #0056b3; color: white; }
-        td { background-color: #f5f9ff; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #0057FF;
+            color: white;
+        }
+        td:first-child {
+            background-color: #0057FF;
+            color: white;
+            font-weight: bold;
+        }
+        tbody td {
+            background-color: #F5FAFF;
+        }	
     </style>
 </head>
 <body>
@@ -36,5 +53,6 @@
             </tr>
         </tbody>
     </table>
+    
 </body>
 </html>

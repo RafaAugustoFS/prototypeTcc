@@ -41,17 +41,27 @@ public class BoletimPDFController {
 
         Student student = studentOpt.get();
 
-        // Agrupando notas por disciplina
+        // Agrupando notas por disciplina e preenchendo notas ausentes com "-"
         List<Map<String, Object>> disciplinas = student.getNotas().stream()
             .collect(Collectors.groupingBy(n -> n.getDisciplineId().getNomeDisciplina()))
             .entrySet().stream()
-            .map(entry -> Map.of(
-                "nome", entry.getKey(),
-                "notas", entry.getValue().stream()
+            .map(entry -> {
+                // Ordenando as notas por bimestre
+                List<String> notasOrdenadas = entry.getValue().stream()
                     .sorted(Comparator.comparingInt(Note::getBimestre))
-                    .map(Note::getNota)
-                    .toList()
-            ))
+                    .map(n -> n.getNota() != null ? n.getNota().toString() : " - ") // Se a nota for null, substitui por "-"
+                    .collect(Collectors.toList());
+
+                // Garantindo que sempre teremos 4 bimestres (preenchendo faltantes com "-")
+                while (notasOrdenadas.size() < 4) {
+                    notasOrdenadas.add(" - ");
+                }
+
+                return Map.of(
+                    "nome", entry.getKey(),
+                    "notas", notasOrdenadas
+                );
+            })
             .toList();
 
         // Construindo os dados para o PDF
@@ -70,4 +80,5 @@ public class BoletimPDFController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 }
