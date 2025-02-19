@@ -1,18 +1,16 @@
 package com.onAcademy.tcc.controller;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.server.ResponseStatusException;
 import com.onAcademy.tcc.model.Discipline;
-import com.onAcademy.tcc.repository.ClassStRepo;
-import com.onAcademy.tcc.repository.DisciplineRepo;
 import com.onAcademy.tcc.service.DisciplineService;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @Tag(name = "Discipline", description = "EndPoint de disciplina")
 @RestController
@@ -22,23 +20,27 @@ public class DisciplineController {
     @Autowired
     private DisciplineService disciplineService;
 
-    @Autowired
-    private ClassStRepo classStRepo;
-
-    @Autowired
-    private DisciplineRepo disciplineRepository;
-
     record DisciplineDTO(String nomeDisciplina) {}
 
-    @PostMapping("/discipline")
-    public ResponseEntity<String> criarDiscipline(@RequestBody Discipline discipline) {
-        try {
-            Discipline disciplineUnica = disciplineService.criarDiscipline(discipline);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Disciplina criada com sucesso.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao criar disciplina.");
+
+@Validated
+@PostMapping("/discipline")
+public ResponseEntity<String> criarDiscipline(@RequestBody @Valid Discipline discipline) {
+    try {
+        // Verifica se o nome da disciplina foi informado
+        if (discipline.getNomeDisciplina() == null || discipline.getNomeDisciplina().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome da disciplina é obrigatório.");
         }
+
+        // Criar disciplina
+        Discipline disciplineUnica = disciplineService.criarDiscipline(discipline);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Disciplina criada com sucesso.");
+    } catch (ResponseStatusException e) {
+        return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao criar disciplina.");
     }
+}
 
     @GetMapping("/discipline")
     public ResponseEntity<List<Discipline>> buscarDisciplines() {
@@ -47,11 +49,11 @@ public class DisciplineController {
     }
 
     @PutMapping("/discipline/{id}")
-    public ResponseEntity<String> editarDiscipline(@PathVariable Long id, @RequestBody Discipline discipline) {
+    public ResponseEntity<?> editarDiscipline(@PathVariable Long id, @RequestBody Discipline discipline) {
         try {
             Discipline editarDiscipline = disciplineService.atualizarDiscipline(id, discipline);
             if (editarDiscipline != null) {
-                return ResponseEntity.ok("Disciplina atualizada com sucesso.");
+            	return new ResponseEntity<>(editarDiscipline, HttpStatus.OK);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Disciplina não encontrada.");
             }
