@@ -67,7 +67,6 @@ public class TeacherService {
 			Teacher deletarTeacher = existingTeacher.get();
 			teacherRepo.delete(deletarTeacher);
 			return deletarTeacher;
-
 		}
 
 		return null;

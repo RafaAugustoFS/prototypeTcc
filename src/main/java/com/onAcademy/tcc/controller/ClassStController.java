@@ -2,23 +2,16 @@ package com.onAcademy.tcc.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.Discipline;
-import com.onAcademy.tcc.model.Note;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.ClassStRepo;
 import com.onAcademy.tcc.repository.DisciplineRepo;
@@ -32,145 +25,156 @@ import jakarta.transaction.Transactional;
 @RestController
 @RequestMapping("/api")
 public class ClassStController {
-	@Autowired
-	private ClassStService classStService;
 
-	@Autowired
-	private ClassStRepo classStRepo;
+    @Autowired
+    private ClassStService classStService;
 
-	@Autowired
-	private TeacherRepo teacherRepo;
+    @Autowired
+    private ClassStRepo classStRepo;
 
-	@Autowired
-	private DisciplineRepo disRepo;
+    @Autowired
+    private TeacherRepo teacherRepo;
 
-	record TeacherTurmaDTO(Long id, String nomeDocente) {
-	};
+    @Autowired
+    private DisciplineRepo disRepo;
 
-	record DisciplineTurmaDTO(Long id, String nomeDiscipline) {
-	};
+    record TeacherTurmaDTO(Long id, String nomeDocente) {}
 
-	record NoteDTO(String nomeDisciplina, Double valorNota) {
-	};
+    record DisciplineTurmaDTO(Long id, String nomeDisciplina) {}
 
-	record StudentDTO(String nomeAluno, String dataNascimentoAluno, List<NoteDTO> nota, Long id) {
-	};
+    record NoteDTO(String nomeDisciplina, Double valorNota) {}
 
-	record TeacherDTO(String nome, Long id) {
-	};
+    record StudentDTO(String nomeAluno, String dataNascimentoAluno, List<NoteDTO> nota, Long id) {}
 
-	record ClassDTO(String nomeTurma, String periodoTurma, List<Long> idTeacher, List<TeacherDTO> teachers,
-			List<Long> disciplineId, List<DisciplineTurmaDTO> disciplinas) {
-	};
+    record TeacherDTO(String nome, Long id) {}
 
-	record ClassDTODisciplina(String nomeTurma, String periodoTurma, List<Long> disciplineId,
-			List<DisciplineTurmaDTO> disciplinas) {
-	};
+    record ClassDTO(String nomeTurma, String periodoTurma, List<Long> idTeacher, List<TeacherDTO> teachers,
+                    List<Long> disciplineId, List<DisciplineTurmaDTO> disciplinas) {}
 
-	record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
-	};
+    record ClassDTODisciplina(String nomeTurma, String periodoTurma, List<Long> disciplineId,
+                              List<DisciplineTurmaDTO> disciplinas) {}
 
-	record ClassDTOTre(String nomeTurma, String periodoTurma, List<TeacherTurmaDTO> teachers) {
-	};
+    record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {}
 
-	@PreAuthorize("hasRole('INSTITUTION')")
-	@PostMapping("/class")
-	@Transactional
-	public ResponseEntity<ClassSt> criarClasse(@RequestBody ClassDTO classDTO) {
-		List<Teacher> teacher = teacherRepo.findAllById(classDTO.idTeacher());
-		List<Discipline> disciplines = disRepo.findAllById(classDTO.disciplineId());
+    record ClassDTOTre(String nomeTurma, String periodoTurma, List<TeacherTurmaDTO> teachers) {}
 
-		if (teacher.size() != classDTO.idTeacher().size()) {
-			throw new RuntimeException("Professor não encontrado.");
-		}
+    @PreAuthorize("hasRole('INSTITUTION')")
+    @PostMapping("/class")
+    @Transactional
+    public ResponseEntity<?> criarClasse(@RequestBody ClassDTO classDTO) {
+        try {
+            List<Teacher> teacher = teacherRepo.findAllById(classDTO.idTeacher());
+            List<Discipline> disciplines = disRepo.findAllById(classDTO.disciplineId());
 
-		ClassSt classSt = new ClassSt();
-		classSt.setNomeTurma(classDTO.nomeTurma);
-		classSt.setPeriodoTurma(classDTO.periodoTurma);
+            if (teacher.size() != classDTO.idTeacher().size()) {
+                return new ResponseEntity<>(Map.of("error", "Professor não encontrado."), HttpStatus.BAD_REQUEST);
+            }
 
-		var ss = classStRepo.save(classSt);
-		ss.setDisciplinaTurmas(disciplines);
-		ss.setClasses(teacher);
+            ClassSt classSt = new ClassSt();
+            classSt.setNomeTurma(classDTO.nomeTurma);
+            classSt.setPeriodoTurma(classDTO.periodoTurma);
 
-		classStRepo.save(ss);
-		return new ResponseEntity<>(classSt, HttpStatus.CREATED);
-	}
+            var st = classStRepo.save(classSt);
+            st.setDisciplinaTurmas(disciplines);
+            st.setClasses(teacher);
 
-	@GetMapping("/class/discipline")
-	public ResponseEntity<List<ClassDTODisciplina>> buscarTodasClassesDisciplines() {
-		List<ClassSt> classSt = classStService.buscarTodasClasses();
+            classStRepo.save(st);
+            return new ResponseEntity<>(classSt, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao criar classe: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 
-		List<ClassDTODisciplina> classDTos = classSt.stream().map(turma -> {
+    @GetMapping("/class")
+    public ResponseEntity<List<ClassSt>> buscarTodasClasses() {
+        List<ClassSt> classSt = classStService.buscarTodasClasses();
+        return new ResponseEntity<>(classSt, HttpStatus.OK);
+    }
 
-			List<DisciplineTurmaDTO> disciplinas = turma.getDisciplinaTurmas().stream()
-					.map(disciplina -> new DisciplineTurmaDTO(disciplina.getId(), disciplina.getNomeDisciplina()))
-					.collect(Collectors.toList());
+    @GetMapping("/class/discipline")
+    public ResponseEntity<List<ClassDTODisciplina>> buscarTodasClassesDisciplines() {
+        List<ClassSt> classSt = classStService.buscarTodasClasses();
 
-			return new ClassDTODisciplina(turma.getNomeTurma(), turma.getPeriodoTurma(),
-					turma.getDisciplinaTurmas().stream().map(Discipline::getId).collect(Collectors.toList()),
-					disciplinas);
-		}).collect(Collectors.toList());
+        List<ClassDTODisciplina> classDTos = classSt.stream().map(turma -> {
 
-		return ResponseEntity.ok(classDTos);
+            List<DisciplineTurmaDTO> disciplinas = turma.getDisciplinaTurmas().stream()
+                    .map(disciplina -> new DisciplineTurmaDTO(disciplina.getId(), disciplina.getNomeDisciplina()))
+                    .collect(Collectors.toList());
 
-	}
+            return new ClassDTODisciplina(turma.getNomeTurma(), turma.getPeriodoTurma(),
+                    turma.getDisciplinaTurmas().stream().map(Discipline::getId).collect(Collectors.toList()),
+                    disciplinas);
+        }).collect(Collectors.toList());
 
-	@GetMapping("/class")
-	public ResponseEntity<List<ClassSt>> buscarTodasClasses() {
-		List<ClassSt> classSt = classStService.buscarTodasClasses();
-		return new ResponseEntity<>(classSt, HttpStatus.OK);
-	}
+        return ResponseEntity.ok(classDTos);
+    }
 
-	@GetMapping("/class/students/{id}")
-	public ResponseEntity<ClassDTOTwo> buscarClasseStudentsUnica(@PathVariable Long id) {
-		ClassSt buscaClasse = classStService.buscarClasseUnica(id);
-		if (buscaClasse != null) {
-			List<StudentDTO> students = buscaClasse.getStudents().stream().map(student -> {
+    @GetMapping("/class/students/{id}")
+    public ResponseEntity<?> buscarClasseStudentsUnica(@PathVariable Long id) {
+        try {
+            ClassSt buscaClasse = classStService.buscarClasseUnica(id);
+            if (buscaClasse != null) {
+                List<StudentDTO> students = buscaClasse.getStudents().stream().map(student -> {
 
-				List<NoteDTO> notas = student.getNotas().stream().map(nota -> {
-					Discipline disciplina = nota.getDisciplineId();
-					return new NoteDTO(disciplina.getNomeDisciplina(), nota.getNota());
-				}).collect(Collectors.toList());
+                    List<NoteDTO> notas = student.getNotas().stream().map(nota -> {
+                        Discipline disciplina = nota.getDisciplineId();
+                        return new NoteDTO(disciplina.getNomeDisciplina(), nota.getNota());
+                    }).collect(Collectors.toList());
 
-				return new StudentDTO(student.getNomeAluno(), student.getDataNascimentoAluno().toString(), notas,
-						student.getId());
-			}).collect(Collectors.toList());
+                    return new StudentDTO(student.getNomeAluno(), student.getDataNascimentoAluno().toString(), notas,
+                            student.getId());
+                }).collect(Collectors.toList());
 
-			ClassDTOTwo classDTO = new ClassDTOTwo(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(),
-					buscaClasse.getId(), students);
-			return ResponseEntity.ok(classDTO);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+                ClassDTOTwo classDTO = new ClassDTOTwo(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(),
+                        buscaClasse.getId(), students);
+                return ResponseEntity.ok(classDTO);
+            }
+            return new ResponseEntity<>(Map.of("error", "Classe não encontrada"), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao buscar alunos da classe: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-	@GetMapping("/class/teacher/{id}")
-	public ResponseEntity<ClassDTOTre> buscarClasseTeachersUnica(@PathVariable Long id) {
-		ClassSt buscaClasse = classStService.buscarClasseUnica(id);
-		if (buscaClasse != null) {
-			List<TeacherTurmaDTO> teachers = buscaClasse.getClasses().stream()
-					.map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
-					.collect(Collectors.toList());
-			ClassDTOTre classDTO = new ClassDTOTre(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(), teachers);
-			return ResponseEntity.ok(classDTO);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @GetMapping("/class/teacher/{id}")
+    public ResponseEntity<?> buscarClasseTeachersUnica(@PathVariable Long id) {
+        try {
+            ClassSt buscaClasse = classStService.buscarClasseUnica(id);
+            if (buscaClasse != null) {
+                List<TeacherTurmaDTO> teachers = buscaClasse.getClasses().stream()
+                        .map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
+                        .collect(Collectors.toList());
+                ClassDTOTre classDTO = new ClassDTOTre(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(), teachers);
+                return ResponseEntity.ok(classDTO);
+            }
+            return new ResponseEntity<>(Map.of("error", "Classe não encontrada"), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao buscar professores da classe: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-	@PutMapping("/class/{id}")
-	public ResponseEntity<ClassSt> atualizarClasse(@PathVariable Long id, @RequestBody ClassSt classSt) {
-		ClassSt atualizarClasse = classStService.atualizarClasse(id, classSt);
-		if (atualizarClasse != null) {
-			return new ResponseEntity<>(atualizarClasse, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @PutMapping("/class/{id}")
+    public ResponseEntity<?> atualizarClasse(@PathVariable Long id, @RequestBody ClassSt classSt) {
+        try {
+            ClassSt atualizarClasse = classStService.atualizarClasse(id, classSt);
+            if (atualizarClasse != null) {
+                return new ResponseEntity<>(atualizarClasse, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(Map.of("error", "Classe não encontrada"), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao atualizar classe: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 
-	@DeleteMapping("/class/{id}")
-	public ResponseEntity<ClassSt> deletarClasse(@PathVariable Long id) {
-		ClassSt deletarClasse = classStService.deletarClasse(id);
-		if (deletarClasse != null) {
-			return new ResponseEntity<>(deletarClasse, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @DeleteMapping("/class/{id}")
+    public ResponseEntity<?> deletarClasse(@PathVariable Long id) {
+        try {
+            ClassSt deletarClasse = classStService.deletarClasse(id);
+            if (deletarClasse != null) {
+                return new ResponseEntity<>(deletarClasse, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(Map.of("error", "Classe não encontrada"), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao deletar classe: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 }

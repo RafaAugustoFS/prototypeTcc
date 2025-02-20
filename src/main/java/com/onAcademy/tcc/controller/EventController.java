@@ -1,22 +1,15 @@
 package com.onAcademy.tcc.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.onAcademy.tcc.model.Event;
-
 import com.onAcademy.tcc.service.EventService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,48 +19,66 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api")
 public class EventController {
 
-	@Autowired
-	private EventService eventService;
+    @Autowired
+    private EventService eventService;
 
-	@PostMapping("/event")
-	@PreAuthorize("hasRole('INSTITUTION')")
-	public ResponseEntity<Event> criarEvento(@RequestBody Event event) {
-		Event event1 = eventService.criarEvento(event);
-		return new ResponseEntity<>(event1, HttpStatus.CREATED);
-	}
+    @PostMapping("/event")
+    @PreAuthorize("hasRole('INSTITUTION')")
+    public ResponseEntity<?> criarEvento(@RequestBody Event event) {
+        try {
+            Event event1 = eventService.criarEvento(event);
+            return new ResponseEntity<>(event1, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao criar evento: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 
-	@GetMapping("/event")
-	public ResponseEntity<List<Event>> buscarTodosEventos() {
-		List<Event> events = eventService.buscarEventos();
-		return new ResponseEntity<>(events, HttpStatus.OK);
-	}
+    @GetMapping("/event")
+    public ResponseEntity<?> buscarTodosEventos() {
+        try {
+            List<Event> events = eventService.buscarEventos();
+            return new ResponseEntity<>(events, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao buscar eventos: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-	@GetMapping("/event/{id}")
-	public ResponseEntity<Event> buscarUnico(@PathVariable Long id) {
+    @GetMapping("/event/{id}")
+    public ResponseEntity<?> buscarUnico(@PathVariable Long id) {
+        try {
+            Event eventUnico = eventService.buscarEventoUnico(id);
+            if (eventUnico == null) {
+                return new ResponseEntity<>(Map.of("error", "Evento não encontrado"), HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(eventUnico, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao buscar evento: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 
-		Event eventUnico = eventService.buscarEventoUnico(id);
-		if (eventUnico != null) {
-			return new ResponseEntity<>(eventUnico, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @PutMapping("/event/{id}")
+    public ResponseEntity<?> atualizarEvento(@PathVariable Long id, @RequestBody Event event) {
+        try {
+            Event atualizarEvento = eventService.atualizarEvento(id, event);
+            if (atualizarEvento == null) {
+                return new ResponseEntity<>(Map.of("error", "Evento não encontrado"), HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(atualizarEvento, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao atualizar evento: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 
-	@PutMapping("/event/{id}")
-	public ResponseEntity<Event> atualizarEvento(@PathVariable Long id, @RequestBody Event event) {
-		Event atualizarEvento = eventService.atualizarEvento(id, event);
-		if (atualizarEvento != null) {
-			return new ResponseEntity<>(atualizarEvento, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-
-	@DeleteMapping("/event/{id}")
-	public ResponseEntity<Event> deletarEvento(@PathVariable Long id) {
-		Event deletarEvent = eventService.deletarEvent(id);
-		if (deletarEvent != null) {
-			return new ResponseEntity<>(deletarEvent, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-
+    @DeleteMapping("/event/{id}")
+    public ResponseEntity<?> deletarEvento(@PathVariable Long id) {
+        try {
+            Event deletarEvent = eventService.deletarEvent(id);
+            if (deletarEvent == null) {
+                return new ResponseEntity<>(Map.of("error", "Evento não encontrado"), HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(deletarEvent, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao deletar evento: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 }
