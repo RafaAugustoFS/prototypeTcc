@@ -41,29 +41,29 @@ public class NotesController {
 	@PostMapping("/note")
 	public ResponseEntity<String> criarNotas(@RequestBody NoteDTO noteDTO) {
 		try {
-			// Verifica se o aluno existe
+			
 			Student student = studentRepo.findById(noteDTO.getStudentId())
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado"));
 
-			// Verifica se a disciplina existe
+			
 			Discipline discipline = disciplineRepo.findById(noteDTO.getDisciplineId())
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Disciplina não encontrada"));
 
-			// Criando e configurando a nota
+			
 			Note note = new Note();
 			note.setStudentId(student);
 			note.setNota(noteDTO.getNota());
 			note.setStatus(noteDTO.getStatus());
 
-			// Validação da nota
+			
 			if (noteDTO.getNota() < 0 || noteDTO.getNota() > 10) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nota deve estar entre 0 e 10");
 			}
 
-			// Define status com base na nota
+			
 			note.setStatus(note.getNota() > 5 ? "Aprovado" : "Reprovado");
 
-			// Validação do bimestre
+		
 			if (noteDTO.getBimestre() < 1 || noteDTO.getBimestre() > 4) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bimestre inválido. Deve estar entre 1 e 4.");
 			}
@@ -71,7 +71,7 @@ public class NotesController {
 			note.setBimestre(noteDTO.getBimestre());
 			note.setDisciplineId(discipline);
 
-			// Salvar a nota
+		
 			noteService.criarNotas(note);
 
 			return ResponseEntity.status(HttpStatus.CREATED).body("Nota lançada com sucesso.");

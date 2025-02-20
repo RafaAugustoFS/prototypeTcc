@@ -1,16 +1,12 @@
 package com.onAcademy.tcc.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.onAcademy.tcc.model.FeedbackByTeacher;
 import com.onAcademy.tcc.service.FeedbackByTeacherService;
@@ -21,61 +17,69 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api")
 public class FeedbackByTeacherController {
-	@Autowired
-	private FeedbackByTeacherService feedbackByTeacherService;
 
-	record StudentDTO(String nomeAluno, Long id) {
-	}
+    @Autowired
+    private FeedbackByTeacherService feedbackByTeacherService;
 
-	record ClassStDTO(String nomeTurma, Long id) {
-	}
+    record StudentDTO(String nomeAluno, Long id) {}
 
-	record CreatedByDTO(String nomeDocente, Long id) {
-	}
+    record ClassStDTO(String nomeTurma, Long id) {}
 
-	record FeedbackDTO(String titulo, String conteudo, CreatedByDTO createdByDTO, StudentDTO student) {
-	}
+    record CreatedByDTO(String nomeDocente, Long id) {}
 
-	record Feedback2DTO(String titulo, String conteudo, CreatedByDTO createdByDTO, ClassStDTO classSt) {
-	}
+    record FeedbackDTO(String titulo, String conteudo, CreatedByDTO createdByDTO, StudentDTO student) {}
 
-	@PostMapping("/feedbackTeacher")
-	public ResponseEntity<FeedbackByTeacher> criarFeedback(@RequestBody FeedbackByTeacher feedback) {
-		FeedbackByTeacher feedback1 = feedbackByTeacherService.criarFeedback(feedback);
-		return new ResponseEntity<>(feedback1, HttpStatus.OK);
-	}
+    record Feedback2DTO(String titulo, String conteudo, CreatedByDTO createdByDTO, ClassStDTO classSt) {}
 
-	@GetMapping("/feedbackTeacher")
-	public ResponseEntity<List<FeedbackByTeacher>> buscarTodasFeedback() {
-		List<FeedbackByTeacher> feedback = feedbackByTeacherService.buscarTodosFeedbacks();
-		return new ResponseEntity<>(feedback, HttpStatus.OK);
-	}
+    @PostMapping("/feedbackTeacher")
+    public ResponseEntity<?> criarFeedback(@RequestBody FeedbackByTeacher feedback) {
+        try {
+            FeedbackByTeacher feedback1 = feedbackByTeacherService.criarFeedback(feedback);
+            return new ResponseEntity<>(feedback1, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao criar feedback: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 
-	@GetMapping("/feedbackTeacherStudent/{id}")
-	public ResponseEntity<FeedbackDTO> buscarFeedbackStudentUnico(@PathVariable Long id) {
-		FeedbackByTeacher buscaFeedback = feedbackByTeacherService.buscarFeedbackUnico(id);
-		if (buscaFeedback != null) {
-			var teacher = new CreatedByDTO(buscaFeedback.getCreatedBy().getNomeDocente(),
-					buscaFeedback.getCreatedBy().getId());
-			var student = new StudentDTO(buscaFeedback.getRecipientStudent().getNomeAluno(),
-					buscaFeedback.getRecipientStudent().getId());
-			var feedbackDTO = new FeedbackDTO(buscaFeedback.getTitulo(), buscaFeedback.getConteudo(), teacher, student);
-			return new ResponseEntity<>(feedbackDTO, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @GetMapping("/feedbackTeacher")
+    public ResponseEntity<?> buscarTodasFeedback() {
+        try {
+            List<FeedbackByTeacher> feedbacks = feedbackByTeacherService.buscarTodosFeedbacks();
+            return new ResponseEntity<>(feedbacks, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao buscar feedbacks: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-	@GetMapping("/feedbackTeacherClassSt/{id}")
-	public ResponseEntity<Feedback2DTO> buscarFeedbackClassUnico(@PathVariable Long id) {
-		FeedbackByTeacher buscaFeedback = feedbackByTeacherService.buscarFeedbackUnico(id);
-		if (buscaFeedback != null) {
-			var teacher = new CreatedByDTO(buscaFeedback.getCreatedBy().getNomeDocente(),
-					buscaFeedback.getCreatedBy().getId());
-			var classSt = new ClassStDTO(buscaFeedback.getClassSt().getNomeTurma(), buscaFeedback.getClassSt().getId());
-			var feedback2DTO = new Feedback2DTO(buscaFeedback.getTitulo(), buscaFeedback.getConteudo(), teacher,
-					classSt);
-			return new ResponseEntity<>(feedback2DTO, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
+    @GetMapping("/feedbackTeacherStudent/{id}")
+    public ResponseEntity<?> buscarFeedbackStudentUnico(@PathVariable Long id) {
+        try {
+            FeedbackByTeacher buscaFeedback = feedbackByTeacherService.buscarFeedbackUnico(id);
+            if (buscaFeedback != null) {
+                var teacher = new CreatedByDTO(buscaFeedback.getCreatedBy().getNomeDocente(), buscaFeedback.getCreatedBy().getId());
+                var student = new StudentDTO(buscaFeedback.getRecipientStudent().getNomeAluno(), buscaFeedback.getRecipientStudent().getId());
+                var feedbackDTO = new FeedbackDTO(buscaFeedback.getTitulo(), buscaFeedback.getConteudo(), teacher, student);
+                return new ResponseEntity<>(feedbackDTO, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(Map.of("error", "Feedback não encontrado"), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao buscar feedback: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/feedbackTeacherClassSt/{id}")
+    public ResponseEntity<?> buscarFeedbackClassUnico(@PathVariable Long id) {
+        try {
+            FeedbackByTeacher buscaFeedback = feedbackByTeacherService.buscarFeedbackUnico(id);
+            if (buscaFeedback != null) {
+                var teacher = new CreatedByDTO(buscaFeedback.getCreatedBy().getNomeDocente(), buscaFeedback.getCreatedBy().getId());
+                var classSt = new ClassStDTO(buscaFeedback.getClassSt().getNomeTurma(), buscaFeedback.getClassSt().getId());
+                var feedback2DTO = new Feedback2DTO(buscaFeedback.getTitulo(), buscaFeedback.getConteudo(), teacher, classSt);
+                return new ResponseEntity<>(feedback2DTO, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(Map.of("error", "Feedback não encontrado"), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("error", "Erro ao buscar feedback: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
 }
