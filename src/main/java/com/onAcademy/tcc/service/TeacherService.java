@@ -53,14 +53,15 @@ public class TeacherService {
 			atualizarTeacher.setDataNascimentoDocente(teacher.getDataNascimentoDocente());
 			atualizarTeacher.setEmailDocente(teacher.getEmailDocente());
 			atualizarTeacher.setTelefoneDocente(teacher.getTelefoneDocente());
-			atualizarTeacher.setPassword(teacher.getPassword());
+			String encodedPassword = passwordEncoder.encode(teacher.getPassword());
+			atualizarTeacher.setPassword(encodedPassword);
 			teacherRepo.save(atualizarTeacher);
 			return atualizarTeacher;
 		}
 
 		return null;
 	}
-	
+
 	public Teacher deletarTeacher(Long id) {
 		Optional<Teacher> existingTeacher = teacherRepo.findById(id);
 		if (existingTeacher.isPresent()) {

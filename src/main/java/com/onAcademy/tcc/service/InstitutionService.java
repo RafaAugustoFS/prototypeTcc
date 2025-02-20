@@ -49,6 +49,10 @@ public class InstitutionService {
 			Institution atualizarInstituicao = existInstitution.get();
 			atualizarInstituicao.setNameInstitution(institution.getNameInstitution());
 			atualizarInstituicao.setUnitInstitution(institution.getUnitInstitution());
+			
+			String encoderPassword = passwordEncoder.encode(institution.getPassword());
+			atualizarInstituicao.setPassword(encoderPassword);
+			
 			institutionRepo.save(atualizarInstituicao);
 			return atualizarInstituicao;
 		}

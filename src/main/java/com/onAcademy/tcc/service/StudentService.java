@@ -70,7 +70,8 @@ public class StudentService {
 			atualizarEstudante.setEmailAluno(student.getEmailAluno());
 			atualizarEstudante.setDataNascimentoAluno(student.getDataNascimentoAluno());
 			atualizarEstudante.setTelefoneAluno(student.getTelefoneAluno());
-			atualizarEstudante.setPassword(student.getPassword());
+			String encoderPassword = passworsEncoder.encode(student.getPassword());
+			atualizarEstudante.setPassword(encoderPassword);
 			studentRepo.save(atualizarEstudante);
 			return atualizarEstudante;
 		}
