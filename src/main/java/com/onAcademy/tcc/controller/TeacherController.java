@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.onAcademy.tcc.config.TokenProvider;
 import com.onAcademy.tcc.dto.LoginTeacherDTO;
 import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.Discipline;
@@ -60,6 +62,9 @@ public class TeacherController {
 
 	@Autowired
 	private TeacherService teacherService;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@PostMapping("/teacher/login")
 	public ResponseEntity<Map<String, String>> loginTeacher(@RequestBody LoginTeacherDTO loginTeacherDTO) {
@@ -79,12 +84,13 @@ public class TeacherController {
 			throw new RuntimeException("Algumas disciplinas não foram adicionadas");
 		}
 		Teacher teacher = new Teacher();
+		String encodePassword = passwordEncoder.encode(teacherDTO.password());
 		teacher.setNomeDocente(teacherDTO.nomeDocente());
 		teacher.setDataNascimentoDocente(teacherDTO.dataNascimentoDocente());
 		teacher.setEmailDocente(teacherDTO.emailDocente());
 		teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
 		teacher.setIdentifierCode(teacherDTO.identifierCode());
-		teacher.setPassword(teacherDTO.password());
+		teacher.setPassword(encodePassword);
 
 		if (teacher.getDisciplines() == null) {
 			teacher.setDisciplines(new ArrayList<>());
