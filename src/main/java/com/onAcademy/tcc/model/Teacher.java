@@ -39,5 +39,8 @@ public class Teacher {
 
 	@OneToMany(mappedBy = "createdBy")
 	private List<FeedbackByTeacher> feedbackProfessor;
+	
+	@OneToMany(mappedBy = "createdBy")
+	private List<FeedbackForm> feedbackForm; 
 
 }

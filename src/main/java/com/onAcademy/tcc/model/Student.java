@@ -33,6 +33,7 @@ public class Student {
 	private Date dataNascimentoAluno;
 	private String emailAluno;
 	private String telefoneAluno;
+	private Long turmaId;
 	private String identifierCode;
 	private String password;
 
@@ -46,9 +47,10 @@ public class Student {
 	@OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
 	private List<FeedBackByStudent> feedbackAluno;
 
-	private Long turmaId;
-
 	@ManyToOne
 	@JoinColumn(name = "turmaId", insertable = false, updatable = false)
 	private ClassSt classSt;
+	
+	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
+	private List<FeedbackForm> feedbackForm;
 }
