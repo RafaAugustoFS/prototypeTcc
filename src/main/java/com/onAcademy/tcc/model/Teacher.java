@@ -43,4 +43,6 @@ public class Teacher {
 	@OneToMany(mappedBy = "createdBy")
 	private List<FeedbackForm> feedbackForm; 
 
+	@OneToMany(mappedBy = "createdBy")
+	private List<Reminder> reminder; 
 }

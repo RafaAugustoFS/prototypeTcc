@@ -41,4 +41,6 @@ public class ClassSt {
 	@OneToMany(mappedBy = "classSt")
 	private List<Student> students;
 
+	@OneToMany(mappedBy = "classSt")
+	private List<Reminder> reminder;
 }
