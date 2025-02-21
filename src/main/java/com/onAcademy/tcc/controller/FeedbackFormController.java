@@ -28,19 +28,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class FeedbackFormController {
 	@Autowired
 	private FeedbackFormService feedbackFormService;
-	
-	record StudentDTO(String nomeAluno, Long id) {
-	}
 
-	record ClassStDTO(String nomeTurma, Long id) {
+	record StudentDTO(String nomeAluno, Long id) {
 	}
 
 	record CreatedByDTO(String nomeDocente, Long id) {
 	}
 
-	record FeedbackDTO(int resposta1, int resposta2,int resposta3,int resposta4,int resposta5, CreatedByDTO createdByDTO, StudentDTO student) {
+	record FeedbackDTO(int resposta1, int resposta2, int resposta3, int resposta4, int resposta5,
+			CreatedByDTO createdByDTO, StudentDTO student) {
 	}
-	
+
 	@PostMapping("/feedbackForm")
 	public ResponseEntity<FeedbackForm> criarFeedback(@RequestBody FeedbackForm feedbackByStudent) {
 		FeedbackForm feedback1 = feedbackFormService.criarFeedbackStudent(feedbackByStudent);
@@ -48,9 +46,23 @@ public class FeedbackFormController {
 	}
 
 	@GetMapping("/feedbackForm")
-	public ResponseEntity<List<FeedbackForm>> buscarTodasFeedback() {
-		List<FeedbackForm> feedback = feedbackFormService.buscarTodosFeedbacksStudent();
-		return new ResponseEntity<>(feedback, HttpStatus.OK);
+	public ResponseEntity<List<FeedbackDTO>> buscarTodosFeedback() {
+		List<FeedbackForm> feedbacks = feedbackFormService.buscarTodosFeedbacksStudent();
+		if (feedbacks != null) {
+			List<FeedbackDTO> feedbackDTos = feedbacks.stream()
+					.map(feedback -> new FeedbackDTO(feedback.getResposta1(), feedback.getResposta2(),
+							feedback.getResposta3(), feedback.getResposta4(), feedback.getResposta5(),
+							new CreatedByDTO(feedback.getCreatedBy().getNomeDocente(), feedback.getCreatedBy().getId()),
+							new StudentDTO(feedback.getRecipientStudent().getNomeAluno(),
+									feedback.getRecipientStudent().getId())
+
+					)
+
+					).toList();
+			return new ResponseEntity<>(feedbackDTos, HttpStatus.OK);
+		}
+
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 
 	@GetMapping("/feedbackForm/{id}")
@@ -61,7 +73,9 @@ public class FeedbackFormController {
 					buscarFeedback.getCreatedBy().getId());
 			var student = new StudentDTO(buscarFeedback.getRecipientStudent().getNomeAluno(),
 					buscarFeedback.getRecipientStudent().getId());
-			var feedbackDTO = new FeedbackDTO(buscarFeedback.getResposta1(), buscarFeedback.getResposta2(), buscarFeedback.getResposta3(), buscarFeedback.getResposta4(), buscarFeedback.getResposta5(), teacher, student);
+			var feedbackDTO = new FeedbackDTO(buscarFeedback.getResposta1(), buscarFeedback.getResposta2(),
+					buscarFeedback.getResposta3(), buscarFeedback.getResposta4(), buscarFeedback.getResposta5(),
+					teacher, student);
 			return new ResponseEntity<>(feedbackDTO, HttpStatus.OK);
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
