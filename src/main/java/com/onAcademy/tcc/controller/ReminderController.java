@@ -37,9 +37,23 @@ public class ReminderController {
 	}
 
 	@GetMapping("/reminder")
-	public ResponseEntity<List<Reminder>> buscarTodosLembretes() {
+	public ResponseEntity<List<ReminderDTO>> buscarTodosLembretes() {
 		List<Reminder> reminder = reminderService.buscarTodosLembretes();
-		return new ResponseEntity<>(reminder, HttpStatus.OK);
+		if(reminder != null) {
+			List<ReminderDTO> reminderDTos = reminder.stream().map(reminders ->
+			new ReminderDTO(
+				reminders.getId(),
+				reminders.getConteudo(),
+				reminders.getHorarioSistema(),
+				new CreatedByDTO(
+				reminders.getCreatedBy().getNomeDocente(), reminders.getCreatedBy().getId()
+					),
+				null
+				)
+			).toList();
+			return new ResponseEntity<>(reminderDTos, HttpStatus.OK);
+		}
+		 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 	
 	@GetMapping("/reminder/{classStId}")
