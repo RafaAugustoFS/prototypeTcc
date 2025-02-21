@@ -30,6 +30,7 @@ public class TeacherController {
      record ClassDTO(String nomeTurma, Long id) {}
      record TeacherDTO(String nomeDocente, Date dataNascimentoDocente, String emailDocente, String telefoneDocente,
                               String identifierCode, String password, List<Long> disciplineId) {}
+     record TeacherDTOGet(String nomeDocente, String dataNascimentoDocente, String emailDocente, String telefoneDocente) {}
      record TeacherDTOTwo(String nomeDocente, Long id, List<DisciplineDTO> disciplinas) {}
      record TeacherDTOTre(String nomeDocente, Long id, List<ClassDTO> classes) {}
 
@@ -87,10 +88,22 @@ public class TeacherController {
     public ResponseEntity<?> buscarTeachers() {
         try {
             List<Teacher> teachers = teacherService.buscarTeachers();
-            return new ResponseEntity<>(teachers, HttpStatus.OK);
+            if(teachers != null) {
+            	List<TeacherDTOGet> teacherDTO = teachers.stream().map(teacher -> 
+            	new TeacherDTOGet(
+            	teacher.getNomeDocente(),
+            	teacher.getDataNascimentoDocente().toString(),
+            	teacher.getEmailDocente(),
+            	teacher.getTelefoneDocente()
+            		)
+            	).toList();
+            	 return new ResponseEntity<>(teacherDTO, HttpStatus.OK);
+            }
+           
         } catch (Exception e) {
             return new ResponseEntity<>(Map.of("error", "Erro ao buscar professores: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/teacher/{id}")
@@ -109,6 +122,20 @@ public class TeacherController {
             return new ResponseEntity<>(Map.of("error", "Erro ao buscar professor: " + e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
+    
+    @GetMapping("/teacher/classes/{id}")
+	public ResponseEntity<TeacherDTOTre> buscarTeacherClassUnico(@PathVariable Long id) {
+		Teacher buscarUnico = teacherService.buscarUnicoTeacher(id);
+
+		if (buscarUnico != null) {
+			List<ClassDTO> classes = buscarUnico.getTeachers().stream()
+					.map(classe -> new ClassDTO(classe.getNomeTurma(), classe.getId())).collect(Collectors.toList());
+			TeacherDTOTre teacherTree = new TeacherDTOTre(buscarUnico.getNomeDocente(), buscarUnico.getId(), classes);
+			return ResponseEntity.ok(teacherTree);
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+	}
 
     @PutMapping("/teacher/{id}")
     public ResponseEntity<?> editarTeacher(@PathVariable Long id, @RequestBody Teacher teacher) {
