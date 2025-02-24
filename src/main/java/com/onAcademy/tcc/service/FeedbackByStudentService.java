@@ -29,5 +29,8 @@ public class FeedbackByStudentService {
 		}
 		return null;
 	}
+	public List<FeedBackByStudent> buscarFeedbacksDocente(Long recipientTeacher){
+		return feedBackByStudentRepo.findByRecipientTeacher_Id(recipientTeacher);
+	}
 
 }
