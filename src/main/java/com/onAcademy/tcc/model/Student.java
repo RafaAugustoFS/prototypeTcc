@@ -30,6 +30,7 @@ public class Student {
 	private Long turmaId;
 	private String identifierCode;
 	private String password;
+	public static final String ENROLLMENT_PREFIX = "a";
 
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
 	private List<FeedbackByTeacher> feedback;
@@ -57,7 +58,7 @@ public class Student {
 		String initials = (nomeAluno != null && nomeAluno.replaceAll("[^A-Za-z]", "").length() > 0)
 				? nomeAluno.replaceAll("[^A-Za-z]", "").substring(0, Math.min(2, nomeAluno.length())).toUpperCase()
 				: "XX";
-		this.identifierCode = String.format("%s-%s-%s-%s", year, studentId, classCode, initials);
+		this.identifierCode = String.format(ENROLLMENT_PREFIX + year + studentId +classCode + initials);
 
 	}
 
