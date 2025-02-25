@@ -1,5 +1,6 @@
 package com.onAcademy.tcc.model;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import jakarta.persistence.JoinColumn;
@@ -10,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostPersist;
 import lombok.Data;
 
 @Entity
@@ -25,7 +27,7 @@ public class Teacher {
 	private String telefoneDocente;
 	private String identifierCode;
 	private String password;
-
+	public static final String ENROLLMENT_PREFIX = "p";
 	@OneToMany(mappedBy = "recipientTeacher")
 	private List<FeedBackByStudent> feedback;
 
@@ -45,4 +47,21 @@ public class Teacher {
 
 	@OneToMany(mappedBy = "createdBy")
 	private List<Reminder> reminder; 
+	
+	
+	
+	@PostPersist
+	public void generateIdentifierCode() {
+		String year = String.valueOf(LocalDate.now().getYear());
+		String teacherId = String.format("%04d", id);
+		String initials = (nomeDocente != null && nomeDocente.replaceAll("[^A-Za-z]", "").length() > 0)
+				? nomeDocente.replaceAll("[^A-Za-z]", "").substring(0, Math.min(2, nomeDocente.length())).toUpperCase()
+				: "XX";
+		
+		this.identifierCode = ENROLLMENT_PREFIX + year + teacherId+ initials;
+
+	}
+	
+	
+	
 }
