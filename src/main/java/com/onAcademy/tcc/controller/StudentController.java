@@ -23,95 +23,107 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api")
 public class StudentController {
 
-    @Autowired
-    private StudentService studentService;
+	@Autowired
+	private StudentService studentService;
 
-    record ClassDTO(String nomeTurma, Long idTurma) {};
-    record NoteDTO(Long idNota, Double nota, int bimestre, String status, String nomeDisciplina) {};
-    record StudentDTO(String nome, String dataNascimentoAluno, String telefoneAluno, String emailAluno,
-                      String matriculaAluno, ClassDTO turma, List<NoteDTO> notas) {};
+	record ClassDTO(String nomeTurma, Long idTurma) {
+	};
 
-    @PostMapping("/student/login")
-    public ResponseEntity<Map<String, String>> loginStudent(@RequestBody LoginStudent loginStudent) {
-        try {
-            String token = studentService.loginStudent(loginStudent.identifierCode(), loginStudent.password());
-            Map<String, String> response = new HashMap<>();
-            response.put("token", token);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Falha no login: " + e.getMessage()), HttpStatus.UNAUTHORIZED);
-        }
-    }
+	record NoteDTO(Long idNota, Double nota, int bimestre, String status, String nomeDisciplina) {
+	};
 
-    @PreAuthorize("hasRole('INSTITUTION')")
-    @PostMapping("/student")
-    public ResponseEntity<?> criarEstudante(@RequestBody StudentClassDTO studentDTO) {
-        try {
-            Student student1 = studentService.criarEstudante(studentDTO);
-            return new ResponseEntity<>(student1, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao criar estudante: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
+	record StudentDTO(String nome, String dataNascimentoAluno, String telefoneAluno, String emailAluno,
+			String matriculaAluno, ClassDTO turma, List<NoteDTO> notas) {
+	};
 
-    @GetMapping("/student")
-    public ResponseEntity<?> buscarTodosEstudantes() {
-        try {
-            List<Student> students = studentService.buscarTodosEstudantes();
-            return new ResponseEntity<>(students, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao buscar estudantes: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	@PostMapping("/student/login")
+	public ResponseEntity<Map<String, String>> loginStudent(@RequestBody LoginStudent loginStudent) {
+		try {
+			String token = studentService.loginStudent(loginStudent.identifierCode(), loginStudent.password());
+			Map<String, String> response = new HashMap<>();
+			response.put("token", token);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Falha no login: " + e.getMessage()), HttpStatus.UNAUTHORIZED);
+		}
+	}
 
-    @GetMapping("/student/{id}")
-    public ResponseEntity<?> buscarEstudanteUnico(@PathVariable Long id) {
-        try {
-            Student buscaEstudante = studentService.buscarEstudanteUnico(id);
-            if (buscaEstudante != null) {
-                List<NoteDTO> notas = buscaEstudante.getNotas().stream().map(nota ->
-                        new NoteDTO(nota.getId(), nota.getNota(), nota.getBimestre(), nota.getStatus(),
-                                nota.getDisciplineId().getNomeDisciplina())).collect(Collectors.toList());
+	@PreAuthorize("hasRole('INSTITUTION')")
+	@PostMapping("/student")
+	public ResponseEntity<?> criarEstudante(@RequestBody StudentClassDTO studentDTO) {
+		try {
+			Student student1 = studentService.criarEstudante(studentDTO);
+			return new ResponseEntity<>(student1, HttpStatus.CREATED);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao criar estudante: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
 
-                var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(), buscaEstudante.getClassSt().getId());
-                var studentDTO = new StudentDTO(buscaEstudante.getNomeAluno(),
-                        buscaEstudante.getDataNascimentoAluno().toString(), buscaEstudante.getTelefoneAluno(),
-                        buscaEstudante.getEmailAluno(), buscaEstudante.getIdentifierCode(), turma, notas);
+	@GetMapping("/student")
+	public ResponseEntity<?> buscarTodosEstudantes() {
+		try {
+			List<Student> students = studentService.buscarTodosEstudantes();
+			return new ResponseEntity<>(students, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao buscar estudantes: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-                return new ResponseEntity<>(studentDTO, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao buscar estudante: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	@GetMapping("/student/{id}")
+	public ResponseEntity<?> buscarEstudanteUnico(@PathVariable Long id) {
+		try {
+			Student buscaEstudante = studentService.buscarEstudanteUnico(id);
+			if (buscaEstudante != null) {
+				List<NoteDTO> notas = buscaEstudante
+						.getNotas().stream().map(nota -> new NoteDTO(nota.getId(), nota.getNota(), nota.getBimestre(),
+								nota.getStatus(), nota.getDisciplineId().getNomeDisciplina()))
+						.collect(Collectors.toList());
 
-    @PutMapping("/student/{id}")
-    public ResponseEntity<?> atualizarEstudante(@PathVariable Long id, @RequestBody Student student) {
-        try {
-            Student atualizarEstudante = studentService.atualizarEstudante(id, student);
-            if (atualizarEstudante != null) {
-                return new ResponseEntity<>(atualizarEstudante, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao atualizar estudante: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
+				var turma = new ClassDTO(buscaEstudante.getClassSt().getNomeTurma(),
+						buscaEstudante.getClassSt().getId());
+				var studentDTO = new StudentDTO(buscaEstudante.getNomeAluno(),
+						buscaEstudante.getDataNascimentoAluno().toString(), buscaEstudante.getTelefoneAluno(),
+						buscaEstudante.getEmailAluno(), buscaEstudante.getIdentifierCode(), turma, notas);
 
-    @DeleteMapping("/student/{id}")
-    public ResponseEntity<?> deletarEstudante(@PathVariable Long id) {
-        try {
-            Student deletarEstudante = studentService.deletarEstudante(id);
-            if (deletarEstudante != null) {
-                return new ResponseEntity<>(deletarEstudante, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao deletar estudante: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+				return new ResponseEntity<>(studentDTO, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao buscar estudante: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PutMapping("/student/{id}")
+	public ResponseEntity<?> atualizarEstudante(@PathVariable Long id, @RequestBody Student student) {
+		try {
+			Student atualizarEstudante = studentService.atualizarEstudante(id, student);
+			if (atualizarEstudante != null) {
+				return new ResponseEntity<>(atualizarEstudante, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao atualizar estudante: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@DeleteMapping("/student/{id}")
+	public ResponseEntity<?> deletarEstudante(@PathVariable Long id) {
+		try {
+			Student deletarEstudante = studentService.deletarEstudante(id);
+			if (deletarEstudante != null) {
+				return new ResponseEntity<>(deletarEstudante, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao deletar estudante: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }

@@ -41,6 +41,19 @@ public class StudentService {
 		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
 				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 
+		if (studentRepo.existsByEmailAluno(studentDTO.getEmailAluno())) {
+			throw new IllegalArgumentException("Email já cadastrado.");
+		} else if (studentRepo.existsByTelefoneAluno(studentDTO.getTelefoneAluno())) {
+			throw new IllegalArgumentException("Telefone já cadastrado.");
+		}
+		if (!studentDTO.getTelefoneAluno().matches("[0-9]+")) {
+			throw new IllegalArgumentException("Telefone deve conter somente números.");
+		}
+
+		if (studentDTO.getTelefoneAluno().length() != 11) {
+			throw new IllegalArgumentException("Telefone deve ter 11 dígitos.");
+		}
+
 		String endodedPassword = passworsEncoder.encode(studentDTO.getPassword());
 
 		Student student = new Student();

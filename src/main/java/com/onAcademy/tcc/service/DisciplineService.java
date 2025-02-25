@@ -14,6 +14,7 @@ public class DisciplineService {
 	private DisciplineRepo disciplineRepo;
 
 	public Discipline criarDiscipline(Discipline discipline) {
+
 		Discipline Salvardiscipline = disciplineRepo.save(discipline);
 		return Salvardiscipline;
 	}
@@ -42,6 +43,7 @@ public class DisciplineService {
 		}
 		return null;
 	}
+
 	public Discipline deleteDiscipline(Long id) {
 		Optional<Discipline> existingDiscipline = disciplineRepo.findById(id);
 		if (existingDiscipline.isPresent()) {

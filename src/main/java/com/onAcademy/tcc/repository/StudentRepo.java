@@ -7,4 +7,9 @@ import com.onAcademy.tcc.model.Student;
 public interface StudentRepo extends JpaRepository<Student, Long> {
 	Optional<Student> findByidentifierCode(String registration);
 
+	boolean existsByEmailAluno(String emailAluno);
+
+	boolean existsByTelefoneAluno(String TelefoneAluno);
+
+
 }
