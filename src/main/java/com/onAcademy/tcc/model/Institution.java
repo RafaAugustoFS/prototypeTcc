@@ -1,5 +1,6 @@
 package com.onAcademy.tcc.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,7 +16,11 @@ public class Institution {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String nameInstitution;
+
+	@Column(unique = true)
 	private String identifierCode;
+
 	private String unitInstitution;
+
 	private String password;
 }

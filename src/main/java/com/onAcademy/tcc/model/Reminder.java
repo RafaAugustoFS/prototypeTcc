@@ -27,11 +27,11 @@ public class Reminder {
 	@ManyToOne
 	@JoinColumn(name = "class_st_id")
 	private ClassSt classSt;
-	
+
 	@PrePersist
-    public void prePersist() {
-        if (this.horarioSistema == null) {
-            this.horarioSistema = LocalDateTime.now();  // Definir a hora do sistema
-        }
-    }
+	public void prePersist() {
+		if (this.horarioSistema == null) {
+			this.horarioSistema = LocalDateTime.now(); // Definir a hora do sistema
+		}
+	}
 }

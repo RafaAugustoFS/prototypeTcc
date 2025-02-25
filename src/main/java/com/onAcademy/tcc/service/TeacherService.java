@@ -34,8 +34,6 @@ public class TeacherService {
 	}
 
 	public Teacher criarTeacher(Teacher teacher) {
-		String encodedPassword = passwordEncoder.encode(teacher.getPassword());
-		teacher.setPassword(encodedPassword);
 		Teacher salvarTeacher = teacherRepo.save(teacher);
 		return salvarTeacher;
 	}

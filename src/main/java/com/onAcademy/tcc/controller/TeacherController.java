@@ -26,104 +26,123 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api")
 public class TeacherController {
 
-     record DisciplineDTO(String nomeDisciplina, Long discipline_id) {}
-     record ClassDTO(String nomeTurma, Long id) {}
-     record TeacherDTO(String nomeDocente, Date dataNascimentoDocente, String emailDocente, String telefoneDocente,
-                              String identifierCode, String password, List<Long> disciplineId) {}
-     record TeacherDTOGet(String nomeDocente, String dataNascimentoDocente, String emailDocente, String telefoneDocente) {}
-     record TeacherDTOTwo(String nomeDocente, Long id, List<DisciplineDTO> disciplinas) {}
-     record TeacherDTOTre(String nomeDocente, Long id, List<ClassDTO> classes) {}
+	record DisciplineDTO(String nomeDisciplina, Long discipline_id) {
+	}
 
-    @Autowired
-    private TeacherService teacherService;
+	record ClassDTO(String nomeTurma, Long id) {
+	}
 
-    @Autowired
-    private TeacherRepo teacherRepo;
+	record TeacherDTO(String nomeDocente, Date dataNascimentoDocente, String emailDocente, String telefoneDocente,
+			String identifierCode, String password, List<Long> disciplineId) {
+	}
 
-    @Autowired
-    private DisciplineRepo disciplineRepo;
+	record TeacherDTOGet(String nomeDocente, String dataNascimentoDocente, String emailDocente,
+			String telefoneDocente) {
+	}
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+	record TeacherDTOTwo(String nomeDocente, Long id, List<DisciplineDTO> disciplinas) {
+	}
 
-    @PostMapping("/teacher")
-    @PreAuthorize("hasRole('INSTITUTION')")
-    public ResponseEntity<?> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
-        try {
-            List<Discipline> disciplines = disciplineRepo.findAllById(teacherDTO.disciplineId());
-            if (disciplines.size() != teacherDTO.disciplineId().size()) {
-                return new ResponseEntity<>(Map.of("error", "Algumas disciplinas não foram encontradas"), HttpStatus.BAD_REQUEST);
-            }
-            Teacher teacher = new Teacher();
-            teacher.setNomeDocente(teacherDTO.nomeDocente());
-            teacher.setDataNascimentoDocente(teacherDTO.dataNascimentoDocente());
-            teacher.setEmailDocente(teacherDTO.emailDocente());
-            teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
-            teacher.setIdentifierCode(teacherDTO.identifierCode());
-            teacher.setPassword(passwordEncoder.encode(teacherDTO.password()));
-            teacher.setDisciplines(new ArrayList<>(disciplines));
-            Teacher savedTeacher = teacherRepo.save(teacher);
-            return new ResponseEntity<>(savedTeacher, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao criar professor: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
+	record TeacherDTOTre(String nomeDocente, Long id, List<ClassDTO> classes) {
+	}
 
-    
-    
-    
-    @PostMapping("/teacher/login")
+	@Autowired
+	private TeacherService teacherService;
+
+	@Autowired
+	private TeacherRepo teacherRepo;
+
+	@Autowired
+	private DisciplineRepo disciplineRepo;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+	@PostMapping("/teacher")
+	@PreAuthorize("hasRole('INSTITUTION')")
+	public ResponseEntity<?> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
+		try {
+			List<Discipline> disciplines = disciplineRepo.findAllById(teacherDTO.disciplineId());
+			if (disciplines.size() != teacherDTO.disciplineId().size()) {
+				return new ResponseEntity<>(Map.of("error", "Algumas disciplinas não foram encontradas"),
+						HttpStatus.BAD_REQUEST);
+			}
+			if (teacherRepo.existsByEmailDocente(teacherDTO.emailDocente())) {
+				throw new IllegalArgumentException("Email já cadastrado.");
+			} else if (teacherRepo.existsByTelefoneDocente(teacherDTO.telefoneDocente())) {
+				throw new IllegalArgumentException("Telefone já cadastrado.");
+			}
+			if (!teacherDTO.telefoneDocente().matches("[0-9]+")) {
+				throw new IllegalArgumentException("Telefone deve conter somente números.");
+			}
+			if (teacherDTO.telefoneDocente().length() != 11) {
+				throw new IllegalArgumentException("Telefone deve ter 11 dígitos.");
+			}
+
+			Teacher teacher = new Teacher();
+			teacher.setNomeDocente(teacherDTO.nomeDocente());
+			teacher.setDataNascimentoDocente(teacherDTO.dataNascimentoDocente());
+			teacher.setEmailDocente(teacherDTO.emailDocente());
+			teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
+			teacher.setIdentifierCode(teacherDTO.identifierCode());
+			teacher.setPassword(passwordEncoder.encode(teacherDTO.password()));
+			teacher.setDisciplines(new ArrayList<>(disciplines));
+			Teacher savedTeacher = teacherRepo.save(teacher);
+			return new ResponseEntity<>(savedTeacher, HttpStatus.CREATED);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao criar professor: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PostMapping("/teacher/login")
 	public ResponseEntity<Map<String, String>> loginTeacher(@RequestBody LoginTeacherDTO loginTeacherDTO) {
 		String token = teacherService.loginTeacher(loginTeacherDTO.identifierCode(), loginTeacherDTO.password());
- 
+
 		Map<String, String> response = new HashMap<>();
 		response.put("token", token);
- 
+
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-    
-    
-    
-    @GetMapping("/teacher")
-    public ResponseEntity<?> buscarTeachers() {
-        try {
-            List<Teacher> teachers = teacherService.buscarTeachers();
-            if(teachers != null) {
-            	List<TeacherDTOGet> teacherDTO = teachers.stream().map(teacher -> 
-            	new TeacherDTOGet(
-            	teacher.getNomeDocente(),
-            	teacher.getDataNascimentoDocente().toString(),
-            	teacher.getEmailDocente(),
-            	teacher.getTelefoneDocente()
-            		)
-            	).toList();
-            	 return new ResponseEntity<>(teacherDTO, HttpStatus.OK);
-            }
-           
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao buscar professores: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
 
-    @GetMapping("/teacher/{id}")
-    public ResponseEntity<?> buscarTeacherUnico(@PathVariable Long id) {
-        try {
-            Teacher teacher = teacherService.buscarUnicoTeacher(id);
-            if (teacher == null) {
-                return new ResponseEntity<>(Map.of("error", "Professor não encontrado"), HttpStatus.NOT_FOUND);
-            }
-            List<DisciplineDTO> disciplines = teacher.getDisciplines().stream()
-                .map(d -> new DisciplineDTO(d.getNomeDisciplina(), d.getId()))
-                .collect(Collectors.toList());
-            TeacherDTOTwo teacherDTOTwo = new TeacherDTOTwo(teacher.getNomeDocente(), teacher.getId(), disciplines);
-            return new ResponseEntity<>(teacherDTOTwo, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao buscar professor: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
-    
-    @GetMapping("/teacher/classes/{id}")
+	@GetMapping("/teacher")
+	public ResponseEntity<?> buscarTeachers() {
+		try {
+			List<Teacher> teachers = teacherService.buscarTeachers();
+			if (teachers != null) {
+				List<TeacherDTOGet> teacherDTO = teachers.stream()
+						.map(teacher -> new TeacherDTOGet(teacher.getNomeDocente(),
+								teacher.getDataNascimentoDocente().toString(), teacher.getEmailDocente(),
+								teacher.getTelefoneDocente()))
+						.toList();
+				return new ResponseEntity<>(teacherDTO, HttpStatus.OK);
+			}
+
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao buscar professores: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
+
+	@GetMapping("/teacher/{id}")
+	public ResponseEntity<?> buscarTeacherUnico(@PathVariable Long id) {
+		try {
+			Teacher teacher = teacherService.buscarUnicoTeacher(id);
+			if (teacher == null) {
+				return new ResponseEntity<>(Map.of("error", "Professor não encontrado"), HttpStatus.NOT_FOUND);
+			}
+			List<DisciplineDTO> disciplines = teacher.getDisciplines().stream()
+					.map(d -> new DisciplineDTO(d.getNomeDisciplina(), d.getId())).collect(Collectors.toList());
+			TeacherDTOTwo teacherDTOTwo = new TeacherDTOTwo(teacher.getNomeDocente(), teacher.getId(), disciplines);
+			return new ResponseEntity<>(teacherDTOTwo, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao buscar professor: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping("/teacher/classes/{id}")
 	public ResponseEntity<TeacherDTOTre> buscarTeacherClassUnico(@PathVariable Long id) {
 		Teacher buscarUnico = teacherService.buscarUnicoTeacher(id);
 
@@ -137,29 +156,31 @@ public class TeacherController {
 
 	}
 
-    @PutMapping("/teacher/{id}")
-    public ResponseEntity<?> editarTeacher(@PathVariable Long id, @RequestBody Teacher teacher) {
-        try {
-            Teacher atualizarTeacher = teacherService.atualizarTeacher(id, teacher);
-            if (atualizarTeacher == null) {
-                return new ResponseEntity<>(Map.of("error", "Professor não encontrado"), HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>(atualizarTeacher, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao atualizar professor: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }	
-    }
+	@PutMapping("/teacher/{id}")
+	public ResponseEntity<?> editarTeacher(@PathVariable Long id, @RequestBody Teacher teacher) {
+		try {
+			Teacher atualizarTeacher = teacherService.atualizarTeacher(id, teacher);
+			if (atualizarTeacher == null) {
+				return new ResponseEntity<>(Map.of("error", "Professor não encontrado"), HttpStatus.NOT_FOUND);
+			}
+			return new ResponseEntity<>(atualizarTeacher, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao atualizar professor: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
 
-    @DeleteMapping("/teacher/{id}")
-    public ResponseEntity<?> deletarTeacher(@PathVariable Long id) {
-        try {
-            Teacher deletarTeacher = teacherService.deletarTeacher(id);
-            if (deletarTeacher == null) {
-                return new ResponseEntity<>(Map.of("error", "Professor não encontrado"), HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>(deletarTeacher, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao deletar professor: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
+	@DeleteMapping("/teacher/{id}")
+	public ResponseEntity<?> deletarTeacher(@PathVariable Long id) {
+		try {
+			Teacher deletarTeacher = teacherService.deletarTeacher(id);
+			if (deletarTeacher == null) {
+				return new ResponseEntity<>(Map.of("error", "Professor não encontrado"), HttpStatus.NOT_FOUND);
+			}
+			return new ResponseEntity<>(deletarTeacher, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao deletar professor: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
 }
