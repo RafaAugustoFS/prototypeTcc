@@ -1,5 +1,6 @@
 package com.onAcademy.tcc.service;
 
+import java.util.Base64;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,16 +11,25 @@ import com.cloudinary.utils.ObjectUtils;
 
 @Service
 public class ImageUploaderService {
-	@Autowired
-	private Cloudinary cloudinary;
-	
-	public String uploadImage(byte[]imagePath) {
-		try {
-			Map uploadResult = cloudinary.uploader().upload(imagePath, ObjectUtils.emptyMap());
-			return uploadResult.get("url").toString();
-		} catch (Exception e) {
-			// TODO: handle exception
-			throw new RuntimeException(e);
-		}
-	}
+
+    @Autowired
+    private Cloudinary cloudinary;
+
+    public String uploadBase64Image(String base64Image) {
+        try {
+            // Removendo prefixo caso exista (ex: "data:image/png;base64,")
+            if (base64Image.contains(",")) {
+                base64Image = base64Image.split(",")[1];
+            }
+
+            byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+
+            Map uploadResult = cloudinary.uploader().upload(imageBytes, ObjectUtils.asMap(
+                "resource_type", "image"
+            ));
+            return uploadResult.get("url").toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao enviar imagem para o Cloudinary: " + e.getMessage());
+        }
+    }
 }
