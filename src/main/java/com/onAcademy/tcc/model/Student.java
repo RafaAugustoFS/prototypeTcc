@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.onAcademy.tcc.dto.StudentClassDTO;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -18,7 +19,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Student {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -30,9 +30,7 @@ public class Student {
 	private String identifierCode;
 	private String password;
 	
-
-	
-	
+	private static final String ENROLLMENT_PREFIX = "a";
 	
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
 	private List<FeedbackByTeacher> feedback;
@@ -51,5 +49,9 @@ public class Student {
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
 	private List<FeedbackForm> feedbackForm;
 
+	public static String generateRandomPassword(StudentClassDTO studentDTO, ClassSt classSt) {
+        String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
+        return ENROLLMENT_PREFIX + year + studentDTO.getNomeAluno().toLowerCase();
+    }
 
 }
