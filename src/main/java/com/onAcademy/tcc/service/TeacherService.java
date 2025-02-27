@@ -1,83 +1,102 @@
 package com.onAcademy.tcc.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.onAcademy.tcc.config.TokenProvider;
-import com.onAcademy.tcc.model.Discipline;
 import com.onAcademy.tcc.model.Teacher;
-import com.onAcademy.tcc.repository.DisciplineRepo;
 import com.onAcademy.tcc.repository.TeacherRepo;
 
 @Service
 public class TeacherService {
 
-	@Autowired
-	private TeacherRepo teacherRepo;
+    public static final String ENROLLMENT_PREFIX = "p";
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+    @Autowired
+    private TeacherRepo teacherRepo;
 
-	@Autowired
-	private TokenProvider tokenProvider;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-	public String loginTeacher(String identifierCode, String password) {
-		Teacher teacher = teacherRepo.findByidentifierCode(identifierCode)
-				.filter(i -> passwordEncoder.matches(password, i.getPassword()))
-				.orElseThrow(() -> new RuntimeException("Matricula ou senha incorretos"));
-		return tokenProvider.generate(teacher.getId().toString(), List.of("teacher"));
-	}
+    @Autowired
+    private TokenProvider tokenProvider;
 
-	public Teacher criarTeacher(Teacher teacher) {
-		Teacher salvarTeacher = teacherRepo.save(teacher);
-		return salvarTeacher;
-	}
+    public String loginTeacher(String identifierCode, String password) {
+        Teacher teacher = teacherRepo.findByidentifierCode(identifierCode)
+                .filter(i -> passwordEncoder.matches(password, i.getPassword()))
+                .orElseThrow(() -> new RuntimeException("Matricula ou senha incorretos"));
+        return tokenProvider.generate(teacher.getId().toString(), List.of("teacher"));
+    }
 
-	public List<Teacher> buscarTeachers() {
-		List<Teacher> teacher = teacherRepo.findAll();
-		return teacher;
-	}
+    public Teacher criarTeacher(Teacher teacher) {
+        Teacher teacher1 = new Teacher();
+        teacher1.setNomeDocente(teacher.getNomeDocente());
+        teacher1.setDataNascimentoDocente(teacher.getDataNascimentoDocente());
+        teacher1.setEmailDocente(teacher.getEmailDocente());
+        teacher1.setTelefoneDocente(teacher.getTelefoneDocente());
 
-	public Teacher atualizarTeacher(Long id, Teacher teacher) {
-		Optional<Teacher> existingTeacher = teacherRepo.findById(id);
-		if (existingTeacher.isPresent()) {
-			Teacher atualizarTeacher = existingTeacher.get();
-			atualizarTeacher.setNomeDocente(teacher.getNomeDocente());
-			atualizarTeacher.setDataNascimentoDocente(teacher.getDataNascimentoDocente());
-			atualizarTeacher.setEmailDocente(teacher.getEmailDocente());
-			atualizarTeacher.setTelefoneDocente(teacher.getTelefoneDocente());
-			String encodedPassword = passwordEncoder.encode(teacher.getPassword());
-			atualizarTeacher.setPassword(encodedPassword);
-			teacherRepo.save(atualizarTeacher);
-			return atualizarTeacher;
-		}
+        String year = String.valueOf(teacher.getDataNascimentoDocente().getYear());
+        teacher1.setPassword(ENROLLMENT_PREFIX + year + teacher1.getNomeDocente().toLowerCase());
 
-		return null;
-	}
+        String encoded = passwordEncoder.encode(teacher1.getPassword());
+        teacher1.setPassword(encoded);
 
-	public Teacher deletarTeacher(Long id) {
-		Optional<Teacher> existingTeacher = teacherRepo.findById(id);
-		if (existingTeacher.isPresent()) {
-			Teacher deletarTeacher = existingTeacher.get();
-			teacherRepo.delete(deletarTeacher);
-			return deletarTeacher;
-		}
+        teacher1 = teacherRepo.save(teacher1);
 
-		return null;
-	}
+        String identifierCode = generateIdentifierCode(teacher1.getId(), teacher1.getNomeDocente());
+        teacher1.setIdentifierCode(identifierCode);
 
-	public Teacher buscarUnicoTeacher(Long id) {
-		Optional<Teacher> existingTeacher = teacherRepo.findById(id);
-		if (existingTeacher.isPresent()) {
-			Teacher buscarTeacher = existingTeacher.get();
-			return buscarTeacher;
-		}
-		return null;
-	}
+        return teacherRepo.save(teacher1);
+    }
 
+    public List<Teacher> buscarTeachers() {
+        return teacherRepo.findAll();
+    }
+
+    public Teacher atualizarTeacher(Long id, Teacher teacher) {
+        Optional<Teacher> existingTeacher = teacherRepo.findById(id);
+        if (existingTeacher.isPresent()) {
+            Teacher atualizarTeacher = existingTeacher.get();
+            atualizarTeacher.setNomeDocente(teacher.getNomeDocente());
+            atualizarTeacher.setDataNascimentoDocente(teacher.getDataNascimentoDocente());
+            atualizarTeacher.setEmailDocente(teacher.getEmailDocente());
+            atualizarTeacher.setTelefoneDocente(teacher.getTelefoneDocente());
+            String encodedPassword = passwordEncoder.encode(teacher.getPassword());
+            atualizarTeacher.setPassword(encodedPassword);
+            teacherRepo.save(atualizarTeacher);
+            return atualizarTeacher;
+        }
+        return null;
+    }
+
+    public Teacher deletarTeacher(Long id) {
+        Optional<Teacher> existingTeacher = teacherRepo.findById(id);
+        if (existingTeacher.isPresent()) {
+            Teacher deletarTeacher = existingTeacher.get();
+            teacherRepo.delete(deletarTeacher);
+            return deletarTeacher;
+        }
+        return null;
+    }
+
+    public Teacher buscarUnicoTeacher(Long id) {
+        Optional<Teacher> existingTeacher = teacherRepo.findById(id);
+        if (existingTeacher.isPresent()) {
+            return existingTeacher.get();
+        }
+        return null;
+    }
+
+    private String generateIdentifierCode(Long teacherId, String nomeDocente) {
+        String year = String.valueOf(LocalDate.now().getYear());
+        String formattedId = String.format("%04d", teacherId);
+        String initials = nomeDocente.replaceAll("[^A-Za-z]", "")
+                .substring(0, Math.min(2, nomeDocente.length()))
+                .toUpperCase();
+        return ENROLLMENT_PREFIX + year + formattedId + initials;
+    }
 }
