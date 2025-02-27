@@ -59,6 +59,7 @@ public class TeacherController {
             if (disciplines.size() != teacherDTO.disciplineId().size()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Algumas disciplinas não foram encontradas"));
             }
+            
 
             Teacher teacher = new Teacher();
             teacher.setNomeDocente(teacherDTO.nomeDocente());
@@ -80,14 +81,30 @@ public class TeacherController {
     }
 
     private void validarTeacherDTO(TeacherDTO teacherDTO) {
+        if(teacherDTO.emailDocente.isEmpty()) {
+        	throw new IllegalArgumentException("Por favor preencha o campo email.");
+        } 
+        if(!teacherDTO.emailDocente.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+       	 throw new IllegalArgumentException("O email fornecido não tem formato válido.");
+       }
         if (teacherRepo.existsByEmailDocente(teacherDTO.emailDocente())) {
             throw new IllegalArgumentException("Email já cadastrado.");
+        }
+        if (!teacherDTO.telefoneDocente().matches("\\d{11}")) {
+            throw new IllegalArgumentException("Telefone deve conter exatamente 11 dígitos numéricos.");
         }
         if (teacherRepo.existsByTelefoneDocente(teacherDTO.telefoneDocente())) {
             throw new IllegalArgumentException("Telefone já cadastrado.");
         }
-        if (!teacherDTO.telefoneDocente().matches("\\d{11}")) {
-            throw new IllegalArgumentException("Telefone deve conter exatamente 11 dígitos numéricos.");
+       
+        if (teacherDTO.disciplineId.isEmpty()) {
+        	throw new IllegalArgumentException("Por favor preencha com no mínimo uma disciplina.");
+        }
+        if (teacherDTO.nomeDocente.isEmpty()) {
+        	throw new IllegalArgumentException("Por favor preencha com um nome.");
+        }
+        if (teacherDTO.dataNascimentoDocente == null) {
+        	throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
         }
     }
 
