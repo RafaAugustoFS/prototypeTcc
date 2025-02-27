@@ -15,11 +15,16 @@ import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.repository.ClassStRepo;
 import com.onAcademy.tcc.repository.StudentRepo;
 
+import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
+
 @Service
 public class StudentService {
+	private static final String ENROLLMENT_PREFIX = "a";
 
-	public static final String ENROLLMENT_PREFIX = "a";
-
+	@Autowired
+	private EmailService emailService;
+	
 	@Autowired
 	private StudentRepo studentRepo;
 
@@ -27,49 +32,61 @@ public class StudentService {
 	private ClassStRepo classStRepo;
 
 	@Autowired
-	private PasswordEncoder passworsEncoder;
+	private PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private TokenProvider tokenProvider;
 
 	public String loginStudent(String identifierCode, String password) {
 		Student student = studentRepo.findByidentifierCode(identifierCode)
-				.filter(s -> passworsEncoder.matches(password, s.getPassword()))
+				.filter(s -> passwordEncoder.matches(password, s.getPassword()))
 				.orElseThrow(() -> new RuntimeException("Revise os campos!!"));
 		return tokenProvider.generate(student.getId().toString(), List.of("student"));
 	}
 
-	public Student criarEstudante(StudentClassDTO studentDTO) {
-		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
-				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
+	@Transactional
+    public Student criarEstudante(StudentClassDTO studentDTO) throws MessagingException {
+        ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
+                .orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 
-		if (studentRepo.existsByEmailAluno(studentDTO.getEmailAluno())) {
-			throw new IllegalArgumentException("Email já cadastrado.");
-		} else if (studentRepo.existsByTelefoneAluno(studentDTO.getTelefoneAluno())) {
-			throw new IllegalArgumentException("Telefone já cadastrado.");
-		}
+        if (studentRepo.existsByEmailAluno(studentDTO.getEmailAluno())) {
+            throw new IllegalArgumentException("Email já cadastrado.");
+        } else if (studentRepo.existsByTelefoneAluno(studentDTO.getTelefoneAluno())) {
+            throw new IllegalArgumentException("Telefone já cadastrado.");
+        }
 
-		if (!studentDTO.getTelefoneAluno().matches("[0-9]+")) {
-			throw new IllegalArgumentException("Telefone deve conter somente números.");
-		}
+        if (!studentDTO.getTelefoneAluno().matches("[0-9]+")) {
+            throw new IllegalArgumentException("Telefone deve conter somente números.");
+        }
 
-		if (studentDTO.getTelefoneAluno().length() != 11) {
-			throw new IllegalArgumentException("Telefone deve ter 11 dígitos.");
-		}
+        if (studentDTO.getTelefoneAluno().length() != 11) {
+            throw new IllegalArgumentException("Telefone deve ter 11 dígitos.");
+        }
 
-		Student student = new Student();
+        Student student = new Student();
 		String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
 		student.setNomeAluno(studentDTO.getNomeAluno());
 		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
 		student.setEmailAluno(studentDTO.getEmailAluno());
 		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
 		student.setIdentifierCode(generateIdentifierCode(studentDTO, classSt));
-		student.setPassword(ENROLLMENT_PREFIX + year + student.getNomeAluno().toLowerCase());
-		String encoded = passworsEncoder.encode(student.getPassword());
+		
+		String rawPassword = Student.generateRandomPassword(studentDTO, classSt);
+	    String encodedPassword = passwordEncoder.encode(rawPassword);
+	    student.setPassword(encodedPassword);
+	    
 		student.setTurmaId(classSt.getId());
-		student.setPassword(encoded);
-		return studentRepo.save(student);
-	}
+		student.setPassword(encodedPassword); 
+
+        Student savedStudent = studentRepo.save(student);
+
+        String emailSubject = "Bem-vindo ao OnAcademy!";
+        String emailText = "<h1>Olá " + savedStudent.getNomeAluno() + ",</h1>" +
+                "<p>Seu cadastro foi realizado com sucesso!" + "\n" + "O código de matrícula é: " + savedStudent.getIdentifierCode() + "\n" + "Sua senha é:" + rawPassword + "</p>";
+        emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
+
+        return savedStudent;
+    }
 
 	public List<Student> buscarTodosEstudantes() {
 		return studentRepo.findAll();
@@ -83,7 +100,7 @@ public class StudentService {
 			atualizarEstudante.setEmailAluno(student.getEmailAluno());
 			atualizarEstudante.setDataNascimentoAluno(student.getDataNascimentoAluno());
 			atualizarEstudante.setTelefoneAluno(student.getTelefoneAluno());
-			String encoderPassword = passworsEncoder.encode(student.getPassword());
+			String encoderPassword = passwordEncoder.encode(student.getPassword());
 			atualizarEstudante.setPassword(encoderPassword);
 			studentRepo.save(atualizarEstudante);
 			return atualizarEstudante;
