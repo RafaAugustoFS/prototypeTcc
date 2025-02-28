@@ -69,7 +69,7 @@ public class StudentService {
 		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
 		student.setEmailAluno(studentDTO.getEmailAluno());
 		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
-		student.setIdentifierCode(generateIdentifierCode(studentDTO, classSt));
+
 		
 		String rawPassword = Student.generateRandomPassword(studentDTO, classSt);
 	    String encodedPassword = passwordEncoder.encode(rawPassword);
@@ -123,14 +123,5 @@ public class StudentService {
 		return null;
 	}
 
-	private String generateIdentifierCode(StudentClassDTO studentDTO, ClassSt classSt) {
-		String year = String.valueOf(LocalDate.now().getYear());
-		String studentId = String.format("%04d", studentRepo.count() + 1);
-		String classCode = (classSt != null) ? String.valueOf(classSt.getId()) : "sala não encontrada";
 
-		String initials = studentDTO.getNomeAluno().replaceAll("[^A-Za-z]", "")
-				.substring(0, Math.min(2, studentDTO.getNomeAluno().length())).toUpperCase();
-
-		return ENROLLMENT_PREFIX + year + studentId + classCode + initials;
-	}
 }

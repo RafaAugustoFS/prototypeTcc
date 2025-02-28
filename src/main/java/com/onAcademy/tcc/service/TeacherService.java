@@ -8,8 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.onAcademy.tcc.config.TokenProvider;
+import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.TeacherRepo;
+
+import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class TeacherService {
@@ -24,6 +28,10 @@ public class TeacherService {
 
     @Autowired
     private TokenProvider tokenProvider;
+    
+    @Autowired
+	private EmailService emailService;
+	
 
     public String loginTeacher(String identifierCode, String password) {
         Teacher teacher = teacherRepo.findByidentifierCode(identifierCode)
@@ -31,8 +39,8 @@ public class TeacherService {
                 .orElseThrow(() -> new RuntimeException("Matricula ou senha incorretos"));
         return tokenProvider.generate(teacher.getId().toString(), List.of("teacher"));
     }
-
-    public Teacher criarTeacher(Teacher teacher) {
+    @Transactional
+    public Teacher criarTeacher(Teacher teacher) throws MessagingException {
         Teacher teacher1 = new Teacher();
         teacher1.setNomeDocente(teacher.getNomeDocente());
         teacher1.setDataNascimentoDocente(teacher.getDataNascimentoDocente());
@@ -41,16 +49,24 @@ public class TeacherService {
 
         String year = String.valueOf(teacher.getDataNascimentoDocente().getYear());
         teacher1.setPassword(ENROLLMENT_PREFIX + year + teacher1.getNomeDocente().toLowerCase());
-
-        String encoded = passwordEncoder.encode(teacher1.getPassword());
+        
+        
+        String rawPassword = Teacher.generateRandomPassword(teacher);
+	    String encodedPassword = passwordEncoder.encode(rawPassword);
+	    teacher.setPassword(encodedPassword);
+        
+	    String encoded = passwordEncoder.encode(teacher1.getPassword());
         teacher1.setPassword(encoded);
+	  
+        Teacher saveTeacher = teacherRepo.save(teacher1);
+       
 
-        teacher1 = teacherRepo.save(teacher1);
-
-        String identifierCode = generateIdentifierCode(teacher1.getId(), teacher1.getNomeDocente());
-        teacher1.setIdentifierCode(identifierCode);
-
-        return teacherRepo.save(teacher1);
+        String emailSubject = "Bem-vindo ao OnAcademy!";
+        String emailText = "<h1>Olá " + saveTeacher.getNomeDocente() + ",</h1>" +
+                "<p>Seu cadastro foi realizado com sucesso!" + "\n" + "O código de matrícula é: " + saveTeacher.getIdentifierCode() + "\n" + "Sua senha é:" + rawPassword + "</p>";
+        emailService.sendEmail(saveTeacher.getEmailDocente(), emailSubject, emailText);
+        
+        return saveTeacher;
     }
 
     public List<Teacher> buscarTeachers() {
@@ -91,12 +107,5 @@ public class TeacherService {
         return null;
     }
 
-    private String generateIdentifierCode(Long teacherId, String nomeDocente) {
-        String year = String.valueOf(LocalDate.now().getYear());
-        String formattedId = String.format("%04d", teacherId);
-        String initials = nomeDocente.replaceAll("[^A-Za-z]", "")
-                .substring(0, Math.min(2, nomeDocente.length()))
-                .toUpperCase();
-        return ENROLLMENT_PREFIX + year + formattedId + initials;
-    }
+
 }
