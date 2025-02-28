@@ -16,11 +16,6 @@ public class ClassStService {
 	@Autowired
 	private ClassStRepo classStRepo;
 
-	public ClassSt criarClasse(ClassSt classSt) {
-		ClassSt criarClasse = classStRepo.save(classSt);
-		return criarClasse;
-	}
-
 	@Transactional
 	public List<ClassSt> buscarTodasClasses() {
 		List<ClassSt> buscarClasses = classStRepo.findAll();
