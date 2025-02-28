@@ -1,5 +1,6 @@
 package com.onAcademy.tcc.model;
 
+
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -53,5 +54,18 @@ public class Student {
         String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
         return ENROLLMENT_PREFIX + year + studentDTO.getNomeAluno().toLowerCase();
     }
+	
+	  @PostPersist
+		public void generateIdentifierCode() {
+			String year = String.valueOf(LocalDate.now().getYear());
+			String studentId = String.format("%04d", id);
+			String classCode = (turmaId != null) ? String.valueOf(turmaId) : "SNTF";
+
+			String initials = (nomeAluno != null && nomeAluno.replaceAll("[^A-Za-z]", "").length() > 0)
+					? nomeAluno.replaceAll("[^A-Za-z]", "").substring(0, Math.min(2, nomeAluno.length())).toUpperCase()
+					: "XX";
+			this.identifierCode = String.format(ENROLLMENT_PREFIX+ year + studentId+ classCode+ initials);
+
+		}
 
 }
