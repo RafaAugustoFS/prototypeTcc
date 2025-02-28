@@ -41,14 +41,22 @@ public class NotesController {
 	@PostMapping("/note")
 	public ResponseEntity<String> criarNotas(@RequestBody NoteDTO noteDTO) {
 		try {
-			
+			if(noteDTO.getStudentId() == null) {
+				throw new IllegalArgumentException("Por favor preencha o campo student.");
+			}
 			Student student = studentRepo.findById(noteDTO.getStudentId())
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado"));
 
 			
+			if(noteDTO.getDisciplineId() == null) {
+				throw new IllegalArgumentException("Por favor preencha o campo disciplina.");
+			}
 			Discipline discipline = disciplineRepo.findById(noteDTO.getDisciplineId())
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Disciplina não encontrada"));
 
+			if(noteDTO.getNota() == null) {
+				throw new IllegalArgumentException("Por favor preencha o campo nota.");
+			}
 			
 			Note note = new Note();
 			note.setStudentId(student);
