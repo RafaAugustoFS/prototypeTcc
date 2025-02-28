@@ -81,6 +81,12 @@ public class TeacherController {
     }
 
     private void validarTeacherDTO(TeacherDTO teacherDTO) {
+    	 if (teacherDTO.nomeDocente.isEmpty()) {
+         	throw new IllegalArgumentException("Por favor preencha com um nome.");
+         }
+    	 if (teacherDTO.dataNascimentoDocente == null) {
+         	throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
+         }
         if(teacherDTO.emailDocente.isEmpty()) {
         	throw new IllegalArgumentException("Por favor preencha o campo email.");
         } 
@@ -100,12 +106,8 @@ public class TeacherController {
         if (teacherDTO.disciplineId.isEmpty()) {
         	throw new IllegalArgumentException("Por favor preencha com no mínimo uma disciplina.");
         }
-        if (teacherDTO.nomeDocente.isEmpty()) {
-        	throw new IllegalArgumentException("Por favor preencha com um nome.");
-        }
-        if (teacherDTO.dataNascimentoDocente == null) {
-        	throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
-        }
+       
+        
     }
 
     @GetMapping("/teacher")
