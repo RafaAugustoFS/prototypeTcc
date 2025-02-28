@@ -48,7 +48,20 @@ public class StudentService {
     public Student criarEstudante(StudentClassDTO studentDTO) throws MessagingException {
         ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
                 .orElseThrow(() -> new RuntimeException("Turma não encontrada"));
+        
+        if (studentDTO.getNomeAluno().isEmpty()) {
+        	throw new IllegalArgumentException("Por favor preencha com um nome.");
+        }
+        if (studentDTO.getDataNascimentoAluno() == null) {
+        	throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
+        }
 
+        if(studentDTO.getEmailAluno().isEmpty()) {
+        	throw new IllegalArgumentException("Por favor preencha o campo email.");
+        } 
+        if(!studentDTO.getEmailAluno().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+          	 throw new IllegalArgumentException("O email fornecido não tem formato válido.");
+          }
         if (studentRepo.existsByEmailAluno(studentDTO.getEmailAluno())) {
             throw new IllegalArgumentException("Email já cadastrado.");
         } else if (studentRepo.existsByTelefoneAluno(studentDTO.getTelefoneAluno())) {
@@ -61,6 +74,10 @@ public class StudentService {
 
         if (studentDTO.getTelefoneAluno().length() != 11) {
             throw new IllegalArgumentException("Telefone deve ter 11 dígitos.");
+        }
+        
+        if(studentDTO.getTurmaId() == null) {
+        	throw new IllegalArgumentException("Por favor preencha o campo de turma.");
         }
 
         Student student = new Student();
