@@ -92,6 +92,12 @@ public class ClassStController {
 			if (classDTO.periodoTurma.isEmpty()) {
 				throw new IllegalArgumentException("Periodo da turma é obrigatório.");
 			}
+			if (classDTO.capacidadeMaximaTurma <= 10 || classDTO.capacidadeMaximaTurma > 60) {
+				throw new IllegalArgumentException("Por favor insira uma capacidade válida.");
+			}
+			if (classDTO.salaTurma <= 0) {
+				throw new IllegalArgumentException("Por favor insira uma sala válida.");
+			}
 			if (classDTO.idTeacher.isEmpty()) {
 				throw new IllegalArgumentException("Turma deve ter professores.");
 			}
@@ -103,6 +109,8 @@ public class ClassStController {
 			ClassSt classSt = new ClassSt();
 			classSt.setNomeTurma(classDTO.nomeTurma);
 			classSt.setPeriodoTurma(classDTO.periodoTurma);
+			classSt.setCapacidadeMaximaTurma(classDTO.capacidadeMaximaTurma);
+			classSt.setSalaTurma(classDTO.salaTurma);
 
 			var st = classStRepo.save(classSt);
 			st.setDisciplinaTurmas(disciplines);
