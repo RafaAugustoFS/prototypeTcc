@@ -99,7 +99,9 @@ public class StudentService {
 
         String emailSubject = "Bem-vindo ao OnAcademy!";
         String emailText = "<h1>Olá " + savedStudent.getNomeAluno() + ",</h1>" +
-                "<p>Seu cadastro foi realizado com sucesso!" + "\n" + "O código de matrícula é: " + savedStudent.getIdentifierCode() + "\n" + "Sua senha é:" + rawPassword + "</p>";
+                "<p>Seu cadastro foi realizado com sucesso!" + "<br/>" + 
+        		"O código de matrícula é: " + savedStudent.getIdentifierCode() + "<br/>" + 
+                "Sua senha é: " + rawPassword + "</p>";
         emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
 
         return savedStudent;

@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api")
 public class ReminderController {
-	record CreatedByDTO(String nomeDocente, Long id) {
+	record CreatedByDTO(String nomeDocente, Long id, String getInitials) {
 	}
 	record ReminderDTO(Long id, String conteudo, LocalDateTime horarioSistema, CreatedByDTO createdBy, Long classStId) {
     }
@@ -46,7 +46,7 @@ public class ReminderController {
 				reminders.getConteudo(),
 				reminders.getHorarioSistema(),
 				new CreatedByDTO(
-				reminders.getCreatedBy().getNomeDocente(), reminders.getCreatedBy().getId()
+				reminders.getCreatedBy().getNomeDocente(), reminders.getCreatedBy().getId(), reminders.getCreatedBy().getInitials()
 					),
 				null
 				)
@@ -68,7 +68,8 @@ public class ReminderController {
         List<ReminderDTO> reminderDTOs = lembretes.stream().map(lembrete -> {
             CreatedByDTO createdByDTO = new CreatedByDTO(
                     lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getNomeDocente() : null,
-                    lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getId() : null
+                    lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getId() : null,
+                    lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getInitials() : null
             );
             return new ReminderDTO(lembrete.getId(), lembrete.getConteudo(), lembrete.getHorarioSistema(), createdByDTO, lembrete.getClassSt().getId());
         }).collect(Collectors.toList());
