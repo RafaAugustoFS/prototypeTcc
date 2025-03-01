@@ -63,7 +63,9 @@ public class TeacherService {
 
         String emailSubject = "Bem-vindo ao OnAcademy!";
         String emailText = "<h1>Olá " + saveTeacher.getNomeDocente() + ",</h1>" +
-                "<p>Seu cadastro foi realizado com sucesso!" + "\n" + "O código de matrícula é: " + saveTeacher.getIdentifierCode() + "\n" + "Sua senha é:" + rawPassword + "</p>";
+                "<p>Seu cadastro foi realizado com sucesso!" + "<br/>" + 
+        		"O código de matrícula é: " + saveTeacher.getIdentifierCode() + "<br/>" + 
+                "Sua senha é: " + rawPassword + "</p>";
         emailService.sendEmail(saveTeacher.getEmailDocente(), emailSubject, emailText);
         
         return saveTeacher;
