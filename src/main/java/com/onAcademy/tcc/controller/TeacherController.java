@@ -124,6 +124,20 @@ public class TeacherController {
 
         return ResponseEntity.ok(teacherDTOs);
     }
+    
+    @GetMapping("/teacher/classes/{id}")
+	public ResponseEntity<TeacherDTOTre> buscarTeacherClassUnico(@PathVariable Long id) {
+		Teacher buscarUnico = teacherService.buscarUnicoTeacher(id);
+
+		if (buscarUnico != null) {
+			List<ClassDTO> classes = buscarUnico.getTeachers().stream()
+					.map(classe -> new ClassDTO(classe.getNomeTurma(), classe.getId())).collect(Collectors.toList());
+			TeacherDTOTre teacherTree = new TeacherDTOTre(buscarUnico.getNomeDocente(), buscarUnico.getId(), classes);
+			return ResponseEntity.ok(teacherTree);
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+	}
 
     @GetMapping("/teacher/{id}")
     public ResponseEntity<?> buscarTeacherUnico(@PathVariable Long id) {
