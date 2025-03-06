@@ -77,4 +77,31 @@ public class ReminderController {
         return new ResponseEntity<>(reminderDTOs, HttpStatus.OK);  // Retorna a lista de lembretes
     }
 	
+	@GetMapping("/reminder/teacher/{teacherId}")
+	public ResponseEntity<List<ReminderDTO>> buscarPorCreatedBy(@PathVariable Long teacherId) {
+	    List<Reminder> lembretes = reminderService.buscarLembretePorCreatedBy(teacherId);
+
+	    if (lembretes.isEmpty()) {
+	        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	    }
+
+	    // Convertendo para DTO
+	    List<ReminderDTO> reminderDTOs = lembretes.stream().map(lembrete -> {
+	        CreatedByDTO createdByDTO = new CreatedByDTO(
+	                lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getNomeDocente() : null,
+	                lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getId() : null,
+	                lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getInitials() : null
+	        );
+	        return new ReminderDTO(
+	                lembrete.getId(), 
+	                lembrete.getConteudo(), 
+	                lembrete.getHorarioSistema(), 
+	                createdByDTO, 
+	                lembrete.getClassSt() != null ? lembrete.getClassSt().getId() : null
+	        );
+	    }).collect(Collectors.toList());
+
+	    return new ResponseEntity<>(reminderDTOs, HttpStatus.OK);
+	}
+
 }

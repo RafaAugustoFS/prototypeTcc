@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.onAcademy.tcc.model.Reminder;
+import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.ClassStRepo;
 import com.onAcademy.tcc.repository.ReminderRepo;
+import com.onAcademy.tcc.repository.TeacherRepo;
 
 @Service
 public class ReminderService {
@@ -17,6 +19,9 @@ public class ReminderService {
 	
 	@Autowired
 	private ClassStRepo classStRepo;
+	
+	@Autowired
+	private TeacherRepo teacherRepo;
 	
 	public Reminder criarLembrete(Reminder lembrete) {
 		Reminder criarLembrete = reminderRepo.save(lembrete);
@@ -31,4 +36,12 @@ public class ReminderService {
 	public List<Reminder> buscarLembretePorClassStId(Long classStId) {
         return reminderRepo.findByClassStId(classStId);
     }
+	
+	public List<Reminder> buscarLembretePorCreatedBy(Long teacherId) {
+	    Teacher teacher = teacherRepo.findById(teacherId).orElse(null);
+	    if (teacher == null) {
+	        return List.of(); // Retorna lista vazia se não encontrar
+	    }
+	    return reminderRepo.findByCreatedBy(teacher);
+	}
 }
