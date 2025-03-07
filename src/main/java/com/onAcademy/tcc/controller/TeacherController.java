@@ -27,7 +27,10 @@ public class TeacherController {
 	record DisciplineDTO(String nomeDisciplina, Long discipline_id) {
 	}
 
-	record ClassDTO(String nomeTurma, Long id) {
+	record ClassDTO(String nomeTurma, Long id, int quantidadeAlunos) {
+	}
+
+	record ClassDTOSimples(String nomeTurma, Long id) {
 	}
 
 	record TeacherDTO(String nomeDocente, Date dataNascimentoDocente, String emailDocente, String telefoneDocente,
@@ -42,7 +45,15 @@ public class TeacherController {
 			String identifierCode, Long id, List<DisciplineDTO> disciplinas, List<ClassDTO> classes) {
 	}
 
+	record TeacherDTOTwoSimples(String nomeDocente, String dataNascimentoDocente, String emailDocente,
+			String telefoneDocente, String identifierCode, Long id, List<DisciplineDTO> disciplinas,
+			List<ClassDTOSimples> classes) {
+	}
+
 	record TeacherDTOTre(String nomeDocente, Long id, List<ClassDTO> classes) {
+	}
+
+	record TeacherDTOSimples(String nomeDocente, Long id, List<ClassDTOSimples> classes) {
 	}
 
 	@Autowired
@@ -134,7 +145,8 @@ public class TeacherController {
 
 		if (buscarUnico != null) {
 			List<ClassDTO> classes = buscarUnico.getTeachers().stream()
-					.map(classe -> new ClassDTO(classe.getNomeTurma(), classe.getId())).collect(Collectors.toList());
+					.map(classe -> new ClassDTO(classe.getNomeTurma(), classe.getId(), classe.getStudents().size()))
+					.collect(Collectors.toList());
 			TeacherDTOTre teacherTree = new TeacherDTOTre(buscarUnico.getNomeDocente(), buscarUnico.getId(), classes);
 			return ResponseEntity.ok(teacherTree);
 		}
@@ -151,14 +163,14 @@ public class TeacherController {
 
 		List<DisciplineDTO> disciplines = teacher.getDisciplines().stream()
 				.map(d -> new DisciplineDTO(d.getNomeDisciplina(), d.getId())).collect(Collectors.toList());
-		List<ClassDTO> classes = teacher.getTeachers().stream()
-				.map(classe -> new ClassDTO(classe.getNomeTurma(), classe.getId())).collect(Collectors.toList());
-		TeacherDTOTre teacherTree = new TeacherDTOTre(teacher.getNomeDocente(), teacher.getId(), classes);
+		List<ClassDTOSimples> classes = teacher.getTeachers().stream()
+				.map(classe -> new ClassDTOSimples(classe.getNomeTurma(), classe.getId())).collect(Collectors.toList());
+		TeacherDTOSimples TeacherDTOSimples = new TeacherDTOSimples(teacher.getNomeDocente(), teacher.getId(), classes);
 
-		TeacherDTOTwo teacherDTOTwo = new TeacherDTOTwo(teacher.getNomeDocente(),
+		TeacherDTOTwoSimples teacherDTOTwoSimples = new TeacherDTOTwoSimples(teacher.getNomeDocente(),
 				teacher.getDataNascimentoDocente().toString(), teacher.getEmailDocente(), teacher.getTelefoneDocente(),
 				teacher.getIdentifierCode(), teacher.getId(), disciplines, classes);
-		return ResponseEntity.ok(teacherDTOTwo);
+		return ResponseEntity.ok(teacherDTOTwoSimples);
 	}
 
 	@PostMapping("/teacher/login")
