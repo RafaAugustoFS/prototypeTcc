@@ -55,7 +55,7 @@ public class ClassStController {
 	record NoteDTO(String nomeDisciplina, Double valorNota) {
 	}
 
-	record StudentDTO(String nomeAluno, String dataNascimentoAluno, List<NoteDTO> nota, Long id) {
+	record StudentDTO(String nomeAluno, String dataNascimentoAluno, List<NoteDTO> nota, Long id, String identifierCode) {
 	}
 
 	record TeacherDTO(String nome, Long id) {
@@ -161,7 +161,7 @@ public class ClassStController {
 					}).collect(Collectors.toList());
 
 					return new StudentDTO(student.getNomeAluno(), student.getDataNascimentoAluno().toString(), notas,
-							student.getId());
+							student.getId(), student.getIdentifierCode());
 				}).collect(Collectors.toList());
 
 				ClassDTOTwo classDTO = new ClassDTOTwo(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(),
