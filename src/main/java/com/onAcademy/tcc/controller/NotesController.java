@@ -39,7 +39,7 @@ public class NotesController {
 	private DisciplineRepo disciplineRepo;
 
 	@PostMapping("/note")
-	public ResponseEntity<String> criarNotas(@RequestBody NoteDTO noteDTO) {
+	public ResponseEntity<?> criarNotas(@RequestBody NoteDTO noteDTO) {
 		try {
 			if(noteDTO.getStudentId() == null) {
 				throw new IllegalArgumentException("Por favor preencha o campo student.");
@@ -82,7 +82,8 @@ public class NotesController {
 		
 			noteService.criarNotas(note);
 
-			return ResponseEntity.status(HttpStatus.CREATED).body("Nota lançada com sucesso.");
+		
+			 return ResponseEntity.status(HttpStatus.CREATED).body(note);
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 		}
@@ -137,5 +138,6 @@ public class NotesController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 	}
+		
 
 }

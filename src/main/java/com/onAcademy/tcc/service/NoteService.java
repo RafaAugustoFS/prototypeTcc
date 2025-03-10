@@ -14,10 +14,22 @@ public class NoteService {
 	private NoteRepo noteRepo;
 
 	public Note criarNotas(Note note) {
-		Note criarNota = noteRepo.save(note);
-		return criarNota;
-	}
+		boolean noteExists = noteRepo.existsByStudentIdAndDisciplineIdAndBimestre(
+		        note.getStudentId(), // Objeto Student
+		        note.getDisciplineId(), // Objeto Discipline
+		        note.getBimestre() // Inteiro (bimestre)
+		    );
 
+		    if (noteExists) {
+		        throw new RuntimeException("Já existe uma nota para este aluno, disciplina e bimestre.");
+		    }
+		    return noteRepo.save(note);
+		}
+	
+	
+	 
+
+	
 	public List<Note> buscarNotas() {
 		List<Note> buscarNotas = noteRepo.findAll();
 		return buscarNotas;
