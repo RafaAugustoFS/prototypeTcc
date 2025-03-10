@@ -14,6 +14,7 @@ import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.repository.ClassStRepo;
 import com.onAcademy.tcc.repository.StudentRepo;
+import com.onAcademy.tcc.repository.TeacherRepo;
 
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
@@ -24,12 +25,15 @@ public class StudentService {
 
 	@Autowired
 	private EmailService emailService;
-	
+
 	@Autowired
 	private StudentRepo studentRepo;
 
 	@Autowired
 	private ClassStRepo classStRepo;
+
+	@Autowired
+	private TeacherRepo teacherRepo;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -45,67 +49,70 @@ public class StudentService {
 	}
 
 	@Transactional
-    public Student criarEstudante(StudentClassDTO studentDTO) throws MessagingException {
-        ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
-                .orElseThrow(() -> new RuntimeException("Turma não encontrada"));
-        
-        if (studentDTO.getNomeAluno().isEmpty()) {
-        	throw new IllegalArgumentException("Por favor preencha com um nome.");
-        }
-        if (studentDTO.getDataNascimentoAluno() == null) {
-        	throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
-        }
+	public Student criarEstudante(StudentClassDTO studentDTO) throws MessagingException {
+		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
+				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 
-        if(studentDTO.getEmailAluno().isEmpty()) {
-        	throw new IllegalArgumentException("Por favor preencha o campo email.");
-        } 
-        if(!studentDTO.getEmailAluno().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-          	 throw new IllegalArgumentException("O email fornecido não tem formato válido.");
-          }
-        if (studentRepo.existsByEmailAluno(studentDTO.getEmailAluno())) {
-            throw new IllegalArgumentException("Email já cadastrado.");
-        } else if (studentRepo.existsByTelefoneAluno(studentDTO.getTelefoneAluno())) {
-            throw new IllegalArgumentException("Telefone já cadastrado.");
-        }
+		if (studentDTO.getNomeAluno().isEmpty()) {
+			throw new IllegalArgumentException("Por favor preencha com um nome.");
+		}
+		if (studentDTO.getDataNascimentoAluno() == null) {
+			throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
+		}
 
-        if (!studentDTO.getTelefoneAluno().matches("[0-9]+")) {
-            throw new IllegalArgumentException("Telefone deve conter somente números.");
-        }
+		if (studentDTO.getEmailAluno().isEmpty()) {
+			throw new IllegalArgumentException("Por favor preencha o campo email.");
+		}
+		if (!studentDTO.getEmailAluno().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+			throw new IllegalArgumentException("O email fornecido não tem formato válido.");
+		}
+		if (studentRepo.existsByEmailAluno(studentDTO.getEmailAluno())) {
+			throw new IllegalArgumentException("Email já cadastrado.");
 
-        if (studentDTO.getTelefoneAluno().length() != 11) {
-            throw new IllegalArgumentException("Telefone deve ter 11 dígitos.");
-        }
-        
-        if(studentDTO.getTurmaId() == null) {
-        	throw new IllegalArgumentException("Por favor preencha o campo de turma.");
-        }
+		} else if (teacherRepo.existsByEmailDocente(studentDTO.getEmailAluno())) {
+			throw new IllegalArgumentException("Email já cadastrado.");
+		}
 
-        Student student = new Student();
+		if (studentRepo.existsByTelefoneAluno(studentDTO.getTelefoneAluno())) {
+			throw new IllegalArgumentException("Telefone já cadastrado.");
+		}
+
+		if (!studentDTO.getTelefoneAluno().matches("[0-9]+")) {
+			throw new IllegalArgumentException("Telefone deve conter somente números.");
+		}
+
+		if (studentDTO.getTelefoneAluno().length() != 11) {
+			throw new IllegalArgumentException("Telefone deve ter 11 dígitos.");
+		}
+
+		if (studentDTO.getTurmaId() == null) {
+			throw new IllegalArgumentException("Por favor preencha o campo de turma.");
+		}
+
+		Student student = new Student();
 		String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
 		student.setNomeAluno(studentDTO.getNomeAluno());
 		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
 		student.setEmailAluno(studentDTO.getEmailAluno());
 		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
 
-		
 		String rawPassword = Student.generateRandomPassword(studentDTO, classSt);
-	    String encodedPassword = passwordEncoder.encode(rawPassword);
-	    student.setPassword(encodedPassword);
-	    
+		String encodedPassword = passwordEncoder.encode(rawPassword);
+		student.setPassword(encodedPassword);
+
 		student.setTurmaId(classSt.getId());
-		student.setPassword(encodedPassword); 
+		student.setPassword(encodedPassword);
 
-        Student savedStudent = studentRepo.save(student);
+		Student savedStudent = studentRepo.save(student);
 
-        String emailSubject = "Bem-vindo ao OnAcademy!";
-        String emailText = "<h1>Olá " + savedStudent.getNomeAluno() + ",</h1>" +
-                "<p>Seu cadastro foi realizado com sucesso!" + "<br/>" + 
-        		"O código de matrícula é: " + savedStudent.getIdentifierCode() + "<br/>" + 
-                "Sua senha é: " + rawPassword + "</p>";
-        emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
+		String emailSubject = "Bem-vindo ao OnAcademy!";
+		String emailText = "<h1>Olá " + savedStudent.getNomeAluno() + ",</h1>"
+				+ "<p>Seu cadastro foi realizado com sucesso!" + "<br/>" + "O código de matrícula é: "
+				+ savedStudent.getIdentifierCode() + "<br/>" + "Sua senha é: " + rawPassword + "</p>";
+		emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
 
-        return savedStudent;
-    }
+		return savedStudent;
+	}
 
 	public List<Student> buscarTodosEstudantes() {
 		return studentRepo.findAll();
@@ -141,6 +148,5 @@ public class StudentService {
 		}
 		return null;
 	}
-
 
 }
