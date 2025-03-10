@@ -14,6 +14,7 @@ import com.onAcademy.tcc.dto.LoginTeacherDTO;
 import com.onAcademy.tcc.model.Discipline;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.DisciplineRepo;
+import com.onAcademy.tcc.repository.StudentRepo;
 import com.onAcademy.tcc.repository.TeacherRepo;
 import com.onAcademy.tcc.service.TeacherService;
 
@@ -61,6 +62,9 @@ public class TeacherController {
 
 	@Autowired
 	private TeacherRepo teacherRepo;
+
+	@Autowired
+	private StudentRepo studentRepo;
 
 	@Autowired
 	private DisciplineRepo disciplineRepo;
@@ -111,7 +115,10 @@ public class TeacherController {
 		}
 		if (teacherRepo.existsByEmailDocente(teacherDTO.emailDocente())) {
 			throw new IllegalArgumentException("Email já cadastrado.");
+		} else if (studentRepo.existsByEmailAluno(teacherDTO.emailDocente())) {
+			throw new IllegalArgumentException("Email já cadastrado.");
 		}
+
 		if (!teacherDTO.telefoneDocente().matches("\\d{11}")) {
 			throw new IllegalArgumentException("Telefone deve conter exatamente 11 dígitos numéricos.");
 		}
