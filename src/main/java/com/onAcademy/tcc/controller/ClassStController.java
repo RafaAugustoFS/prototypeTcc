@@ -125,10 +125,22 @@ public class ClassStController {
 	}
 
 	@GetMapping("/class")
-	public ResponseEntity<List<ClassSt>> buscarTodasClasses() {
-		List<ClassSt> classSt = classStService.buscarTodasClasses();
-		return new ResponseEntity<>(classSt, HttpStatus.OK);
+	public ResponseEntity<?> buscarTodasClasses() {
+	    try {
+	        List<ClassSt> classList = classStService.buscarTodasClasses();
+	        List<ClassDTOTre> classDTOList = classList.stream().map(classSt -> {
+	            List<TeacherTurmaDTO> teachers = classSt.getClasses().stream()
+	                    .map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
+	                    .collect(Collectors.toList());
+	            return new ClassDTOTre(classSt.getNomeTurma(), classSt.getPeriodoTurma(), teachers);
+	        }).collect(Collectors.toList());
+	        return ResponseEntity.ok(classDTOList);
+	    } catch (Exception e) {
+	        return new ResponseEntity<>(Map.of("error", "Erro ao buscar todas as classes: " + e.getMessage()),
+	                HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
 	}
+
 
 	@GetMapping("/class/discipline")
 	public ResponseEntity<List<ClassDTODisciplina>> buscarTodasClassesDisciplines() {

@@ -68,10 +68,4 @@ public class Teacher {
 
 	}
 	
-	public String getInitials() {
-	    if (nomeDocente != null && nomeDocente.replaceAll("[^A-Za-z]", "").length() >= 2) {
-	        return nomeDocente.replaceAll("[^A-Za-z]", "").substring(0, 2).toUpperCase();
-	    }
-	    return "XX";
-	}
 }
