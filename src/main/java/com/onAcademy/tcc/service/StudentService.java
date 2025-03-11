@@ -1,8 +1,8 @@
 package com.onAcademy.tcc.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,6 +40,34 @@ public class StudentService {
 
 	@Autowired
 	private TokenProvider tokenProvider;
+
+	private String generateRandomNumber(int length) {
+		String numbers = "0123456789";
+		StringBuilder sb = new StringBuilder();
+		Random random = new Random();
+
+		for (int i = 0; i < length; i++) {
+			sb.append(numbers.charAt(random.nextInt(numbers.length())));
+		}
+
+		return sb.toString();
+	}
+
+	private String generateRandomPasswordWithName(int length, String nome) {
+		String numbers = "0123456789";
+		StringBuilder sb = new StringBuilder();
+		Random random = new Random();
+
+		for (int i = 0; i < length; i++) {
+			sb.append(numbers.charAt(random.nextInt(numbers.length())));
+		}
+
+		// Adiciona o nome do estudante ao final da senha
+		String nomeFormatado = nome.replaceAll("\\s+", ""); // Remove espaços em branco do nome
+		sb.append(nomeFormatado); // Adiciona o nome formatado à senha
+
+		return sb.toString();
+	}
 
 	public String loginStudent(String identifierCode, String password) {
 		Student student = studentRepo.findByidentifierCode(identifierCode)
@@ -110,7 +138,6 @@ public class StudentService {
 				+ "<p>Seu cadastro foi realizado com sucesso!" + "<br/>" + "O código de matrícula é: "
 				+ savedStudent.getIdentifierCode() + "<br/>" + "Sua senha é: " + rawPassword + "</p>";
 		emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
-		
 
 		return savedStudent;
 	}
@@ -120,17 +147,35 @@ public class StudentService {
 	}
 
 	public Student atualizarEstudante(Long id, Student student) {
-		Optional<Student> existStudent = studentRepo.findById(id);
-		if (existStudent.isPresent()) {
-			Student atualizarEstudante = existStudent.get();
-			atualizarEstudante.setNomeAluno(student.getNomeAluno());
-			atualizarEstudante.setEmailAluno(student.getEmailAluno());
-			atualizarEstudante.setDataNascimentoAluno(student.getDataNascimentoAluno());
-			atualizarEstudante.setTelefoneAluno(student.getTelefoneAluno());
-			String encoderPassword = passwordEncoder.encode(student.getPassword());
-			atualizarEstudante.setPassword(encoderPassword);
-			studentRepo.save(atualizarEstudante);
-			return atualizarEstudante;
+		Optional<Student> existStudentOpt = studentRepo.findById(id);
+		if (existStudentOpt.isPresent()) {
+			Student existStudent = existStudentOpt.get();
+
+			existStudent.setNomeAluno(student.getNomeAluno());
+			existStudent.setEmailAluno(student.getEmailAluno());
+			existStudent.setDataNascimentoAluno(student.getDataNascimentoAluno());
+			existStudent.setTelefoneAluno(student.getTelefoneAluno());
+			existStudent.setImageUrl(student.getImageUrl());
+
+			String identifierCode = ENROLLMENT_PREFIX + generateRandomNumber(6);
+			existStudent.setIdentifierCode(identifierCode);
+
+			String rawPassword = generateRandomPasswordWithName(6, existStudent.getNomeAluno()); 
+			String encodedPassword = passwordEncoder.encode(rawPassword);
+			existStudent.setPassword(encodedPassword);
+
+			String emailSubject = "Seus dados de acesso foram atualizados!";
+			String emailText = "<h1>Olá " + existStudent.getNomeAluno() + ",</h1>"
+					+ "<p>Seus dados de acesso foram atualizados com sucesso!" + "<br/>"
+					+ "Seu novo código de matrícula é: " + identifierCode + "<br/>" + "Sua nova senha é: " + rawPassword
+					+ "</p>";
+			try {
+				emailService.sendEmail(existStudent.getEmailAluno(), emailSubject, emailText);
+			} catch (MessagingException e) {
+				throw new RuntimeException("Erro ao enviar email com os novos dados de acesso.", e);
+			}
+
+			return studentRepo.save(existStudent);
 		}
 		return null;
 	}
