@@ -72,7 +72,7 @@ public class ClassStController {
 	record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
 	}
 
-	record ClassDTOTre(String nomeTurma, String periodoTurma, List<TeacherTurmaDTO> teachers) {
+	record ClassDTOTre(Long id, String nomeTurma, String periodoTurma, int quantidadeAlunos, List<TeacherTurmaDTO> teachers) {
 	}
 
 	@PreAuthorize("hasRole('INSTITUTION')")
@@ -132,7 +132,7 @@ public class ClassStController {
 	            List<TeacherTurmaDTO> teachers = classSt.getClasses().stream()
 	                    .map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
 	                    .collect(Collectors.toList());
-	            return new ClassDTOTre(classSt.getNomeTurma(), classSt.getPeriodoTurma(), teachers);
+	            return new ClassDTOTre(classSt.getId(),classSt.getNomeTurma(), classSt.getPeriodoTurma(), classSt.getStudents().size(), teachers);
 	        }).collect(Collectors.toList());
 	        return ResponseEntity.ok(classDTOList);
 	    } catch (Exception e) {
@@ -195,7 +195,7 @@ public class ClassStController {
 				List<TeacherTurmaDTO> teachers = buscaClasse.getClasses().stream()
 						.map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
 						.collect(Collectors.toList());
-				ClassDTOTre classDTO = new ClassDTOTre(buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(),
+				ClassDTOTre classDTO = new ClassDTOTre(buscaClasse.getId(),buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(), buscaClasse.getStudents().size(),
 						teachers);
 				return ResponseEntity.ok(classDTO);
 			}
