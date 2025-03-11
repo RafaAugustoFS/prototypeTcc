@@ -1,6 +1,8 @@
 package com.onAcademy.tcc.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +20,8 @@ public class Event {
 	private String tituloEvento;
 	
 	@Column(unique = true)
-	private LocalDateTime dataHorarioEvento;
+	private LocalDate dataEvento;
+	private LocalTime horarioEvento;
 	private String localEvento;
 	private String descricaoEvento;
 }
