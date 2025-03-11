@@ -15,9 +15,9 @@ public class NoteService {
 
 	public Note criarNotas(Note note) {
 		boolean noteExists = noteRepo.existsByStudentIdAndDisciplineIdAndBimestre(
-		        note.getStudentId(), // Objeto Student
-		        note.getDisciplineId(), // Objeto Discipline
-		        note.getBimestre() // Inteiro (bimestre)
+		        note.getStudentId(),
+		        note.getDisciplineId(), 
+		        note.getBimestre() 
 		    );
 
 		    if (noteExists) {

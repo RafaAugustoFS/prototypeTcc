@@ -1,6 +1,5 @@
 package com.onAcademy.tcc.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,11 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.onAcademy.tcc.config.TokenProvider;
-import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.model.Teacher;
-import com.onAcademy.tcc.repository.StudentRepo;
 import com.onAcademy.tcc.repository.TeacherRepo;
-
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 
