@@ -16,7 +16,8 @@ public class CorsConfig {
 				registry.addMapping("/**") // Aplica CORS a todos os endpoints
 						.allowedOrigins("http://localhost:3001") // Permite requisições do frontend React/Next.js
 						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Métodos HTTP permitidos
-						.allowedHeaders("*") // Permite qualquer cabeçalho
+						.allowedHeaders("*")// Permite qualquer cabeçalho
+						// Para busca de imagens também autenticado
 						.allowCredentials(true); // Permite envio de cookies e autenticação
 			}
 		};

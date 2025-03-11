@@ -24,7 +24,7 @@ public class SecurityConfig {
 		// Configuração de segurança HTTP
 		http.csrf(csrf -> csrf.disable()) // Desabilita a proteção CSRF (para APIs REST)
 				.authorizeHttpRequests(authorizedRequests -> {
-					authorizedRequests.requestMatchers("/api/**") // Permite o acesso sem autenticação para as rotas
+					authorizedRequests.requestMatchers("/api/**", "/student/upload-image/{id}**", "/student/image/{id}**") // Permite o acesso sem autenticação para as rotas
 																	// /api/**
 							.permitAll().requestMatchers(PERMIT_ALL_LIST).permitAll().anyRequest().authenticated();
 				}).addFilterBefore(securityFilter, BasicAuthenticationFilter.class);

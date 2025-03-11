@@ -13,5 +13,6 @@ public class StudentClassDTO {
 	private String identifierCode;
 	private String password;
 	private Long turmaId;
+	private String imageUrl;
 
 }

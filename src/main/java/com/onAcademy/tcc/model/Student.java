@@ -30,6 +30,7 @@ public class Student {
 	private Long turmaId;
 	private String identifierCode;
 	private String password;
+	private String imageUrl;
 	
 	private static final String ENROLLMENT_PREFIX = "a";
 	
