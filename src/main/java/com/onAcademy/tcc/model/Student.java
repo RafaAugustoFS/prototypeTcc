@@ -53,7 +53,7 @@ public class Student {
 
 	public static String generateRandomPassword(StudentClassDTO studentDTO, ClassSt classSt) {
         String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
-        return ENROLLMENT_PREFIX + year + studentDTO.getNomeAluno().toLowerCase();
+        return ENROLLMENT_PREFIX + year + studentDTO.getNomeAluno().replaceAll("\\s", "").toLowerCase();
     }
 	
 	  @PostPersist
