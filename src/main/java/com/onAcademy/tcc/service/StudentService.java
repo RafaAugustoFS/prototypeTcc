@@ -102,7 +102,7 @@ public class StudentService {
 
 		student.setTurmaId(classSt.getId());
 		student.setPassword(encodedPassword);
-
+		student.setImageUrl(studentDTO.getImageUrl());
 		Student savedStudent = studentRepo.save(student);
 
 		String emailSubject = "Bem-vindo ao OnAcademy!";
@@ -110,6 +110,7 @@ public class StudentService {
 				+ "<p>Seu cadastro foi realizado com sucesso!" + "<br/>" + "O código de matrícula é: "
 				+ savedStudent.getIdentifierCode() + "<br/>" + "Sua senha é: " + rawPassword + "</p>";
 		emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
+		
 
 		return savedStudent;
 	}
