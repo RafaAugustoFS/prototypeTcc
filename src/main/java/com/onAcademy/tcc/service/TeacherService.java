@@ -2,13 +2,16 @@ package com.onAcademy.tcc.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import com.onAcademy.tcc.config.TokenProvider;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.TeacherRepo;
+
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 
@@ -28,6 +31,34 @@ public class TeacherService {
 
 	@Autowired
 	private EmailService emailService;
+
+	private String generateRandomNumber(int length) {
+		String numbers = "0123456789";
+		StringBuilder sb = new StringBuilder();
+		Random random = new Random();
+
+		for (int i = 0; i < length; i++) {
+			sb.append(numbers.charAt(random.nextInt(numbers.length())));
+		}
+
+		return sb.toString();
+	}
+
+	private String generateRandomPasswordWithName(int length, String nome) {
+		String numbers = "0123456789";
+		StringBuilder sb = new StringBuilder();
+		Random random = new Random();
+
+		for (int i = 0; i < length; i++) {
+			sb.append(numbers.charAt(random.nextInt(numbers.length())));
+		}
+
+		// Adiciona o nome do estudante ao final da senha
+		String nomeFormatado = nome.replaceAll("\\s+", ""); // Remove espaços em branco do nome
+		sb.append(nomeFormatado); // Adiciona o nome formatado à senha
+
+		return sb.toString();
+	}
 
 	public String loginTeacher(String identifierCode, String password) {
 		Teacher teacher = teacherRepo.findByidentifierCode(identifierCode)
@@ -77,9 +108,26 @@ public class TeacherService {
 			atualizarTeacher.setDataNascimentoDocente(teacher.getDataNascimentoDocente());
 			atualizarTeacher.setEmailDocente(teacher.getEmailDocente());
 			atualizarTeacher.setTelefoneDocente(teacher.getTelefoneDocente());
-			String encodedPassword = passwordEncoder.encode(teacher.getPassword());
+
+			String identifierCode = ENROLLMENT_PREFIX + generateRandomNumber(6);
+			atualizarTeacher.setIdentifierCode(identifierCode);
+
+			String rawPassword = generateRandomPasswordWithName(6, atualizarTeacher.getNomeDocente());
+			String encodedPassword = passwordEncoder.encode(rawPassword);
 			atualizarTeacher.setPassword(encodedPassword);
 			teacherRepo.save(atualizarTeacher);
+
+			String emailSubject = "Seus dados de acesso foram atualizados!";
+			String emailText = "<h1>Olá " + atualizarTeacher.getNomeDocente() + ",</h1>"
+					+ "<p>Seus dados de acesso foram atualizados com sucesso!" + "<br/>"
+					+ "Seu novo código de matrícula é: " + identifierCode + "<br/>" + "Sua nova senha é: " + rawPassword
+					+ "</p>";
+			try {
+				emailService.sendEmail(atualizarTeacher.getEmailDocente(), emailSubject, emailText);
+			} catch (MessagingException e) {
+				throw new RuntimeException("Erro ao enviar email com os novos dados de acesso.", e);
+			}
+
 			return atualizarTeacher;
 		}
 		return null;
