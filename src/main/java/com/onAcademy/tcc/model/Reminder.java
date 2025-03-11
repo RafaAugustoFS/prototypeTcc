@@ -22,6 +22,9 @@ public class Reminder {
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime horarioSistema;
 	@ManyToOne
+	@JoinColumn(name = "institution_id")
+	private Institution createdByInstitution;
+	@ManyToOne
 	@JoinColumn(name = "teacher_id")
 	private Teacher createdBy;
 	@ManyToOne
@@ -34,4 +37,14 @@ public class Reminder {
 			this.horarioSistema = LocalDateTime.now(); // Definir a hora do sistema
 		}
 	}
+	
+	public String getInitials() {
+	    if (createdBy != null && createdBy.getNomeDocente() != null && createdBy.getNomeDocente().replaceAll("[^A-Za-z]", "").length() >= 2) {
+	        return createdBy.getNomeDocente().replaceAll("[^A-Za-z]", "").substring(0, 2).toUpperCase();
+	    } else if (createdByInstitution != null) {
+	        return "I";
+	    }
+	    return "XX";
+	}
+
 }
