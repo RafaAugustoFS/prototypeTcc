@@ -3,21 +3,20 @@ package com.onAcademy.tcc.controller;
 import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import com.onAcademy.tcc.dto.LoginTeacherDTO;
 import com.onAcademy.tcc.model.Discipline;
+import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.DisciplineRepo;
 import com.onAcademy.tcc.repository.StudentRepo;
 import com.onAcademy.tcc.repository.TeacherRepo;
+import com.onAcademy.tcc.service.ImageUploaderService;
 import com.onAcademy.tcc.service.TeacherService;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Teacher", description = "EndPoint de professor")
@@ -35,7 +34,7 @@ public class TeacherController {
 	}
 
 	record TeacherDTO(String nomeDocente, Date dataNascimentoDocente, String emailDocente, String telefoneDocente,
-			String identifierCode, String password, List<Long> disciplineId) {
+			String identifierCode, String password, List<Long> disciplineId, String imageUrl) {
 	}
 
 	record TeacherDTOGet(String nomeDocente, String dataNascimentoDocente, String emailDocente,
@@ -68,6 +67,14 @@ public class TeacherController {
 
 	@Autowired
 	private DisciplineRepo disciplineRepo;
+	
+	
+	
+	@Autowired
+	private ImageUploaderService imageUploaderService;
+
+	
+	
 
 	@PostMapping("/teacher")
 	@PreAuthorize("hasRole('INSTITUTION')")
@@ -86,6 +93,7 @@ public class TeacherController {
 			teacher.setEmailDocente(teacherDTO.emailDocente());
 			teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
 			teacher.setIdentifierCode(teacherDTO.identifierCode());
+			teacher.setImageUrl(teacherDTO.imageUrl());
 			teacher.setPassword(teacherDTO.password());
 			teacher.setDisciplines(new ArrayList<>(disciplines));
 
@@ -211,4 +219,68 @@ public class TeacherController {
 			return ResponseEntity.badRequest().body(Map.of("error", "Erro ao deletar professor: " + e.getMessage()));
 		}
 	}
+	
+	
+	// Serviço que realizará o upload da imagem
+		@PostMapping("/teacher/upload-image/{id}")
+		public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestBody Map<String, String> request) {
+			try {
+				String base64Image = request.get("image");
+
+				String imageUrl = imageUploaderService.uploadBase64Image(base64Image);
+
+				Teacher teacher = teacherService.buscarUnicoTeacher(id);
+				if (teacher == null) {
+					return new ResponseEntity<>(Map.of("error", "Professor não encontrado"), HttpStatus.NOT_FOUND);
+				}
+				teacher.setImageUrl(imageUrl);
+				teacherService.atualizarTeacher(id, teacher);
+
+				return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
+			} catch (Exception e) {
+				return new ResponseEntity<>(Map.of("error", "Erro ao fazer upload da imagem: " + e.getMessage()),
+						HttpStatus.BAD_REQUEST);
+			}
+		}
+
+		// Extrai o token do cabeçalho Authorization
+		@GetMapping("/teacher/image/{id}")
+		public ResponseEntity<?> getImage(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
+			try {
+
+				String token = extractTokenFromHeader(authHeader);
+				if (token == null) {
+					return new ResponseEntity<>(Map.of("error", "Token não fornecido"), HttpStatus.UNAUTHORIZED);
+				}
+
+				Teacher teacher = teacherService.buscarUnicoTeacher(id);
+				if (teacher == null) {
+					return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
+				}
+
+				String imageUrl = teacher.getImageUrl();
+				if (imageUrl == null || imageUrl.isEmpty()) {
+					return new ResponseEntity<>(Map.of("error", "Imagem não encontrada"), HttpStatus.NOT_FOUND);
+				}
+
+				return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
+
+			} catch (Exception e) {
+				return new ResponseEntity<>(Map.of("error", "Erro ao recuperar a imagem: " + e.getMessage()),
+						HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+
+		// Método para extrair o token do cabeçalho Authorization
+		private String extractTokenFromHeader(String authHeader) {
+			if (authHeader != null && authHeader.startsWith("Bearer ")) {
+				return authHeader.substring(7);
+			}
+			return null;
+		}
+
+	
+	
+	
+	
 }

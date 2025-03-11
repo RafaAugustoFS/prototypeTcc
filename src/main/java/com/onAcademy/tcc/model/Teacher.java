@@ -30,6 +30,7 @@ public class Teacher {
 	private String telefoneDocente;
 	private String identifierCode;
 	private String password;
+	private String imageUrl;
 	public static final String ENROLLMENT_PREFIX = "p";
 	@OneToMany(mappedBy = "recipientTeacher")
 	private List<FeedBackByStudent> feedback;

@@ -17,7 +17,7 @@ public class ImageUploaderService {
 
     public String uploadBase64Image(String base64Image) {
         try {
-            // Removendo prefixo caso exista (ex: "data:image/png;base64,")
+    
             if (base64Image.contains(",")) {
                 base64Image = base64Image.split(",")[1];
             }

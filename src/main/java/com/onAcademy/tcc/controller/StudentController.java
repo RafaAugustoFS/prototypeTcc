@@ -35,10 +35,7 @@ public class StudentController {
 
 	@Autowired
 	private StudentService studentService;
-	
-	@Autowired
-    private TokenProvider jwtTokenUtil; 
-	
+
 	@Autowired
 	private ImageUploaderService imageUploaderService;
 
@@ -112,66 +109,7 @@ public class StudentController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	@PostMapping("/student/upload-image/{id}")
-	public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestBody Map<String, String> request) {
-	    try {
-	        String base64Image = request.get("image");
-	        
-	        // Chama o serviço que realizará o upload da imagem
-	        String imageUrl = imageUploaderService.uploadBase64Image(base64Image);
 
-	        // Atualiza o estudante com a URL da imagem
-	        Student student = studentService.buscarEstudanteUnico(id);
-	        if (student == null) {
-	            return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
-	        }
-	        student.setImageUrl(imageUrl);
-	        studentService.atualizarEstudante(id, student);
-
-	        return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
-	    } catch (Exception e) {
-	        return new ResponseEntity<>(Map.of("error", "Erro ao fazer upload da imagem: " + e.getMessage()),
-	            HttpStatus.BAD_REQUEST);
-	    }
-	}
-	
-	@GetMapping("/student/image/{id}")
-	public ResponseEntity<?> getImage(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
-	    try {
-	        // Extrai o token do cabeçalho Authorization
-	        String token = extractTokenFromHeader(authHeader);
-	        if (token == null) {
-	            return new ResponseEntity<>(Map.of("error", "Token não fornecido"), HttpStatus.UNAUTHORIZED);
-	        }
-
-
-	        // Busca o estudante pelo ID
-	        Student student = studentService.buscarEstudanteUnico(id);
-	        if (student == null) {
-	            return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
-	        }
-
-	        // Verifica se a URL da imagem existe
-	        String imageUrl = student.getImageUrl();
-	        if (imageUrl == null || imageUrl.isEmpty()) {
-	            return new ResponseEntity<>(Map.of("error", "Imagem não encontrada"), HttpStatus.NOT_FOUND);
-	        }
-
-	        // Retorna a URL da imagem
-	        return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
-
-	    } catch (Exception e) {
-	        return new ResponseEntity<>(Map.of("error", "Erro ao recuperar a imagem: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
-	}
-
-	// Método para extrair o token do cabeçalho Authorization
-	private String extractTokenFromHeader(String authHeader) {
-	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-	        return authHeader.substring(7); // Remove o prefixo "Bearer " para obter o token
-	    }
-	    return null; // Retorna null se o cabeçalho não estiver no formato esperado
-	}
 	@PutMapping("/student/{id}")
 	public ResponseEntity<?> atualizarEstudante(@PathVariable Long id, @RequestBody Student student) {
 		try {
@@ -199,6 +137,65 @@ public class StudentController {
 		} catch (Exception e) {
 			return new ResponseEntity<>(Map.of("error", "Erro ao deletar estudante: " + e.getMessage()),
 					HttpStatus.INTERNAL_SERVER_ERROR);
+		}	
+	}
+
+	// Serviço que realizará o upload da imagem
+	@PostMapping("/student/upload-image/{id}")
+	public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestBody Map<String, String> request) {
+		try {
+			String base64Image = request.get("image");
+
+			String imageUrl = imageUploaderService.uploadBase64Image(base64Image);
+
+			Student student = studentService.buscarEstudanteUnico(id);
+			if (student == null) {
+				return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
+			}
+			student.setImageUrl(imageUrl);
+			studentService.atualizarEstudante(id, student);
+
+			return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao fazer upload da imagem: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
 		}
 	}
+
+	// Extrai o token do cabeçalho Authorization
+	@GetMapping("/student/image/{id}")
+	public ResponseEntity<?> getImage(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
+		try {
+
+			String token = extractTokenFromHeader(authHeader);
+			if (token == null) {
+				return new ResponseEntity<>(Map.of("error", "Token não fornecido"), HttpStatus.UNAUTHORIZED);
+			}
+
+			Student student = studentService.buscarEstudanteUnico(id);
+			if (student == null) {
+				return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
+			}
+
+			String imageUrl = student.getImageUrl();
+			if (imageUrl == null || imageUrl.isEmpty()) {
+				return new ResponseEntity<>(Map.of("error", "Imagem não encontrada"), HttpStatus.NOT_FOUND);
+			}
+
+			return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
+
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao recuperar a imagem: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	// Método para extrair o token do cabeçalho Authorization
+	private String extractTokenFromHeader(String authHeader) {
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			return authHeader.substring(7);
+		}
+		return null;
+	}
+
 }
