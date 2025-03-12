@@ -80,4 +80,25 @@ public class FeedbackFormController {
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
+	
+	@GetMapping("/student/feedback/{id}")
+	public ResponseEntity <List<FeedbackDTO>> buscarPorAluno(@PathVariable Long id){
+		List<FeedbackForm> feedbacks = feedbackFormService.buscarFeedbackPorAluno(id);
+		if(feedbacks != null) {
+			List<FeedbackDTO> feedbackDtos = feedbacks.stream()
+					.map(feedback -> new FeedbackDTO(
+							feedback.getResposta1(),
+							feedback.getResposta2(),
+							feedback.getResposta3(),
+							feedback.getResposta4(),
+							feedback.getResposta5(),
+							new CreatedByDTO(feedback.getCreatedBy().getNomeDocente(), feedback.getCreatedBy().getId()),
+							new StudentDTO(feedback.getRecipientStudent().getNomeAluno(), feedback.getRecipientStudent().getId())
+							)).toList();
+			return new ResponseEntity<>(feedbackDtos, HttpStatus.OK);
+	}
+		return null;
+	}
+		
+	
 }

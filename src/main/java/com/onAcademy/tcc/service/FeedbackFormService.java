@@ -52,4 +52,10 @@ public class FeedbackFormService {
 		}
 		return null;
 	}
+	
+	public List<FeedbackForm> buscarFeedbackPorAluno(Long id) {
+	    return feedbackFormRepo.findByRecipientStudentId(id);
+	}
+	
+	
 }
