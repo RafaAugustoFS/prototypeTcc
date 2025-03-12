@@ -19,10 +19,13 @@ public class FeedbackForm {
 	private int resposta3;
 	private int resposta4;
 	private int resposta5;
+	private int bimestre;
 	@ManyToOne
 	@JoinColumn(name = "teacher_id")
 	private Teacher createdBy;
 	@ManyToOne
 	@JoinColumn(name = "student_id")
 	private Student recipientStudent;
+	
+	
 }
