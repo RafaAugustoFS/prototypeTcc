@@ -45,60 +45,20 @@ public class FeedbackFormController {
 		return new ResponseEntity<>(feedback1, HttpStatus.OK);
 	}
 
-	@GetMapping("/feedbackForm")
-	public ResponseEntity<List<FeedbackDTO>> buscarTodosFeedback() {
-		List<FeedbackForm> feedbacks = feedbackFormService.buscarTodosFeedbacksStudent();
+	@GetMapping("/student/feedback/{id}")
+	public ResponseEntity<List<FeedbackDTO>> buscarPorAluno(@PathVariable Long id) {
+		List<FeedbackForm> feedbacks = feedbackFormService.buscarFeedbackPorAluno(id);
 		if (feedbacks != null) {
-			List<FeedbackDTO> feedbackDTos = feedbacks.stream()
+			List<FeedbackDTO> feedbackDtos = feedbacks.stream()
 					.map(feedback -> new FeedbackDTO(feedback.getResposta1(), feedback.getResposta2(),
 							feedback.getResposta3(), feedback.getResposta4(), feedback.getResposta5(),
 							new CreatedByDTO(feedback.getCreatedBy().getNomeDocente(), feedback.getCreatedBy().getId()),
 							new StudentDTO(feedback.getRecipientStudent().getNomeAluno(),
-									feedback.getRecipientStudent().getId())
-
-					)
-
-					).toList();
-			return new ResponseEntity<>(feedbackDTos, HttpStatus.OK);
-		}
-
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-
-	@GetMapping("/feedbackForm/{id}")
-	public ResponseEntity<FeedbackDTO> buscarFeedback(@PathVariable Long id) {
-		FeedbackForm buscarFeedback = feedbackFormService.buscarFeedbackUnico(id);
-		if (buscarFeedback != null) {
-			var teacher = new CreatedByDTO(buscarFeedback.getCreatedBy().getNomeDocente(),
-					buscarFeedback.getCreatedBy().getId());
-			var student = new StudentDTO(buscarFeedback.getRecipientStudent().getNomeAluno(),
-					buscarFeedback.getRecipientStudent().getId());
-			var feedbackDTO = new FeedbackDTO(buscarFeedback.getResposta1(), buscarFeedback.getResposta2(),
-					buscarFeedback.getResposta3(), buscarFeedback.getResposta4(), buscarFeedback.getResposta5(),
-					teacher, student);
-			return new ResponseEntity<>(feedbackDTO, HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-	
-	@GetMapping("/student/feedback/{id}")
-	public ResponseEntity <List<FeedbackDTO>> buscarPorAluno(@PathVariable Long id){
-		List<FeedbackForm> feedbacks = feedbackFormService.buscarFeedbackPorAluno(id);
-		if(feedbacks != null) {
-			List<FeedbackDTO> feedbackDtos = feedbacks.stream()
-					.map(feedback -> new FeedbackDTO(
-							feedback.getResposta1(),
-							feedback.getResposta2(),
-							feedback.getResposta3(),
-							feedback.getResposta4(),
-							feedback.getResposta5(),
-							new CreatedByDTO(feedback.getCreatedBy().getNomeDocente(), feedback.getCreatedBy().getId()),
-							new StudentDTO(feedback.getRecipientStudent().getNomeAluno(), feedback.getRecipientStudent().getId())
-							)).toList();
+									feedback.getRecipientStudent().getId())))
+					.toList();
 			return new ResponseEntity<>(feedbackDtos, HttpStatus.OK);
-	}
+		}
 		return null;
 	}
-		
-	
+
 }
