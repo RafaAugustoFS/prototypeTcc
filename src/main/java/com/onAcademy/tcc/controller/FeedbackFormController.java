@@ -1,6 +1,7 @@
 package com.onAcademy.tcc.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,12 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.onAcademy.tcc.controller.FeedBackByStudentController.CreatedByDTO;
-import com.onAcademy.tcc.controller.FeedBackByStudentController.FeedbackDTO;
-import com.onAcademy.tcc.controller.FeedBackByStudentController.TeacherDTO;
-import com.onAcademy.tcc.controller.FeedbackByTeacherController.StudentDTO;
-import com.onAcademy.tcc.model.FeedBackByStudent;
+import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.FeedbackForm;
+import com.onAcademy.tcc.model.Student;
+import com.onAcademy.tcc.repository.FeedbackFormRepo;
+import com.onAcademy.tcc.repository.StudentRepo;
 import com.onAcademy.tcc.service.FeedbackFormService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +28,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class FeedbackFormController {
 	@Autowired
 	private FeedbackFormService feedbackFormService;
+
+	@Autowired
+	FeedbackFormRepo feedbackFormRepo;
+
+	@Autowired
+	StudentRepo studentRepo;
 
 	record StudentDTO(String nomeAluno, Long id) {
 	}
@@ -40,9 +46,39 @@ public class FeedbackFormController {
 	}
 
 	@PostMapping("/feedbackForm")
-	public ResponseEntity<FeedbackForm> criarFeedback(@RequestBody FeedbackForm feedbackByStudent) {
-		FeedbackForm feedback1 = feedbackFormService.criarFeedbackStudent(feedbackByStudent);
-		return new ResponseEntity<>(feedback1, HttpStatus.OK);
+	public ResponseEntity<?> criarFeedback(@RequestBody FeedbackForm feedbackByStudent) {
+
+		try {
+			validarFeedback(feedbackByStudent);
+
+			FeedbackForm feedback1 = feedbackFormService.criarFeedbackStudent(feedbackByStudent);
+			return ResponseEntity.status(HttpStatus.CREATED).body(feedback1);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError()
+					.body(Map.of("error", "Erro ao criar professor: " + e.getMessage()));
+		}
+
+	}
+
+	private void validarFeedback(FeedbackForm feedbackByStudent) {
+		Student student = studentRepo.findById(feedbackByStudent.getRecipientStudent().getId())
+				.orElseThrow(() -> new RuntimeException("Estudante não encontrado."));
+		if (feedbackByStudent.getRecipientStudent() == null) {
+			new IllegalArgumentException("Precisa indicar para qual aluno é este feedback.");
+		}
+
+		if (feedbackByStudent.getBimestre() > 4 || feedbackByStudent.getBimestre() < 1) {
+			throw new IllegalArgumentException("Bimestre inválido. Deve estar entre 1 e 4.");
+		}
+		boolean feedbackExists = feedbackFormRepo.existsByCreatedByAndRecipientStudentAndBimestre(
+				feedbackByStudent.getCreatedBy(), feedbackByStudent.getRecipientStudent(),
+				feedbackByStudent.getBimestre());
+		if (feedbackExists) {
+			throw new RuntimeException("Já existe um feedback para este aluno nesse bimestre.");
+		}
+
 	}
 
 	@GetMapping("/student/feedback/{id}")

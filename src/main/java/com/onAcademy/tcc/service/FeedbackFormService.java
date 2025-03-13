@@ -18,17 +18,6 @@ public class FeedbackFormService {
 
 	public FeedbackForm criarFeedbackStudent(FeedbackForm feedbackForm) {
 
-		if (feedbackForm.getBimestre() > 4 || feedbackForm.getBimestre() < 1) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bimestre inválido. Deve estar entre 1 e 4.");
-		}
-
-		boolean feedbackExists = feedbackFormRepo.existsByCreatedByAndRecipientStudentAndBimestre(
-				feedbackForm.getCreatedBy(), feedbackForm.getRecipientStudent(), feedbackForm.getBimestre());
-
-		if (feedbackExists) {
-			throw new RuntimeException("Já existe um feedback para este aluno nesse bimestre.");
-		}
-
 		return feedbackFormRepo.save(feedbackForm);
 	}
 

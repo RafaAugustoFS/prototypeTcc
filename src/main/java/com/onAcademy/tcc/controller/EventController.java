@@ -26,6 +26,7 @@ public class EventController {
     @PreAuthorize("hasRole('INSTITUTION')")
     public ResponseEntity<?> criarEvento(@RequestBody Event event) {
         try {
+        	validarEvent(event);
             Event event1 = eventService.criarEvento(event);
             return new ResponseEntity<>(event1, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -43,6 +44,12 @@ public class EventController {
         }
     }
 
+    
+    public void validarEvent(Event event) {
+    	if(event.getDataEvento() == null || event.getDescricaoEvento() == null || event.getHorarioEvento() == null || event.getLocalEvento() == null || event.getTituloEvento() == null) {
+    		throw new IllegalArgumentException("Por favor preencha todos os campos.");
+    	}
+    }
     @GetMapping("/event/{id}")
     public ResponseEntity<?> buscarUnico(@PathVariable Long id) {
         try {
