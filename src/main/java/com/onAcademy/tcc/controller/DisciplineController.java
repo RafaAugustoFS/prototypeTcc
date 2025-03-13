@@ -22,7 +22,7 @@ public class DisciplineController {
 	@Autowired
 	private DisciplineService disciplineService;
 
-	record DisciplineDTO(String nomeDisciplina) {
+	record DisciplineDTO(Long id, String nomeDisciplina) {
 	}
 
 
@@ -42,10 +42,14 @@ public class DisciplineController {
 	}
 
 	@GetMapping("/discipline")
-	public ResponseEntity<List<Discipline>> buscarDisciplines() {
-		List<Discipline> buscarDisciplines = disciplineService.buscarDisciplines();
-		return ResponseEntity.ok(buscarDisciplines);
+	public ResponseEntity<List<DisciplineDTO>> buscarDisciplinas() {
+	    List<DisciplineDTO> disciplineDTOs = disciplineService.buscarDisciplines().stream()
+	        .map(discipline -> new DisciplineDTO(discipline.getId(), discipline.getNomeDisciplina()))
+	        .toList();
+	    
+	    return ResponseEntity.ok(disciplineDTOs);
 	}
+
 
 	@PutMapping("/discipline/{id}")
 	public ResponseEntity<?> editarDiscipline(@PathVariable Long id, @RequestBody Discipline discipline) {

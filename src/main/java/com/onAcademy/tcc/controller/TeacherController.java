@@ -37,7 +37,7 @@ public class TeacherController {
 			String identifierCode, String password, List<Long> disciplineId, String imageUrl) {
 	}
 
-	record TeacherDTOGet(String nomeDocente, String dataNascimentoDocente, String emailDocente,
+	record TeacherDTOGet(Long id, String nomeDocente, String dataNascimentoDocente, String emailDocente,
 			String telefoneDocente) {
 	}
 
@@ -147,7 +147,7 @@ public class TeacherController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Nenhum professor encontrado."));
 		}
 
-		List<TeacherDTOGet> teacherDTOs = teachers.stream().map(t -> new TeacherDTOGet(t.getNomeDocente(),
+		List<TeacherDTOGet> teacherDTOs = teachers.stream().map(t -> new TeacherDTOGet(t.getId(),t.getNomeDocente(),
 				t.getDataNascimentoDocente().toString(), t.getEmailDocente(), t.getTelefoneDocente()))
 				.collect(Collectors.toList());
 
