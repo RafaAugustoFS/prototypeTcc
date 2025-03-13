@@ -46,7 +46,7 @@ public class EventController {
 
     
     public void validarEvent(Event event) {
-    	if(event.getDataEvento() == null || event.getDescricaoEvento() == null || event.getHorarioEvento() == null || event.getLocalEvento() == null || event.getTituloEvento() == null) {
+    	if(event.getTituloEvento().isEmpty() || event.getDataEvento() == null || event.getHorarioEvento() == null || event.getLocalEvento().isEmpty() || event.getDescricaoEvento().isEmpty()) {
     		throw new IllegalArgumentException("Por favor preencha todos os campos.");
     	}
     }
