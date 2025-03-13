@@ -79,6 +79,7 @@ public class ClassStController {
 	@PostMapping("/class")
 	@Transactional
 	public ResponseEntity<?> criarClasse(@RequestBody ClassDTO classDTO) {
+		System.out.println("Recebido: " + classDTO);
 		try {
 			List<Teacher> teacher = teacherRepo.findAllById(classDTO.idTeacher());
 			List<Discipline> disciplines = disRepo.findAllById(classDTO.disciplineId());
@@ -221,16 +222,15 @@ public class ClassStController {
 	}
 
 	@DeleteMapping("/class/{id}")
+	@Transactional
 	public ResponseEntity<?> deletarClasse(@PathVariable Long id) {
-		try {
-			ClassSt deletarClasse = classStService.deletarClasse(id);
-			if (deletarClasse != null) {
-				return new ResponseEntity<>(deletarClasse, HttpStatus.OK);
-			}
-			return new ResponseEntity<>(Map.of("error", "Classe não encontrada"), HttpStatus.NOT_FOUND);
-		} catch (Exception e) {
-			return new ResponseEntity<>(Map.of("error", "Erro ao deletar classe: " + e.getMessage()),
-					HttpStatus.BAD_REQUEST);
-		}
+	    try {
+	        classStService.deletarClasse(id);
+	        return ResponseEntity.noContent().build(); // Retorna 204 No Content
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                .body(Map.of("error", "Erro ao deletar classe: " + e.getMessage()));
+	    }
 	}
+
 }
