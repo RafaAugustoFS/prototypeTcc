@@ -29,7 +29,8 @@ public class ReminderController {
 	record CreatedByInstitutionDTO(String nameInstitution, Long id, String getInitials) {
 	}
 
-	record ReminderDTO(Long id, String conteudo, LocalDateTime horarioSistema, String criadoPorNome, Long criadoPorId, String initials, Long classStId) {
+	record ReminderDTO(Long id, String conteudo, LocalDateTime horarioSistema, String criadoPorNome, Long criadoPorId,
+			String initials, Long classStId) {
 	}
 
 	@Autowired
@@ -37,85 +38,85 @@ public class ReminderController {
 
 	@PostMapping("/reminder")
 	public ResponseEntity<Reminder> criarLembrete(@RequestBody Reminder reminder) {
+		if (reminder.getConteudo().isEmpty()) {
+			throw new IllegalArgumentException("Por favor preencha todos os campos.");
+		}
 		Reminder reminder1 = reminderService.criarLembrete(reminder);
 		return new ResponseEntity<>(reminder1, HttpStatus.OK);
 	}
 
 	@GetMapping("/reminder")
 	public ResponseEntity<List<ReminderDTO>> buscarTodosLembretes() {
-	    List<Reminder> reminders = reminderService.buscarTodosLembretes();
-	    
-	    if (reminders != null && !reminders.isEmpty()) {
-	        List<ReminderDTO> reminderDTOS = reminders.stream().map(reminder -> 
-	            new ReminderDTO(
-	                reminder.getId(),
-	                reminder.getConteudo(),
-	                reminder.getHorarioSistema(),
-	                reminder.getCreatedBy() != null ? reminder.getCreatedBy().getNomeDocente() : 
-	                (reminder.getCreatedByInstitution() != null ? reminder.getCreatedByInstitution().getNameInstitution() : "Desconhecido"),
-	                reminder.getCreatedBy() != null ? reminder.getCreatedBy().getId() : 
-	                (reminder.getCreatedByInstitution() != null ? reminder.getCreatedByInstitution().getId() : null),
-	                reminder.getInitials(),
-	                reminder.getClassSt() != null ? reminder.getClassSt().getId() : null
-	            )
-	        ).toList();
-	        
-	        return new ResponseEntity<>(reminderDTOS, HttpStatus.OK);
-	    }
-	    
-	    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		List<Reminder> reminders = reminderService.buscarTodosLembretes();
+
+		if (reminders != null && !reminders.isEmpty()) {
+			List<ReminderDTO> reminderDTOS = reminders.stream()
+					.map(reminder -> new ReminderDTO(reminder.getId(), reminder.getConteudo(),
+							reminder.getHorarioSistema(),
+							reminder.getCreatedBy() != null ? reminder.getCreatedBy().getNomeDocente()
+									: (reminder.getCreatedByInstitution() != null
+											? reminder.getCreatedByInstitution().getNameInstitution()
+											: "Desconhecido"),
+							reminder.getCreatedBy() != null ? reminder.getCreatedBy().getId()
+									: (reminder.getCreatedByInstitution() != null
+											? reminder.getCreatedByInstitution().getId()
+											: null),
+							reminder.getInitials(),
+							reminder.getClassSt() != null ? reminder.getClassSt().getId() : null))
+					.toList();
+
+			return new ResponseEntity<>(reminderDTOS, HttpStatus.OK);
+		}
+
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 
 	@GetMapping("/reminder/{classStId}")
 	public ResponseEntity<List<ReminderDTO>> buscarPorClassStId(@PathVariable Long classStId) {
-	    List<Reminder> lembretes = reminderService.buscarLembretePorClassStId(classStId);
+		List<Reminder> lembretes = reminderService.buscarLembretePorClassStId(classStId);
 
-	    if (lembretes.isEmpty()) {
-	        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	    }
+		if (lembretes.isEmpty()) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 
-	    List<ReminderDTO> reminderDTOs = lembretes.stream().map(lembrete -> 
-	        new ReminderDTO(
-	            lembrete.getId(),
-	            lembrete.getConteudo(),
-	            lembrete.getHorarioSistema(),
-	            lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getNomeDocente() : 
-	            (lembrete.getCreatedByInstitution() != null ? lembrete.getCreatedByInstitution().getNameInstitution() : "Desconhecido"),
-	            lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getId() : 
-	            (lembrete.getCreatedByInstitution() != null ? lembrete.getCreatedByInstitution().getId() : null),
-	            lembrete.getInitials(),
-	            lembrete.getClassSt() != null ? lembrete.getClassSt().getId() : null
-	        )
-	    ).collect(Collectors.toList());
+		List<ReminderDTO> reminderDTOs = lembretes.stream()
+				.map(lembrete -> new ReminderDTO(lembrete.getId(), lembrete.getConteudo(), lembrete.getHorarioSistema(),
+						lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getNomeDocente()
+								: (lembrete.getCreatedByInstitution() != null
+										? lembrete.getCreatedByInstitution().getNameInstitution()
+										: "Desconhecido"),
+						lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getId()
+								: (lembrete.getCreatedByInstitution() != null
+										? lembrete.getCreatedByInstitution().getId()
+										: null),
+						lembrete.getInitials(), lembrete.getClassSt() != null ? lembrete.getClassSt().getId() : null))
+				.collect(Collectors.toList());
 
-	    return new ResponseEntity<>(reminderDTOs, HttpStatus.OK);
+		return new ResponseEntity<>(reminderDTOs, HttpStatus.OK);
 	}
 
 	@GetMapping("/reminder/teacher/{teacherId}")
 	public ResponseEntity<List<ReminderDTO>> buscarPorCreatedBy(@PathVariable Long teacherId) {
-	    List<Reminder> lembretes = reminderService.buscarLembretePorCreatedBy(teacherId);
+		List<Reminder> lembretes = reminderService.buscarLembretePorCreatedBy(teacherId);
 
-	    if (lembretes.isEmpty()) {
-	        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	    }
+		if (lembretes.isEmpty()) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 
-	    List<ReminderDTO> reminderDTOs = lembretes.stream().map(lembrete -> 
-	        new ReminderDTO(
-	            lembrete.getId(),
-	            lembrete.getConteudo(),
-	            lembrete.getHorarioSistema(),
-	            lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getNomeDocente() : 
-	            (lembrete.getCreatedByInstitution() != null ? lembrete.getCreatedByInstitution().getNameInstitution() : "Desconhecido"),
-	            lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getId() : 
-	            (lembrete.getCreatedByInstitution() != null ? lembrete.getCreatedByInstitution().getId() : null),
-	            lembrete.getInitials(),
-	            lembrete.getClassSt() != null ? lembrete.getClassSt().getId() : null
-	        )
-	    ).collect(Collectors.toList());
+		List<ReminderDTO> reminderDTOs = lembretes.stream()
+				.map(lembrete -> new ReminderDTO(lembrete.getId(), lembrete.getConteudo(), lembrete.getHorarioSistema(),
+						lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getNomeDocente()
+								: (lembrete.getCreatedByInstitution() != null
+										? lembrete.getCreatedByInstitution().getNameInstitution()
+										: "Desconhecido"),
+						lembrete.getCreatedBy() != null ? lembrete.getCreatedBy().getId()
+								: (lembrete.getCreatedByInstitution() != null
+										? lembrete.getCreatedByInstitution().getId()
+										: null),
+						lembrete.getInitials(), lembrete.getClassSt() != null ? lembrete.getClassSt().getId() : null))
+				.collect(Collectors.toList());
 
-	    return new ResponseEntity<>(reminderDTOs, HttpStatus.OK);
+		return new ResponseEntity<>(reminderDTOs, HttpStatus.OK);
 	}
-
-
 
 }
