@@ -1,5 +1,7 @@
 package com.onAcademy.tcc.controller;
 
+
+
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
@@ -69,10 +71,13 @@ public class ClassStController {
 			List<DisciplineTurmaDTO> disciplinas) {
 	}
 
-	record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
+	record ClassDTOTwo(String nomeTurma, String periodoTurma, 
+	  Long id, List<StudentDTO> students) {
 	}
 
-	record ClassDTOTre(Long id, String nomeTurma, String periodoTurma, int quantidadeAlunos, List<TeacherTurmaDTO> teachers) {
+	record ClassDTOTre(Long id, String nomeTurma, String periodoTurma, int capacidadeMaximaTurma, List<TeacherTurmaDTO> teachers) {
+	}
+	record ClassDisciplinasTeacherDTO(Long id, String nomeTurma, Date anoLetivoTurma, String periodoTurma, int capacidadeMaximaTurma, int salaTurma, int quantidadeAlunos, List<TeacherTurmaDTO> teachers, List<DisciplineTurmaDTO> disciplines) {
 	}
 
 	@PreAuthorize("hasRole('INSTITUTION')")
@@ -109,6 +114,7 @@ public class ClassStController {
 
 			ClassSt classSt = new ClassSt();
 			classSt.setNomeTurma(classDTO.nomeTurma);
+			classSt.setAnoLetivoTurma(classDTO.anoLetivoTurma);	
 			classSt.setPeriodoTurma(classDTO.periodoTurma);
 			classSt.setCapacidadeMaximaTurma(classDTO.capacidadeMaximaTurma);
 			classSt.setSalaTurma(classDTO.salaTurma);
@@ -124,7 +130,7 @@ public class ClassStController {
 					HttpStatus.BAD_REQUEST);
 		}
 	}
-
+	
 	@GetMapping("/class")
 	public ResponseEntity<?> buscarTodasClasses() {
 	    try {
@@ -141,6 +147,8 @@ public class ClassStController {
 	                HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
+
+	
 
 
 	@GetMapping("/class/discipline")
@@ -188,7 +196,7 @@ public class ClassStController {
 		}
 	}
 
-	@GetMapping("/class/teacher/{id}")
+	@GetMapping("/class/teacher/disciplinas/{id}")
 	public ResponseEntity<?> buscarClasseTeachersUnica(@PathVariable Long id) {
 		try {
 			ClassSt buscaClasse = classStService.buscarClasseUnica(id);
@@ -196,8 +204,16 @@ public class ClassStController {
 				List<TeacherTurmaDTO> teachers = buscaClasse.getClasses().stream()
 						.map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
 						.collect(Collectors.toList());
-				ClassDTOTre classDTO = new ClassDTOTre(buscaClasse.getId(),buscaClasse.getNomeTurma(), buscaClasse.getPeriodoTurma(), buscaClasse.getStudents().size(),
-						teachers);
+				List<DisciplineTurmaDTO> disciplinas = buscaClasse.getDisciplinaTurmas().stream()
+						.map(disciplina -> new DisciplineTurmaDTO(disciplina.getId(), disciplina.getNomeDisciplina()))
+						.collect(Collectors.toList());
+				ClassDisciplinasTeacherDTO classDTO = new ClassDisciplinasTeacherDTO(buscaClasse.getId(),buscaClasse.getNomeTurma(), 
+						buscaClasse.getAnoLetivoTurma(),					
+						buscaClasse.getPeriodoTurma(),
+						buscaClasse.getCapacidadeMaximaTurma(),
+						buscaClasse.getSalaTurma(),
+						buscaClasse.getStudents().size(),
+						teachers, disciplinas);
 				return ResponseEntity.ok(classDTO);
 			}
 			return new ResponseEntity<>(Map.of("error", "Classe não encontrada"), HttpStatus.NOT_FOUND);
