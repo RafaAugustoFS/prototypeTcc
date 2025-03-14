@@ -75,7 +75,7 @@ public class ClassStController {
 	  Long id, List<StudentDTO> students) {
 	}
 
-	record ClassDTOTre(Long id, String nomeTurma, String periodoTurma, int capacidadeMaximaTurma, List<TeacherTurmaDTO> teachers) {
+	record ClassDTOTre(Long id, String nomeTurma, String periodoTurma, int alunosAtivos, List<TeacherTurmaDTO> teachers) {
 	}
 	record ClassDisciplinasTeacherDTO(Long id, String nomeTurma, Date anoLetivoTurma, String periodoTurma, int capacidadeMaximaTurma, int salaTurma, int quantidadeAlunos, List<TeacherTurmaDTO> teachers, List<DisciplineTurmaDTO> disciplines) {
 	}
