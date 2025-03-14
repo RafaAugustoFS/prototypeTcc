@@ -81,6 +81,33 @@ public class StudentService {
 		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
 				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 
+		validarStudent(studentDTO);
+		Student student = new Student();
+		String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
+		student.setNomeAluno(studentDTO.getNomeAluno());
+		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
+		student.setEmailAluno(studentDTO.getEmailAluno());
+		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
+
+		String rawPassword = Student.generateRandomPassword(studentDTO, classSt);
+		String encodedPassword = passwordEncoder.encode(rawPassword);
+		student.setPassword(encodedPassword);
+
+		student.setTurmaId(classSt.getId());
+		student.setPassword(encodedPassword);
+		student.setImageUrl(studentDTO.getImageUrl());
+		Student savedStudent = studentRepo.save(student);
+
+		String emailSubject = "Bem-vindo ao OnAcademy!";
+		String emailText = "<h1>Olá " + savedStudent.getNomeAluno() + ",</h1>"
+				+ "<p>Seu cadastro foi realizado com sucesso!" + "<br/>" + "O código de matrícula é: "
+				+ savedStudent.getIdentifierCode() + "<br/>" + "Sua senha é: " + rawPassword + "</p>";
+		emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
+
+		return savedStudent;
+	}
+
+	public void validarStudent(StudentClassDTO studentDTO) {
 		if (studentDTO.getNomeAluno().isEmpty()) {
 			throw new IllegalArgumentException("Por favor preencha com um nome.");
 		}
@@ -117,29 +144,6 @@ public class StudentService {
 			throw new IllegalArgumentException("Por favor preencha o campo de turma.");
 		}
 
-		Student student = new Student();
-		String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
-		student.setNomeAluno(studentDTO.getNomeAluno());
-		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
-		student.setEmailAluno(studentDTO.getEmailAluno());
-		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
-
-		String rawPassword = Student.generateRandomPassword(studentDTO, classSt);
-		String encodedPassword = passwordEncoder.encode(rawPassword);
-		student.setPassword(encodedPassword);
-
-		student.setTurmaId(classSt.getId());
-		student.setPassword(encodedPassword);
-		student.setImageUrl(studentDTO.getImageUrl());
-		Student savedStudent = studentRepo.save(student);
-
-		String emailSubject = "Bem-vindo ao OnAcademy!";
-		String emailText = "<h1>Olá " + savedStudent.getNomeAluno() + ",</h1>"
-				+ "<p>Seu cadastro foi realizado com sucesso!" + "<br/>" + "O código de matrícula é: "
-				+ savedStudent.getIdentifierCode() + "<br/>" + "Sua senha é: " + rawPassword + "</p>";
-		emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
-
-		return savedStudent;
 	}
 
 	public List<Student> buscarTodosEstudantes() {
@@ -160,7 +164,7 @@ public class StudentService {
 			String identifierCode = ENROLLMENT_PREFIX + generateRandomNumber(6);
 			existStudent.setIdentifierCode(identifierCode);
 
-			String rawPassword = generateRandomPasswordWithName(6, existStudent.getNomeAluno()); 
+			String rawPassword = generateRandomPasswordWithName(6, existStudent.getNomeAluno());
 			String encodedPassword = passwordEncoder.encode(rawPassword);
 			existStudent.setPassword(encodedPassword);
 

@@ -1,7 +1,5 @@
 package com.onAcademy.tcc.controller;
 
-
-
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +55,8 @@ public class ClassStController {
 	record NoteDTO(String nomeDisciplina, Double valorNota) {
 	}
 
-	record StudentDTO(String nomeAluno, String dataNascimentoAluno, List<NoteDTO> nota, Long id, String identifierCode) {
+	record StudentDTO(String nomeAluno, String dataNascimentoAluno, List<NoteDTO> nota, Long id,
+			String identifierCode) {
 	}
 
 	record TeacherDTO(String nome, Long id) {
@@ -71,13 +70,16 @@ public class ClassStController {
 			List<DisciplineTurmaDTO> disciplinas) {
 	}
 
-	record ClassDTOTwo(String nomeTurma, String periodoTurma, 
-	  Long id, List<StudentDTO> students) {
+	record ClassDTOTwo(String nomeTurma, String periodoTurma, Long id, List<StudentDTO> students) {
 	}
 
-	record ClassDTOTre(Long id, String nomeTurma, String periodoTurma, int alunosAtivos, List<TeacherTurmaDTO> teachers) {
+	record ClassDTOTre(Long id, String nomeTurma, String periodoTurma, int alunosAtivos,
+			List<TeacherTurmaDTO> teachers) {
 	}
-	record ClassDisciplinasTeacherDTO(Long id, String nomeTurma, Date anoLetivoTurma, String periodoTurma, int capacidadeMaximaTurma, int salaTurma, int quantidadeAlunos, List<TeacherTurmaDTO> teachers, List<DisciplineTurmaDTO> disciplines) {
+
+	record ClassDisciplinasTeacherDTO(Long id, String nomeTurma, Date anoLetivoTurma, String periodoTurma,
+			int capacidadeMaximaTurma, int salaTurma, int quantidadeAlunos, List<TeacherTurmaDTO> teachers,
+			List<DisciplineTurmaDTO> disciplines) {
 	}
 
 	@PreAuthorize("hasRole('INSTITUTION')")
@@ -88,33 +90,18 @@ public class ClassStController {
 		try {
 			List<Teacher> teacher = teacherRepo.findAllById(classDTO.idTeacher());
 			List<Discipline> disciplines = disRepo.findAllById(classDTO.disciplineId());
-
-			if (classDTO.nomeTurma.isEmpty()) {
-				throw new IllegalArgumentException("Nome da turma é obrigatório.");
-			}
-			if (classDTO.anoLetivoTurma == null) {
-				throw new IllegalArgumentException("Ano letivo da turma é obrigatório.");
-			}
-			if (classDTO.periodoTurma.isEmpty()) {
-				throw new IllegalArgumentException("Periodo da turma é obrigatório.");
-			}
-			if (classDTO.capacidadeMaximaTurma <= 10 || classDTO.capacidadeMaximaTurma > 60) {
-				throw new IllegalArgumentException("Por favor insira uma capacidade válida.");
-			}
-			if (classDTO.salaTurma <= 0) {
-				throw new IllegalArgumentException("Por favor insira uma sala válida.");
-			}
-			if (classDTO.idTeacher.isEmpty()) {
-				throw new IllegalArgumentException("Turma deve ter professores.");
-			}
-
+			validarClassSt(classDTO);
 			if (teacher.size() != classDTO.idTeacher().size()) {
 				return new ResponseEntity<>(Map.of("error", "Professor não encontrado."), HttpStatus.BAD_REQUEST);
 			}
+			if(disciplines.size() != classDTO.disciplineId().size()) {
+				return new ResponseEntity<>(Map.of("error", "Disciplina não encontrada."), HttpStatus.BAD_REQUEST);
+			}
+			
 
 			ClassSt classSt = new ClassSt();
 			classSt.setNomeTurma(classDTO.nomeTurma);
-			classSt.setAnoLetivoTurma(classDTO.anoLetivoTurma);	
+			classSt.setAnoLetivoTurma(classDTO.anoLetivoTurma);
 			classSt.setPeriodoTurma(classDTO.periodoTurma);
 			classSt.setCapacidadeMaximaTurma(classDTO.capacidadeMaximaTurma);
 			classSt.setSalaTurma(classDTO.salaTurma);
@@ -130,26 +117,47 @@ public class ClassStController {
 					HttpStatus.BAD_REQUEST);
 		}
 	}
+
+	public void validarClassSt(ClassDTO classDTO) {
+		if (classDTO.nomeTurma.isEmpty()) {
+			throw new IllegalArgumentException("Nome da turma é obrigatório.");
+		}
+		if (classDTO.anoLetivoTurma == null) {
+			throw new IllegalArgumentException("Ano letivo da turma é obrigatório.");
+		}
+		if (classDTO.periodoTurma.isEmpty()) {
+			throw new IllegalArgumentException("Periodo da turma é obrigatório.");
+		}
+		if (classDTO.capacidadeMaximaTurma <= 10 || classDTO.capacidadeMaximaTurma > 60) {
+			throw new IllegalArgumentException("Por favor insira uma capacidade válida.");
+		}
+		if (classDTO.salaTurma <= 0) {
+			throw new IllegalArgumentException("Por favor insira uma sala válida.");
+		}
+		if (classDTO.idTeacher.isEmpty()) {
+			throw new IllegalArgumentException("Turma deve ter professores.");
+		}
+
 	
-	@GetMapping("/class")
-	public ResponseEntity<?> buscarTodasClasses() {
-	    try {
-	        List<ClassSt> classList = classStService.buscarTodasClasses();
-	        List<ClassDTOTre> classDTOList = classList.stream().map(classSt -> {
-	            List<TeacherTurmaDTO> teachers = classSt.getClasses().stream()
-	                    .map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
-	                    .collect(Collectors.toList());
-	            return new ClassDTOTre(classSt.getId(),classSt.getNomeTurma(), classSt.getPeriodoTurma(), classSt.getStudents().size(), teachers);
-	        }).collect(Collectors.toList());
-	        return ResponseEntity.ok(classDTOList);
-	    } catch (Exception e) {
-	        return new ResponseEntity<>(Map.of("error", "Erro ao buscar todas as classes: " + e.getMessage()),
-	                HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
 	}
 
-	
-
+	@GetMapping("/class")
+	public ResponseEntity<?> buscarTodasClasses() {
+		try {
+			List<ClassSt> classList = classStService.buscarTodasClasses();
+			List<ClassDTOTre> classDTOList = classList.stream().map(classSt -> {
+				List<TeacherTurmaDTO> teachers = classSt.getClasses().stream()
+						.map(teacher -> new TeacherTurmaDTO(teacher.getId(), teacher.getNomeDocente()))
+						.collect(Collectors.toList());
+				return new ClassDTOTre(classSt.getId(), classSt.getNomeTurma(), classSt.getPeriodoTurma(),
+						classSt.getStudents().size(), teachers);
+			}).collect(Collectors.toList());
+			return ResponseEntity.ok(classDTOList);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao buscar todas as classes: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 	@GetMapping("/class/discipline")
 	public ResponseEntity<List<ClassDTODisciplina>> buscarTodasClassesDisciplines() {
@@ -207,13 +215,10 @@ public class ClassStController {
 				List<DisciplineTurmaDTO> disciplinas = buscaClasse.getDisciplinaTurmas().stream()
 						.map(disciplina -> new DisciplineTurmaDTO(disciplina.getId(), disciplina.getNomeDisciplina()))
 						.collect(Collectors.toList());
-				ClassDisciplinasTeacherDTO classDTO = new ClassDisciplinasTeacherDTO(buscaClasse.getId(),buscaClasse.getNomeTurma(), 
-						buscaClasse.getAnoLetivoTurma(),					
-						buscaClasse.getPeriodoTurma(),
-						buscaClasse.getCapacidadeMaximaTurma(),
-						buscaClasse.getSalaTurma(),
-						buscaClasse.getStudents().size(),
-						teachers, disciplinas);
+				ClassDisciplinasTeacherDTO classDTO = new ClassDisciplinasTeacherDTO(buscaClasse.getId(),
+						buscaClasse.getNomeTurma(), buscaClasse.getAnoLetivoTurma(), buscaClasse.getPeriodoTurma(),
+						buscaClasse.getCapacidadeMaximaTurma(), buscaClasse.getSalaTurma(),
+						buscaClasse.getStudents().size(), teachers, disciplinas);
 				return ResponseEntity.ok(classDTO);
 			}
 			return new ResponseEntity<>(Map.of("error", "Classe não encontrada"), HttpStatus.NOT_FOUND);
@@ -240,13 +245,13 @@ public class ClassStController {
 	@DeleteMapping("/class/{id}")
 	@Transactional
 	public ResponseEntity<?> deletarClasse(@PathVariable Long id) {
-	    try {
-	        classStService.deletarClasse(id);
-	        return ResponseEntity.noContent().build(); // Retorna 204 No Content
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                .body(Map.of("error", "Erro ao deletar classe: " + e.getMessage()));
-	    }
+		try {
+			classStService.deletarClasse(id);
+			return ResponseEntity.noContent().build(); // Retorna 204 No Content
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(Map.of("error", "Erro ao deletar classe: " + e.getMessage()));
+		}
 	}
 
 }

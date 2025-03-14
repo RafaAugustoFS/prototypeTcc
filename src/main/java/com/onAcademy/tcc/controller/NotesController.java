@@ -41,37 +41,23 @@ public class NotesController {
 	@PostMapping("/note")
 	public ResponseEntity<?> criarNotas(@RequestBody NoteDTO noteDTO) {
 		try {
-			if(noteDTO.getStudentId() == null) {
+			if (noteDTO.getStudentId() == null) {
 				throw new IllegalArgumentException("Por favor preencha o campo student.");
 			}
 			Student student = studentRepo.findById(noteDTO.getStudentId())
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado"));
 
-			
-			if(noteDTO.getDisciplineId() == null) {
-				throw new IllegalArgumentException("Por favor preencha o campo disciplina.");
-			}
+			validarNotes(noteDTO);
 			Discipline discipline = disciplineRepo.findById(noteDTO.getDisciplineId())
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Disciplina não encontrada"));
 
-			if(noteDTO.getNota() == null) {
-				throw new IllegalArgumentException("Por favor preencha o campo nota.");
-			}
-			
 			Note note = new Note();
 			note.setStudentId(student);
 			note.setNota(noteDTO.getNota());
 			note.setStatus(noteDTO.getStatus());
 
-			
-			if (noteDTO.getNota() < 0 || noteDTO.getNota() > 10) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nota deve estar entre 0 e 10");
-			}
-
-			
 			note.setStatus(note.getNota() > 5 ? "Aprovado" : "Reprovado");
 
-		
 			if (noteDTO.getBimestre() < 1 || noteDTO.getBimestre() > 4) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bimestre inválido. Deve estar entre 1 e 4.");
 			}
@@ -79,13 +65,28 @@ public class NotesController {
 			note.setBimestre(noteDTO.getBimestre());
 			note.setDisciplineId(discipline);
 
-		
 			noteService.criarNotas(note);
 
-		
-			 return ResponseEntity.status(HttpStatus.CREATED).body(note);
+			return ResponseEntity.status(HttpStatus.CREATED).body(note);
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+		}
+	}
+
+	public void validarNotes(NoteDTO noteDTO) {
+
+		if (noteDTO.getBimestre() < 1 || noteDTO.getBimestre() > 4) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bimestre inválido. Deve estar entre 1 e 4.");
+		}
+
+		if (noteDTO.getNota() == null) {
+			throw new IllegalArgumentException("Por favor preencha o campo nota.");
+		}
+		if (noteDTO.getNota() < 0 || noteDTO.getNota() > 10) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nota deve estar entre 0 e 10");
+		}
+		if (noteDTO.getDisciplineId() == null) {
+			throw new IllegalArgumentException("Por favor preencha o campo disciplina.");
 		}
 	}
 
@@ -135,9 +136,8 @@ public class NotesController {
 			}
 			return ResponseEntity.ok(deletarNote);
 		} catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+		}
 	}
-		
 
 }
