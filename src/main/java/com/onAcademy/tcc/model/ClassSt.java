@@ -1,6 +1,7 @@
 package com.onAcademy.tcc.model;
 
-import java.util.Date;
+
+import java.sql.Date;
 import java.util.List;
 
 import jakarta.persistence.Entity;
