@@ -14,7 +14,6 @@ public class FeedbackByTeacher {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private String titulo;
 	private String conteudo;
 	@ManyToOne
 	@JoinColumn(name = "teacher_id")

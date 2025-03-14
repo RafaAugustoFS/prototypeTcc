@@ -29,10 +29,10 @@ public class FeedBackByStudentController {
 	record CreatedByDTO(String nomeAluno, Long id) {
 	}
 
-	record FeedbackDTO(String titulo, String conteudo, CreatedByDTO createdBy, TeacherDTO teacher) {
+	record FeedbackDTO(String conteudo, CreatedByDTO createdBy, TeacherDTO teacher) {
 	}
 
-	record RecipientDTO(Long id, TeacherDTO teacher, String titulo, String conteudo) {
+	record RecipientDTO(Long id, TeacherDTO teacher, String conteudo) {
 	}
 
 	@PostMapping("/feedbackStudent")
@@ -48,7 +48,7 @@ public class FeedBackByStudentController {
 	}
 
 	public void validarFeedBackByStudent(FeedBackByStudent feedbackByStudent) {
-		if (feedbackByStudent.getTitulo().isEmpty() || feedbackByStudent.getConteudo().isEmpty()) {
+		if (feedbackByStudent.getConteudo().isEmpty()) {
 			throw new IllegalArgumentException("Por favor preencha todos os campos.");
 		}
 	}
@@ -77,7 +77,7 @@ public class FeedBackByStudentController {
 					buscarFeedback.getCreatedBy().getId());
 			var teacher = new TeacherDTO(buscarFeedback.getRecipientTeacher().getNomeDocente(),
 					buscarFeedback.getRecipientTeacher().getId());
-			var feedbackDTO = new FeedbackDTO(buscarFeedback.getTitulo(), buscarFeedback.getConteudo(), createdBy,
+			var feedbackDTO = new FeedbackDTO( buscarFeedback.getConteudo(), createdBy,
 					teacher);
 
 			return new ResponseEntity<>(feedbackDTO, HttpStatus.OK);
@@ -99,7 +99,7 @@ public class FeedBackByStudentController {
 			TeacherDTO teacherDTO = new TeacherDTO(
 					feedback.getRecipientTeacher() != null ? feedback.getRecipientTeacher().getNomeDocente() : null,
 					feedback.getRecipientTeacher() != null ? feedback.getRecipientTeacher().getId() : null);
-			return new RecipientDTO(feedback.getId(), teacherDTO, feedback.getTitulo(), feedback.getConteudo());
+			return new RecipientDTO(feedback.getId(), teacherDTO, feedback.getConteudo());
 		}).collect(Collectors.toList());
 
 		return new ResponseEntity<>(recipientDTO, HttpStatus.OK);

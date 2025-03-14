@@ -30,10 +30,10 @@ public class FeedbackByTeacherController {
 	record CreatedByDTO(String nomeDocente, Long id) {
 	}
 
-	record FeedbackDTO(String titulo, String conteudo, CreatedByDTO createdByDTO, StudentDTO student) {
+	record FeedbackDTO(String conteudo, CreatedByDTO createdByDTO, StudentDTO student) {
 	}
 
-	record Feedback2DTO(String titulo, String conteudo, CreatedByDTO createdByDTO, ClassStDTO classSt) {
+	record Feedback2DTO(String conteudo, CreatedByDTO createdByDTO, ClassStDTO classSt) {
 	}
 
 	@PostMapping("/feedbackTeacher")
@@ -49,7 +49,7 @@ public class FeedbackByTeacherController {
 	}
 
 	public void validarFeedbackTeacher(FeedbackByTeacher feedback) {
-		if (feedback.getTitulo().isEmpty() || feedback.getConteudo().isEmpty()) {
+		if (feedback.getConteudo().isEmpty()) {
 			throw new IllegalArgumentException("Por favor preencha todos os campos.");
 		}
 
@@ -75,7 +75,7 @@ public class FeedbackByTeacherController {
 						buscaFeedback.getCreatedBy().getId());
 				var student = new StudentDTO(buscaFeedback.getRecipientStudent().getNomeAluno(),
 						buscaFeedback.getRecipientStudent().getId());
-				var feedbackDTO = new FeedbackDTO(buscaFeedback.getTitulo(), buscaFeedback.getConteudo(), teacher,
+				var feedbackDTO = new FeedbackDTO(buscaFeedback.getConteudo(), teacher,
 						student);
 				return new ResponseEntity<>(feedbackDTO, HttpStatus.OK);
 			}
@@ -95,7 +95,7 @@ public class FeedbackByTeacherController {
 						buscaFeedback.getCreatedBy().getId());
 				var classSt = new ClassStDTO(buscaFeedback.getClassSt().getNomeTurma(),
 						buscaFeedback.getClassSt().getId());
-				var feedback2DTO = new Feedback2DTO(buscaFeedback.getTitulo(), buscaFeedback.getConteudo(), teacher,
+				var feedback2DTO = new Feedback2DTO(buscaFeedback.getConteudo(), teacher,
 						classSt);
 				return new ResponseEntity<>(feedback2DTO, HttpStatus.OK);
 			}

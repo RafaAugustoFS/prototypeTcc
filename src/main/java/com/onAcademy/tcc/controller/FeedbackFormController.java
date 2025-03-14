@@ -41,7 +41,7 @@ public class FeedbackFormController {
 	record CreatedByDTO(String nomeDocente, Long id) {
 	}
 
-	record FeedbackDTO(int resposta1, int resposta2, int resposta3, int resposta4, int resposta5,
+	record FeedbackDTO(int resposta1, int resposta2, int resposta3, int resposta4, int resposta5, int bimestre,
 			CreatedByDTO createdByDTO, StudentDTO student) {
 	}
 
@@ -87,7 +87,7 @@ public class FeedbackFormController {
 		if (feedbacks != null) {
 			List<FeedbackDTO> feedbackDtos = feedbacks.stream()
 					.map(feedback -> new FeedbackDTO(feedback.getResposta1(), feedback.getResposta2(),
-							feedback.getResposta3(), feedback.getResposta4(), feedback.getResposta5(),
+							feedback.getResposta3(), feedback.getResposta4(), feedback.getResposta5(),feedback.getBimestre(),
 							new CreatedByDTO(feedback.getCreatedBy().getNomeDocente(), feedback.getCreatedBy().getId()),
 							new StudentDTO(feedback.getRecipientStudent().getNomeAluno(),
 									feedback.getRecipientStudent().getId())))
