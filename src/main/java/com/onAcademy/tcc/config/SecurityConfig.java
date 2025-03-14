@@ -14,27 +14,45 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableMethodSecurity
 public class SecurityConfig {
 
-	@Autowired
-	private SecurityFilter securityFilter;
+    @Autowired
+    private SecurityFilter securityFilter;
 
-	private static final String[] PERMIT_ALL_LIST = { "/swagger-ui/**", "/v3/api-docs/**" };
+    private static final String[] PUBLIC_ENDPOINTS = {
+        "/swagger-ui/**",
+        "/v3/api-docs/**",
+        "/api/**",
+        "/student/upload-image/{id}**",
+        "/student/image/{id}**"
+    };
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		// Configuração de segurança HTTP
-		http.csrf(csrf -> csrf.disable()) // Desabilita a proteção CSRF (para APIs REST)
-				.authorizeHttpRequests(authorizedRequests -> {
-					authorizedRequests.requestMatchers("/api/**", "/student/upload-image/{id}**", "/student/image/{id}**") // Permite o acesso sem autenticação para as rotas
-																	// /api/**
-							.permitAll().requestMatchers(PERMIT_ALL_LIST).permitAll().anyRequest().authenticated();
-				}).addFilterBefore(securityFilter, BasicAuthenticationFilter.class);
+    /**
+     * Configura a cadeia de filtros de segurança para a aplicação.
+     * Desabilita a proteção CSRF para APIs REST e define quais endpoints são públicos.
+     * Adiciona um filtro personalizado antes do filtro de autenticação básica.
+     *
+     * @param http Configuração de segurança HTTP.
+     * @return SecurityFilterChain configurado.
+     * @throws Exception Em caso de erro na configuração.
+     */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable()) // Desabilita CSRF para APIs REST
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(PUBLIC_ENDPOINTS).permitAll() // Permite acesso público aos endpoints listados
+                .anyRequest().authenticated() // Exige autenticação para todos os outros endpoints
+            )
+            .addFilterBefore(securityFilter, BasicAuthenticationFilter.class); // Adiciona filtro personalizado
 
-		return http.build(); // Necessário para configurar o filtro de segurança no Spring Boot 3.x
-	}
+        return http.build();
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-
+    /**
+     * Configura o encoder de senhas usando BCrypt.
+     *
+     * @return Uma instância de BCryptPasswordEncoder.
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(); // Configura o encoder de senhas
+    }
 }

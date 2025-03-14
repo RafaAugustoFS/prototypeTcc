@@ -11,13 +11,25 @@ import com.cloudinary.Cloudinary;
 
 @Configuration
 public class CloudinaryConfig {
+
+	/**
+	 * Configura e fornece um bean do Cloudinary com as credenciais necessárias. As
+	 * credenciais são carregadas a partir das propriedades configuradas no
+	 * application.properties.
+	 */
+
 	@Value("${cloudinary.cloud_name}")
 	private String cloudName;
 	@Value("${cloudinary.api_key}")
 	private String apiKey;
 	@Value("${cloudinary.api_secret}")
 	private String apiSecret;
-	
+
+	/**
+	 * @ Bean = Método que cria um objeto que ele vai gerenciar. Esse objeto pode
+	 * ser usado em outras partes do projeto.
+	 */
+
 	@Bean
 	public Cloudinary cloudinary() {
 		Map<String, String> config = new HashMap();
