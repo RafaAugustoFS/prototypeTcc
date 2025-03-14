@@ -86,11 +86,26 @@ public class TeacherService {
 		teacher1.setPassword(encoded);
 
 		Teacher saveTeacher = teacherRepo.save(teacher1);
+		String emailSubject = "Bem-vindo ao OnAcademy - Seu cadastro foi realizado com sucesso!";
 
-		String emailSubject = "Bem-vindo ao OnAcademy!";
-		String emailText = "<h1>Olá " + saveTeacher.getNomeDocente() + ",</h1>"
-				+ "<p>Seu cadastro foi realizado com sucesso!" + "<br/>" + "O código de matrícula é: "
-				+ saveTeacher.getIdentifierCode() + "<br/>" + "Sua senha é: " + rawPassword + "</p>";
+		String emailText = "<html>"
+		    + "<body style='font-family: Arial, sans-serif; color: #333;'>"
+		    + "<div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>"
+		    + "<h1 style='color: #007BFF;'>Olá, " + saveTeacher.getNomeDocente() + "!</h1>"
+		    + "<p style='font-size: 16px;'>Seja muito bem-vindo(a) ao <strong>OnAcademy</strong>! Estamos felizes em tê-lo(a) conosco.</p>"
+		    + "<p style='font-size: 16px;'>Seu cadastro foi realizado com sucesso. Abaixo estão suas credenciais de acesso:</p>"
+		    + "<div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>"
+		    + "<p style='font-size: 14px; margin: 5px 0;'><strong>Código de Matrícula:</strong> " + saveTeacher.getIdentifierCode() + "</p>"
+		    + "<p style='font-size: 14px; margin: 5px 0;'><strong>Senha:</strong> " + rawPassword + "</p>"
+		    + "</div>"
+		    + "<p style='font-size: 16px;'>Por favor, mantenha essas informações em local seguro e não as compartilhe com terceiros.</p>"
+		    + "<p style='font-size: 16px;'>Se precisar de ajuda ou tiver alguma dúvida, entre em contato conosco.</p>"
+		    + "<p style='font-size: 16px;'>Atenciosamente,<br/><strong>Equipe OnAcademy</strong></p>"
+		    + "<p style='font-size: 14px; color: #777;'>Este é um e-mail automático, por favor não responda.</p>"
+		    + "</div>"
+		    + "</body>"
+		    + "</html>";
+
 		emailService.sendEmail(saveTeacher.getEmailDocente(), emailSubject, emailText);
 
 		return saveTeacher;
@@ -117,11 +132,22 @@ public class TeacherService {
 			atualizarTeacher.setPassword(encodedPassword);
 			teacherRepo.save(atualizarTeacher);
 
-			String emailSubject = "Seus dados de acesso foram atualizados!";
-			String emailText = "<h1>Olá " + atualizarTeacher.getNomeDocente() + ",</h1>"
-					+ "<p>Seus dados de acesso foram atualizados com sucesso!" + "<br/>"
-					+ "Seu novo código de matrícula é: " + identifierCode + "<br/>" + "Sua nova senha é: " + rawPassword
-					+ "</p>";
+			String emailSubject = "Atualização dos seus dados de acesso - Confira as novas informações!";
+
+			String emailText = "<html>" + "<body style='font-family: Arial, sans-serif; color: #333;'>"
+					+ "<div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>"
+					+ "<h1 style='color: #007BFF;'>Olá, " + atualizarTeacher.getNomeDocente() + "!</h1>"
+					+ "<p style='font-size: 16px;'>Seus dados de acesso foram atualizados com sucesso. Abaixo estão suas novas credenciais:</p>"
+					+ "<div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>"
+					+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Código de Matrícula:</strong> "
+					+ identifierCode + "</p>"
+					+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Nova Senha:</strong> " + rawPassword + "</p>"
+					+ "</div>"
+					+ "<p style='font-size: 16px;'>Por favor, mantenha essas informações em local seguro e não as compartilhe com terceiros.</p>"
+					+ "<p style='font-size: 16px;'>Se você não solicitou essa alteração ou tem alguma dúvida, entre em contato conosco imediatamente.</p>"
+					+ "<p style='font-size: 16px;'>Atenciosamente,<br/><strong>Equipe OnAcademy</strong></p>"
+					+ "<p style='font-size: 14px; color: #777;'>Este é um e-mail automático, por favor não responda.</p>"
+					+ "</div>" + "</body>" + "</html>";
 			try {
 				emailService.sendEmail(atualizarTeacher.getEmailDocente(), emailSubject, emailText);
 			} catch (MessagingException e) {
