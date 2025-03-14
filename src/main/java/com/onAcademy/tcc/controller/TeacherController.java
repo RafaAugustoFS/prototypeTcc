@@ -26,9 +26,13 @@ public class TeacherController {
 
 	record DisciplineDTO(String nomeDisciplina, Long discipline_id) {
 	}
+	
+	record StudentDTO(Long id, String nomeAluno) {}
 
 	record ClassDTO(String nomeTurma, Long id, int quantidadeAlunos) {
 	}
+	
+	record TeacherDTOFeedback(Long id, String nomeDocente){}
 
 	record ClassDTOSimples(String nomeTurma, Long id) {
 	}
@@ -47,14 +51,17 @@ public class TeacherController {
 
 	record TeacherDTOTwoSimples(String nomeDocente, String dataNascimentoDocente, String emailDocente,
 			String telefoneDocente, String identifierCode, Long id, List<DisciplineDTO> disciplinas,
-			List<ClassDTOSimples> classes) {
+			List<ClassDTOSimples> classes, List<FeedbackDTO> feedbacks) {
 	}
 
 	record TeacherDTOTre(String nomeDocente, Long id, List<ClassDTO> classes) {
 	}
+	
+	record FeedbackDTO(Long id, String titulo, String conteudo, StudentDTO createdBy, TeacherDTOFeedback recipientTeacher){}
 
-	record TeacherDTOSimples(String nomeDocente, Long id, List<ClassDTOSimples> classes) {
+	record TeacherDTOSimples(String nomeDocente, Long id, List<ClassDTOSimples> classes, List<FeedbackDTO> feedback) {
 	}
+	
 
 	@Autowired
 	private TeacherService teacherService;
@@ -180,11 +187,17 @@ public class TeacherController {
 				.map(d -> new DisciplineDTO(d.getNomeDisciplina(), d.getId())).collect(Collectors.toList());
 		List<ClassDTOSimples> classes = teacher.getTeachers().stream()
 				.map(classe -> new ClassDTOSimples(classe.getNomeTurma(), classe.getId())).collect(Collectors.toList());
-		TeacherDTOSimples TeacherDTOSimples = new TeacherDTOSimples(teacher.getNomeDocente(), teacher.getId(), classes);
+		List<FeedbackDTO> feedbacks = teacher.getFeedback().stream()
+				.map(feedback -> new FeedbackDTO(feedback.getId(),feedback.getTitulo(), feedback.getConteudo(),  new StudentDTO(feedback.getCreatedBy().getId(), feedback.getCreatedBy().getNomeAluno()), // Conversão correta
+				        new TeacherDTOFeedback(
+				        		feedback.getRecipientTeacher().getId(),
+				                feedback.getRecipientTeacher().getNomeDocente()
+				            ))).collect(Collectors.toList());
+		TeacherDTOSimples TeacherDTOSimples = new TeacherDTOSimples(teacher.getNomeDocente(), teacher.getId(), classes, feedbacks);
 
 		TeacherDTOTwoSimples teacherDTOTwoSimples = new TeacherDTOTwoSimples(teacher.getNomeDocente(),
 				teacher.getDataNascimentoDocente().toString(), teacher.getEmailDocente(), teacher.getTelefoneDocente(),
-				teacher.getIdentifierCode(), teacher.getId(), disciplines, classes);
+				teacher.getIdentifierCode(), teacher.getId(), disciplines, classes, feedbacks);
 		return ResponseEntity.ok(teacherDTOTwoSimples);
 	}
 
