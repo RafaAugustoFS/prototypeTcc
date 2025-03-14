@@ -57,7 +57,7 @@ public class TeacherController {
 	record TeacherDTOTre(String nomeDocente, Long id, List<ClassDTO> classes) {
 	}
 	
-	record FeedbackDTO(Long id, String titulo, String conteudo, StudentDTO createdBy, TeacherDTOFeedback recipientTeacher){}
+	record FeedbackDTO(Long id, String conteudo, StudentDTO createdBy, TeacherDTOFeedback recipientTeacher){}
 
 	record TeacherDTOSimples(String nomeDocente, Long id, List<ClassDTOSimples> classes, List<FeedbackDTO> feedback) {
 	}
@@ -188,7 +188,7 @@ public class TeacherController {
 		List<ClassDTOSimples> classes = teacher.getTeachers().stream()
 				.map(classe -> new ClassDTOSimples(classe.getNomeTurma(), classe.getId())).collect(Collectors.toList());
 		List<FeedbackDTO> feedbacks = teacher.getFeedback().stream()
-				.map(feedback -> new FeedbackDTO(feedback.getId(),feedback.getTitulo(), feedback.getConteudo(),  new StudentDTO(feedback.getCreatedBy().getId(), feedback.getCreatedBy().getNomeAluno()), // Conversão correta
+				.map(feedback -> new FeedbackDTO(feedback.getId(),feedback.getConteudo(),  new StudentDTO(feedback.getCreatedBy().getId(), feedback.getCreatedBy().getNomeAluno()), // Conversão correta
 				        new TeacherDTOFeedback(
 				        		feedback.getRecipientTeacher().getId(),
 				                feedback.getRecipientTeacher().getNomeDocente()
