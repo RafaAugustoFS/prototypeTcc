@@ -4,6 +4,7 @@ package com.onAcademy.tcc.model;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.onAcademy.tcc.dto.StudentClassDTO;
@@ -33,7 +34,7 @@ public class Student {
 	private String imageUrl;
 	
 	private static final String ENROLLMENT_PREFIX = "a";
-	
+	private static final int IDENTIFIER_CODE_LENGTH = 10; // Defina o comprimento desejado
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
 	private List<FeedbackByTeacher> feedback;
 
@@ -55,18 +56,16 @@ public class Student {
         String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
         return ENROLLMENT_PREFIX + year + studentDTO.getNomeAluno().replaceAll("\\s", "").toLowerCase();
     }
-	
-	  @PostPersist
-		public void generateIdentifierCode() {
-			String year = String.valueOf(LocalDate.now().getYear());
-			String studentId = String.format("%04d", id);
-			String classCode = (turmaId != null) ? String.valueOf(turmaId) : "SNTF";
-
-			String initials = (nomeAluno != null && nomeAluno.replaceAll("[^A-Za-z]", "").length() > 0)
-					? nomeAluno.replaceAll("[^A-Za-z]", "").substring(0, Math.min(2, nomeAluno.length())).toUpperCase()
-					: "XX";
-			this.identifierCode = String.format(ENROLLMENT_PREFIX+ year + studentId+ classCode+ initials);
-
-		}
+	@PostPersist
+	private void generateIdentifierCode() {
+	    String numbers = "0123456789"; 
+	    StringBuilder sb = new StringBuilder(); 
+	    Random random = new Random(); 
+	    for (int i = 0; i < IDENTIFIER_CODE_LENGTH; i++) {
+	        
+	        sb.append(numbers.charAt(random.nextInt(numbers.length())));
+	    }
+	    this.identifierCode = sb.toString();
+	}
 
 }

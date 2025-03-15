@@ -1,11 +1,8 @@
 package com.onAcademy.tcc.model;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
-
-import com.onAcademy.tcc.dto.StudentClassDTO;
-
+import java.util.Random;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,6 +29,7 @@ public class Teacher {
 	private String password;
 	private String imageUrl;
 	public static final String ENROLLMENT_PREFIX = "p";
+	private static final int IDENTIFIER_CODE_LENGTH = 10; 
 	@OneToMany(mappedBy = "recipientTeacher")
 	private List<FeedBackByStudent> feedback;
 
@@ -58,15 +56,14 @@ public class Teacher {
     }
 	
 	@PostPersist
-	public void generateIdentifierCode() {
-		String year = String.valueOf(LocalDate.now().getYear());
-		String teacherId = String.format("%04d", id);
-		String initials = (nomeDocente != null && nomeDocente.replaceAll("[^A-Za-z]", "").length() > 0)
-				? nomeDocente.replaceAll("[^A-Za-z]", "").substring(0, Math.min(2, nomeDocente.length())).toUpperCase()
-				: "XX";
-		
-		this.identifierCode = ENROLLMENT_PREFIX + year + teacherId+ initials;
-
+	private void generateIdentifierCode() {
+	    String numbers = "0123456789"; 
+	    StringBuilder sb = new StringBuilder(); 
+	    Random random = new Random(); 
+	    for (int i = 0; i < IDENTIFIER_CODE_LENGTH; i++) {
+	        
+	        sb.append(numbers.charAt(random.nextInt(numbers.length())));
+	    }
+	    this.identifierCode = sb.toString();
 	}
-	
 }
