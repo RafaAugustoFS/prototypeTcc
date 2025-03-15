@@ -23,62 +23,82 @@ import com.onAcademy.tcc.service.BoletimService;
 @RestController
 @RequestMapping("/api")
 public class BoletimPDFController {
-    private final BoletimPdfService boletimPdfService;
-    private final BoletimService boletimService;
-    
-    public BoletimPDFController(BoletimPdfService boletimPdfService, BoletimService boletimService) {
-        this.boletimPdfService = boletimPdfService;
-        this.boletimService = boletimService;
-    }
-    
-    @GetMapping("/boletim/{studentId}")
-    public ResponseEntity<byte[]> downloadPdf(@PathVariable Long studentId) {
-        Optional<Student> studentOpt = boletimService.getStudentWithGrades(studentId);
 
-        if (studentOpt.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+	private final BoletimPdfService boletimPdfService;
+	private final BoletimService boletimService;
 
-        Student student = studentOpt.get();
+	/**
+	 * Construtor para injeção de dependências.
+	 *
+	 * @param boletimPdfService Serviço para geração de PDFs.
+	 * @param boletimService    Serviço para obtenção de dados do boletim.
+	 */
+	public BoletimPDFController(BoletimPdfService boletimPdfService, BoletimService boletimService) {
+		this.boletimPdfService = boletimPdfService;
+		this.boletimService = boletimService;
+	}
 
-        // Agrupando notas por disciplina e preenchendo notas ausentes com "-"
-        List<Map<String, Object>> disciplinas = student.getNotas().stream()
-            .collect(Collectors.groupingBy(n -> n.getDisciplineId().getNomeDisciplina()))
-            .entrySet().stream()
-            .map(entry -> {
-                // Ordenando as notas por bimestre
-                List<String> notasOrdenadas = entry.getValue().stream()
-                    .sorted(Comparator.comparingInt(Note::getBimestre))
-                    .map(n -> n.getNota() != null ? n.getNota().toString() : " - ") // Se a nota for null, substitui por "-"
-                    .collect(Collectors.toList());
+	/**
+	 * Endpoint para download do boletim do aluno em formato PDF.
+	 *
+	 * @param studentId ID do aluno.
+	 * @return ResponseEntity contendo o arquivo PDF ou um status de erro.
+	 */
+	@GetMapping("/boletim/{studentId}")
+	public ResponseEntity<byte[]> downloadPdf(@PathVariable Long studentId) {
+		Optional<Student> studentOpt = boletimService.getStudentWithGrades(studentId);
 
-                // Garantindo que sempre teremos 4 bimestres (preenchendo faltantes com "-")
-                while (notasOrdenadas.size() < 4) {
-                    notasOrdenadas.add(" - ");
-                }
+		if (studentOpt.isEmpty()) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 
-                return Map.of(
-                    "nome", entry.getKey(),
-                    "notas", notasOrdenadas
-                );
-            })
-            .toList();
+		Student student = studentOpt.get();
+		List<Map<String, Object>> disciplinas = processarNotasPorDisciplina(student);
 
-        // Construindo os dados para o PDF
-        Map<String, Object> data = Map.of(
-            "dataAtual", LocalDate.now().toString(),
-            "student", Map.of("nomeAluno", student.getNomeAluno()),
-            "disciplinas", disciplinas
-        );
+		Map<String, Object> pdfData = criarDadosParaPdf(student, disciplinas);
 
-        try {
-            byte[] pdfBytes = boletimPdfService.generatePdf("boletim", data);
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-Disposition", "attachment; filename=boletim.pdf");
-            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+		try {
+			byte[] pdfBytes = boletimPdfService.generatePdf("boletim", pdfData);
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Content-Disposition", "attachment; filename=boletim.pdf");
+			return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
+	/**
+	 * Processa as notas do aluno, agrupando-as por disciplina e garantindo 4
+	 * bimestres.
+	 *
+	 * @param student Aluno com as notas a serem processadas.
+	 * @return Lista de disciplinas com as notas organizadas.
+	 */
+	private List<Map<String, Object>> processarNotasPorDisciplina(Student student) {
+		return student.getNotas().stream().collect(Collectors.groupingBy(n -> n.getDisciplineId().getNomeDisciplina()))
+				.entrySet().stream().map(entry -> {
+					List<String> notasOrdenadas = entry.getValue().stream()
+							.sorted(Comparator.comparingInt(Note::getBimestre))
+							.map(n -> n.getNota() != null ? n.getNota().toString() : " - ")
+							.collect(Collectors.toList());
+
+					while (notasOrdenadas.size() < 4) {
+						notasOrdenadas.add(" - ");
+					}
+
+					return Map.of("nome", entry.getKey(), "notas", notasOrdenadas);
+				}).toList();
+	}
+
+	/**
+	 * Cria os dados necessários para a geração do PDF.
+	 *
+	 * @param student     Aluno com os dados a serem incluídos no PDF.
+	 * @param disciplinas Lista de disciplinas com as notas processadas.
+	 * @return Mapa contendo os dados formatados para o PDF.
+	 */
+	private Map<String, Object> criarDadosParaPdf(Student student, List<Map<String, Object>> disciplinas) {
+		return Map.of("dataAtual", LocalDate.now().toString(), "student", Map.of("nomeAluno", student.getNomeAluno()),
+				"disciplinas", disciplinas);
+	}
 }

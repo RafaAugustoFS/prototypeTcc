@@ -5,14 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.onAcademy.tcc.dto.NoteDTO;
@@ -22,122 +15,142 @@ import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.repository.DisciplineRepo;
 import com.onAcademy.tcc.repository.StudentRepo;
 import com.onAcademy.tcc.service.NoteService;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Notes", description = "EndPoint de boletim")
 @RestController
 @RequestMapping("/api")
 public class NotesController {
-	@Autowired
-	private NoteService noteService;
 
-	@Autowired
-	private StudentRepo studentRepo;
+    @Autowired
+    private NoteService noteService;
 
-	@Autowired
-	private DisciplineRepo disciplineRepo;
+    @Autowired
+    private StudentRepo studentRepo;
 
-	@PostMapping("/note")
-	public ResponseEntity<?> criarNotas(@RequestBody NoteDTO noteDTO) {
-		try {
-			if (noteDTO.getStudentId() == null) {
-				throw new IllegalArgumentException("Por favor preencha o campo student.");
-			}
-			Student student = studentRepo.findById(noteDTO.getStudentId())
-					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado"));
+    @Autowired
+    private DisciplineRepo disciplineRepo;
 
-			validarNotes(noteDTO);
-			Discipline discipline = disciplineRepo.findById(noteDTO.getDisciplineId())
-					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Disciplina não encontrada"));
+    /**
+     * Cria uma nova nota para um aluno.
+     *
+     * @param noteDTO DTO contendo os dados da nota.
+     * @return ResponseEntity com a nota criada ou uma mensagem de erro.
+     */
+    @PostMapping("/note")
+    public ResponseEntity<?> criarNota(@RequestBody NoteDTO noteDTO) {
+        try {
+            validarNoteDTO(noteDTO);
 
-			Note note = new Note();
-			note.setStudentId(student);
-			note.setNota(noteDTO.getNota());
-			note.setStatus(noteDTO.getStatus());
+            Student student = studentRepo.findById(noteDTO.getStudentId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado."));
 
-			note.setStatus(note.getNota() > 5 ? "Aprovado" : "Reprovado");
+            Discipline discipline = disciplineRepo.findById(noteDTO.getDisciplineId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Disciplina não encontrada."));
 
-			if (noteDTO.getBimestre() < 1 || noteDTO.getBimestre() > 4) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bimestre inválido. Deve estar entre 1 e 4.");
-			}
+            Note note = new Note();
+            note.setStudentId(student);
+            note.setNota(noteDTO.getNota());
+            note.setBimestre(noteDTO.getBimestre());
+            note.setDisciplineId(discipline);
+            note.setStatus(noteDTO.getNota() > 5 ? "Aprovado" : "Reprovado");
 
-			note.setBimestre(noteDTO.getBimestre());
-			note.setDisciplineId(discipline);
+            Note notaCriada = noteService.criarNotas(note);
+            return ResponseEntity.status(HttpStatus.CREATED).body(notaCriada);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao criar nota: " + e.getMessage());
+        }
+    }
 
-			noteService.criarNotas(note);
+    /**
+     * Valida os dados da nota.
+     *
+     * @param noteDTO DTO contendo os dados da nota.
+     * @throws IllegalArgumentException Se algum campo obrigatório estiver inválido.
+     */
+    private void validarNoteDTO(NoteDTO noteDTO) {
+        if (noteDTO.getStudentId() == null) {
+            throw new IllegalArgumentException("Por favor, preencha o campo student.");
+        }
+        if (noteDTO.getNota() == null || noteDTO.getNota() < 0 || noteDTO.getNota() > 10) {
+            throw new IllegalArgumentException("Nota inválida. Deve estar entre 0 e 10.");
+        }
+        if (noteDTO.getDisciplineId() == null) {
+            throw new IllegalArgumentException("Por favor, preencha o campo disciplina.");
+        }
+        if (noteDTO.getBimestre() < 1 || noteDTO.getBimestre() > 4) {
+            throw new IllegalArgumentException("Bimestre inválido. Deve estar entre 1 e 4.");
+        }
+    }
 
-			return ResponseEntity.status(HttpStatus.CREATED).body(note);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-		}
-	}
+    /**
+     * Retorna uma lista de todas as notas.
+     *
+     * @return ResponseEntity com a lista de notas.
+     */
+    @GetMapping("/note")
+    public ResponseEntity<List<Note>> buscarTodasNotas() {
+        List<Note> notas = noteService.buscarNotas();
+        return ResponseEntity.ok(notas);
+    }
 
-	public void validarNotes(NoteDTO noteDTO) {
+    /**
+     * Busca uma nota pelo ID.
+     *
+     * @param id ID da nota a ser buscada.
+     * @return ResponseEntity com a nota encontrada ou uma mensagem de erro.
+     */
+    @GetMapping("/note/{id}")
+    public ResponseEntity<?> buscarNotaPorId(@PathVariable Long id) {
+        try {
+            Note nota = noteService.buscarNotaUnica(id);
+            if (nota == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nota não encontrada.");
+            }
+            return ResponseEntity.ok(nota);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao buscar nota: " + e.getMessage());
+        }
+    }
 
-		if (noteDTO.getBimestre() < 1 || noteDTO.getBimestre() > 4) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bimestre inválido. Deve estar entre 1 e 4.");
-		}
+    /**
+     * Atualiza uma nota existente.
+     *
+     * @param id ID da nota a ser atualizada.
+     * @param note Objeto contendo os novos dados da nota.
+     * @return ResponseEntity com a nota atualizada ou uma mensagem de erro.
+     */
+    @PutMapping("/note/{id}")
+    public ResponseEntity<?> atualizarNota(@PathVariable Long id, @RequestBody Note note) {
+        try {
+            Note notaAtualizada = noteService.atualizarNotas(id, note);
+            if (notaAtualizada == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nota não encontrada.");
+            }
+            return ResponseEntity.ok(notaAtualizada);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao atualizar nota: " + e.getMessage());
+        }
+    }
 
-		if (noteDTO.getNota() == null) {
-			throw new IllegalArgumentException("Por favor preencha o campo nota.");
-		}
-		if (noteDTO.getNota() < 0 || noteDTO.getNota() > 10) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nota deve estar entre 0 e 10");
-		}
-		if (noteDTO.getDisciplineId() == null) {
-			throw new IllegalArgumentException("Por favor preencha o campo disciplina.");
-		}
-	}
-
-	@GetMapping("/note")
-	public ResponseEntity<List<Note>> buscarTodasAsNotas() {
-		List<Note> notes = noteService.buscarNotas();
-		return new ResponseEntity<>(notes, HttpStatus.OK);
-	}
-
-	@GetMapping("/note/{id}")
-	public ResponseEntity<?> BuscarNotaUnica(@PathVariable Long id) {
-
-		try {
-			Note notaUnica = noteService.buscarNotaUnica(id);
-			if (notaUnica != null) {
-				return new ResponseEntity<>(notaUnica, HttpStatus.OK);
-			} else {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nota não encontrada");
-			}
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-		}
-
-	}
-
-	@PutMapping("/note/{id}")
-	public ResponseEntity<?> atualizarNota(@PathVariable Long id, @RequestBody Note note) {
-		try {
-			Note notaUnica = noteService.buscarNotaUnica(id);
-			if (notaUnica != null) {
-				return new ResponseEntity<>(notaUnica, HttpStatus.OK);
-			} else {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nota não encontrada");
-			}
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-
-		}
-	}
-
-	@DeleteMapping("/note/{id}")
-	public ResponseEntity<?> deletarNota(@PathVariable Long id) {
-		try {
-			Note deletarNote = noteService.deletarNota(id);
-			if (deletarNote == null) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nota não encontrada.");
-			}
-			return ResponseEntity.ok(deletarNote);
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-		}
-	}
-
+    /**
+     * Exclui uma nota pelo ID.
+     *
+     * @param id ID da nota a ser excluída.
+     * @return ResponseEntity com a nota excluída ou uma mensagem de erro.
+     */
+    @DeleteMapping("/note/{id}")
+    public ResponseEntity<?> deletarNota(@PathVariable Long id) {
+        try {
+            Note notaDeletada = noteService.deletarNota(id);
+            if (notaDeletada == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nota não encontrada.");
+            }
+            return ResponseEntity.ok(notaDeletada);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao deletar nota: " + e.getMessage());
+        }
+    }
 }

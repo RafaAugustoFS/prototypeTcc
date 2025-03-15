@@ -19,73 +19,123 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api")
 public class EventController {
 
-    @Autowired
-    private EventService eventService;
+	@Autowired
+	private EventService eventService;
 
-    @PostMapping("/event")
-    @PreAuthorize("hasRole('INSTITUTION')")
-    public ResponseEntity<?> criarEvento(@RequestBody Event event) {
-        try {
-        	validarEvent(event);
-            Event event1 = eventService.criarEvento(event);
-            return new ResponseEntity<>(event1, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao criar evento: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
+	/**
+	 * Cria um novo evento.
+	 *
+	 * @param event Objeto contendo os dados do evento.
+	 * @return ResponseEntity com o evento criado ou uma mensagem de erro.
+	 */
+	@PostMapping("/event")
+	@PreAuthorize("hasRole('INSTITUTION')")
+	public ResponseEntity<?> criarEvento(@RequestBody Event event) {
+		try {
+			validarEvento(event);
+			Event eventoCriado = eventService.criarEvento(event);
+			return new ResponseEntity<>(eventoCriado, HttpStatus.CREATED);
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao criar evento: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-    @GetMapping("/event")
-    public ResponseEntity<?> buscarTodosEventos() {
-        try {
-            List<Event> events = eventService.buscarEventos();
-            return new ResponseEntity<>(events, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao buscar eventos: " + e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	/**
+	 * Retorna uma lista de todos os eventos.
+	 *
+	 * @return ResponseEntity com a lista de eventos ou uma mensagem de erro.
+	 */
+	@GetMapping("/event")
+	public ResponseEntity<?> buscarTodosEventos() {
+		try {
+			List<Event> eventos = eventService.buscarEventos();
+			return new ResponseEntity<>(eventos, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao buscar eventos: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-    
-    public void validarEvent(Event event) {
-    	if(event.getTituloEvento().isEmpty() || event.getDataEvento() == null || event.getHorarioEvento() == null || event.getLocalEvento().isEmpty() || event.getDescricaoEvento().isEmpty()) {
-    		throw new IllegalArgumentException("Por favor preencha todos os campos.");
-    	}
-    }
-    @GetMapping("/event/{id}")
-    public ResponseEntity<?> buscarUnico(@PathVariable Long id) {
-        try {
-            Event eventUnico = eventService.buscarEventoUnico(id);
-            if (eventUnico == null) {
-                return new ResponseEntity<>(Map.of("error", "Evento não encontrado"), HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>(eventUnico, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao buscar evento: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
+	/**
+	 * Busca um evento pelo ID.
+	 *
+	 * @param id ID do evento a ser buscado.
+	 * @return ResponseEntity com o evento encontrado ou uma mensagem de erro.
+	 */
+	@GetMapping("/event/{id}")
+	public ResponseEntity<?> buscarEventoPorId(@PathVariable Long id) {
+		try {
+			Event evento = eventService.buscarEventoUnico(id);
+			if (evento == null) {
+				return new ResponseEntity<>(Map.of("error", "Evento não encontrado"), HttpStatus.NOT_FOUND);
+			}
+			return new ResponseEntity<>(evento, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao buscar evento: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
 
-    @PutMapping("/event/{id}")
-    public ResponseEntity<?> atualizarEvento(@PathVariable Long id, @RequestBody Event event) {
-        try {
-            Event atualizarEvento = eventService.atualizarEvento(id, event);
-            if (atualizarEvento == null) {
-                return new ResponseEntity<>(Map.of("error", "Evento não encontrado"), HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>(atualizarEvento, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao atualizar evento: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
+	/**
+	 * Atualiza os dados de um evento existente.
+	 *
+	 * @param id    ID do evento a ser atualizado.
+	 * @param event Objeto contendo os novos dados do evento.
+	 * @return ResponseEntity com o evento atualizado ou uma mensagem de erro.
+	 */
+	@PutMapping("/event/{id}")
+	public ResponseEntity<?> atualizarEvento(@PathVariable Long id, @RequestBody Event event) {
+		try {
+			validarEvento(event);
+			Event eventoAtualizado = eventService.atualizarEvento(id, event);
+			if (eventoAtualizado == null) {
+				return new ResponseEntity<>(Map.of("error", "Evento não encontrado"), HttpStatus.NOT_FOUND);
+			}
+			return new ResponseEntity<>(eventoAtualizado, HttpStatus.OK);
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao atualizar evento: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-    @DeleteMapping("/event/{id}")
-    public ResponseEntity<?> deletarEvento(@PathVariable Long id) {
-        try {
-            Event deletarEvent = eventService.deletarEvent(id);
-            if (deletarEvent == null) {
-                return new ResponseEntity<>(Map.of("error", "Evento não encontrado"), HttpStatus.NOT_FOUND);
-            }
-            return new ResponseEntity<>(deletarEvent, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Erro ao deletar evento: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
+	/**
+	 * Exclui um evento pelo ID.
+	 *
+	 * @param id ID do evento a ser excluído.
+	 * @return ResponseEntity com o evento excluído ou uma mensagem de erro.
+	 */
+	@DeleteMapping("/event/{id}")
+	public ResponseEntity<?> deletarEvento(@PathVariable Long id) {
+		try {
+			Event eventoDeletado = eventService.deletarEvent(id);
+			if (eventoDeletado == null) {
+				return new ResponseEntity<>(Map.of("error", "Evento não encontrado"), HttpStatus.NOT_FOUND);
+			}
+			return new ResponseEntity<>(eventoDeletado, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao deletar evento: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	/**
+	 * Valida os dados de um evento.
+	 *
+	 * @param event Evento a ser validado.
+	 * @throws IllegalArgumentException Se algum campo obrigatório estiver vazio ou
+	 *                                  nulo.
+	 */
+	private void validarEvento(Event event) {
+		if (event.getTituloEvento() == null || event.getTituloEvento().trim().isEmpty() || event.getDataEvento() == null
+				|| event.getHorarioEvento() == null || event.getLocalEvento() == null
+				|| event.getLocalEvento().trim().isEmpty() || event.getDescricaoEvento() == null
+				|| event.getDescricaoEvento().trim().isEmpty()) {
+			throw new IllegalArgumentException("Por favor, preencha todos os campos obrigatórios.");
+		}
+	}
 }
