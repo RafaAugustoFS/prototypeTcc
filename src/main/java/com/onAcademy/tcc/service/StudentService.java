@@ -41,17 +41,7 @@ public class StudentService {
 	@Autowired
 	private TokenProvider tokenProvider;
 
-	private String generateRandomNumber(int length) {
-		String numbers = "0123456789";
-		StringBuilder sb = new StringBuilder();
-		Random random = new Random();
-
-		for (int i = 0; i < length; i++) {
-			sb.append(numbers.charAt(random.nextInt(numbers.length())));
-		}
-
-		return sb.toString();
-	}
+	
 
 	private String generateRandomPasswordWithName(int length, String nome) {
 		String numbers = "0123456789";
@@ -173,8 +163,6 @@ public class StudentService {
 			existStudent.setTelefoneAluno(student.getTelefoneAluno());
 			existStudent.setImageUrl(student.getImageUrl());
 
-			String identifierCode = ENROLLMENT_PREFIX + generateRandomNumber(6);
-			existStudent.setIdentifierCode(identifierCode);
 
 			String rawPassword = generateRandomPasswordWithName(6, existStudent.getNomeAluno()); 
 			String encodedPassword = passwordEncoder.encode(rawPassword);
@@ -188,7 +176,7 @@ public class StudentService {
 					+ "<p style='font-size: 16px;'>Seus dados de acesso foram atualizados com sucesso. Abaixo estão suas novas credenciais:</p>"
 					+ "<div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>"
 					+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Código de Matrícula:</strong> "
-					+ identifierCode + "</p>"
+					+"</p>"
 					+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Nova Senha:</strong> " + rawPassword + "</p>"
 					+ "</div>"
 					+ "<p style='font-size: 16px;'>Por favor, mantenha essas informações em local seguro e não as compartilhe com terceiros.</p>"
