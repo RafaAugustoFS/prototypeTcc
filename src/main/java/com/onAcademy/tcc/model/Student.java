@@ -34,7 +34,7 @@ public class Student {
 	private String imageUrl;
 	
 	private static final String ENROLLMENT_PREFIX = "a";
-	private static final int IDENTIFIER_CODE_LENGTH = 10; // Defina o comprimento desejado
+	private static final int IDENTIFIER_CODE_LENGTH = 10; 
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
 	private List<FeedbackByTeacher> feedback;
 
