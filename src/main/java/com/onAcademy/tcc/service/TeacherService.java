@@ -51,7 +51,7 @@ public class TeacherService {
 	}
 
 	public String loginTeacher(String identifierCode, String password) {
-		Teacher teacher = teacherRepo.findByidentifierCode(identifierCode)
+		Teacher teacher = teacherRepo.findByIdentifierCode(identifierCode)
 				.filter(i -> passwordEncoder.matches(password, i.getPassword()))
 				.orElseThrow(() -> new RuntimeException("Matricula ou senha incorretos"));
 		return tokenProvider.generate(teacher.getId().toString(), List.of("teacher"));
