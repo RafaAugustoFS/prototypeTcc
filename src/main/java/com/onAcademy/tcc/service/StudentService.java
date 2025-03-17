@@ -60,7 +60,7 @@ public class StudentService {
 	}
 
 	public String loginStudent(String identifierCode, String password) {
-		Student student = studentRepo.findByidentifierCode(identifierCode)
+		Student student = studentRepo.findByIdentifierCode(identifierCode)
 				.filter(s -> passwordEncoder.matches(password, s.getPassword()))
 				.orElseThrow(() -> new RuntimeException("Revise os campos!!"));
 		return tokenProvider.generate(student.getId().toString(), List.of("student"));
