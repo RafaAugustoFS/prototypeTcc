@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.FeedbackForm;
 import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.repository.FeedbackFormRepo;
@@ -45,6 +44,18 @@ public class FeedbackFormController {
 			CreatedByDTO createdByDTO, StudentDTO student) {
 	}
 
+	/**
+	 * Cria um feedback de um docente para um aluno.
+	 * 
+	 * - Recebe os dados do feedback via requisição HTTP POST. - Valida o conteúdo
+	 * do feedback, incluindo a existência de feedbacks anteriores para o mesmo
+	 * aluno e bimestre. - Se o feedback for válido, cria o feedback no banco de
+	 * dados. - Caso contrário, retorna uma resposta de erro HTTP 400 (Bad Request)
+	 * ou HTTP 500 (Internal Server Error).
+	 * 
+	 * @param feedbackByStudent Objeto contendo o feedback a ser criado.
+	 * @return Resposta HTTP com o feedback criado ou erro.
+	 */
 	@PostMapping("/feedbackForm")
 	public ResponseEntity<?> criarFeedback(@RequestBody FeedbackForm feedbackByStudent) {
 
@@ -62,6 +73,19 @@ public class FeedbackFormController {
 
 	}
 
+	/**
+	 * Valida o conteúdo de um feedback.
+	 * 
+	 * - Verifica se o aluno para o qual o feedback está sendo dado existe. - Valida
+	 * se o bimestre informado está entre 1 e 4. - Verifica se já existe um feedback
+	 * registrado para o mesmo aluno e bimestre.
+	 * 
+	 * @param feedbackByStudent O feedback a ser validado.
+	 * @throws IllegalArgumentException Se houver algum erro de validação nos dados
+	 *                                  do feedback.
+	 * @throws RuntimeException         Se já existir um feedback para o aluno no
+	 *                                  mesmo bimestre.
+	 */
 	private void validarFeedback(FeedbackForm feedbackByStudent) {
 		Student student = studentRepo.findById(feedbackByStudent.getRecipientStudent().getId())
 				.orElseThrow(() -> new RuntimeException("Estudante não encontrado."));
@@ -81,13 +105,24 @@ public class FeedbackFormController {
 
 	}
 
+	/**
+	 * Busca os feedbacks fornecidos a um aluno específico.
+	 * 
+	 * - Recebe o ID de um aluno e retorna todos os feedbacks fornecidos a ele. - Se
+	 * o aluno não tiver feedbacks registrados, retorna uma resposta HTTP 404 (Not
+	 * Found). - Retorna uma lista de feedbacks convertidos para DTOs.
+	 * 
+	 * @param id ID do aluno para o qual os feedbacks são solicitados.
+	 * @return Resposta HTTP com a lista de feedbacks ou erro.
+	 */
 	@GetMapping("/student/feedback/{id}")
 	public ResponseEntity<List<FeedbackDTO>> buscarPorAluno(@PathVariable Long id) {
 		List<FeedbackForm> feedbacks = feedbackFormService.buscarFeedbackPorAluno(id);
 		if (feedbacks != null) {
 			List<FeedbackDTO> feedbackDtos = feedbacks.stream()
 					.map(feedback -> new FeedbackDTO(feedback.getResposta1(), feedback.getResposta2(),
-							feedback.getResposta3(), feedback.getResposta4(), feedback.getResposta5(),feedback.getBimestre(),
+							feedback.getResposta3(), feedback.getResposta4(), feedback.getResposta5(),
+							feedback.getBimestre(),
 							new CreatedByDTO(feedback.getCreatedBy().getNomeDocente(), feedback.getCreatedBy().getId()),
 							new StudentDTO(feedback.getRecipientStudent().getNomeAluno(),
 									feedback.getRecipientStudent().getId())))

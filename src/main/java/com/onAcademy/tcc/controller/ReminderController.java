@@ -36,6 +36,16 @@ public class ReminderController {
 	@Autowired
 	private ReminderService reminderService;
 
+	/**
+	 * Cria um novo lembrete.
+	 * 
+	 * - Recebe os dados do lembrete via requisição HTTP POST. - Se o conteúdo do
+	 * lembrete for vazio, lança uma exceção. - Cria o lembrete no sistema e retorna
+	 * o lembrete criado.
+	 * 
+	 * @param reminder Objeto contendo os dados do lembrete a ser criado.
+	 * @return Resposta HTTP com o lembrete criado.
+	 */
 	@PostMapping("/reminder")
 	public ResponseEntity<Reminder> criarLembrete(@RequestBody Reminder reminder) {
 		if (reminder.getConteudo().isEmpty()) {
@@ -45,6 +55,15 @@ public class ReminderController {
 		return new ResponseEntity<>(reminder1, HttpStatus.OK);
 	}
 
+	/**
+	 * Recupera todos os lembretes registrados no sistema.
+	 * 
+	 * - Retorna todos os lembretes, com informações detalhadas sobre quem os criou
+	 * e a turma associada. - Se não houver lembretes, retorna uma resposta HTTP 404
+	 * (Not Found).
+	 * 
+	 * @return Resposta HTTP com a lista de todos os lembretes ou erro (404).
+	 */
 	@GetMapping("/reminder")
 	public ResponseEntity<List<ReminderDTO>> buscarTodosLembretes() {
 		List<Reminder> reminders = reminderService.buscarTodosLembretes();
@@ -71,6 +90,16 @@ public class ReminderController {
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 
+	/**
+	 * Busca lembretes associados a uma turma específica.
+	 * 
+	 * - Recebe o ID da turma como parâmetro e retorna todos os lembretes
+	 * relacionados a essa turma. - Caso não existam lembretes para a turma, retorna
+	 * uma resposta HTTP 404 (Not Found).
+	 * 
+	 * @param classStId ID da turma.
+	 * @return Resposta HTTP com a lista de lembretes para a turma ou erro (404).
+	 */
 	@GetMapping("/reminder/{classStId}")
 	public ResponseEntity<List<ReminderDTO>> buscarPorClassStId(@PathVariable Long classStId) {
 		List<Reminder> lembretes = reminderService.buscarLembretePorClassStId(classStId);
@@ -95,6 +124,17 @@ public class ReminderController {
 		return new ResponseEntity<>(reminderDTOs, HttpStatus.OK);
 	}
 
+	/**
+	 * Busca lembretes criados por um docente específico.
+	 * 
+	 * - Recebe o ID do docente como parâmetro e retorna todos os lembretes criados
+	 * por ele. - Se não houver lembretes, retorna uma resposta HTTP 404 (Not
+	 * Found).
+	 * 
+	 * @param teacherId ID do docente.
+	 * @return Resposta HTTP com a lista de lembretes criados pelo docente ou erro
+	 *         (404).
+	 */
 	@GetMapping("/reminder/teacher/{teacherId}")
 	public ResponseEntity<List<ReminderDTO>> buscarPorCreatedBy(@PathVariable Long teacherId) {
 		List<Reminder> lembretes = reminderService.buscarLembretePorCreatedBy(teacherId);

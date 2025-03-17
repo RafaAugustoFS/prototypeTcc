@@ -26,13 +26,15 @@ public class TeacherController {
 
 	record DisciplineDTO(String nomeDisciplina, Long discipline_id) {
 	}
-	
-	record StudentDTO(Long id, String nomeAluno) {}
+
+	record StudentDTO(Long id, String nomeAluno) {
+	}
 
 	record ClassDTO(String nomeTurma, Long id, int quantidadeAlunos) {
 	}
-	
-	record TeacherDTOFeedback(Long id, String nomeDocente){}
+
+	record TeacherDTOFeedback(Long id, String nomeDocente) {
+	}
 
 	record ClassDTOSimples(String nomeTurma, Long id) {
 	}
@@ -56,12 +58,12 @@ public class TeacherController {
 
 	record TeacherDTOTre(String nomeDocente, Long id, List<ClassDTO> classes) {
 	}
-	
-	record FeedbackDTO(Long id, String conteudo, StudentDTO createdBy, TeacherDTOFeedback recipientTeacher){}
+
+	record FeedbackDTO(Long id, String conteudo, StudentDTO createdBy, TeacherDTOFeedback recipientTeacher) {
+	}
 
 	record TeacherDTOSimples(String nomeDocente, Long id, List<ClassDTOSimples> classes, List<FeedbackDTO> feedback) {
 	}
-	
 
 	@Autowired
 	private TeacherService teacherService;
@@ -74,15 +76,16 @@ public class TeacherController {
 
 	@Autowired
 	private DisciplineRepo disciplineRepo;
-	
-	
-	
+
 	@Autowired
 	private ImageUploaderService imageUploaderService;
 
-	
-	
-
+	/**
+	 * Endpoint para criar um novo professor.
+	 * 
+	 * @param teacherDTO Objeto contendo as informações do professor a ser criado.
+	 * @return Status da criação do professor.
+	 */
 	@PostMapping("/teacher")
 	@PreAuthorize("hasRole('INSTITUTION')")
 	public ResponseEntity<?> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
@@ -115,6 +118,12 @@ public class TeacherController {
 		}
 	}
 
+	/**
+	 * Valida os campos do DTO do professor.
+	 * 
+	 * @param teacherDTO O DTO do professor a ser validado.
+	 * @throws IllegalArgumentException Se algum campo estiver inválido.
+	 */
 	private void validarTeacherDTO(TeacherDTO teacherDTO) {
 		if (teacherDTO.nomeDocente.isEmpty()) {
 			throw new IllegalArgumentException("Por favor preencha com um nome.");
@@ -147,6 +156,11 @@ public class TeacherController {
 
 	}
 
+	/**
+	 * Endpoint para buscar todos os professores.
+	 * 
+	 * @return Lista de professores.
+	 */
 	@GetMapping("/teacher")
 	public ResponseEntity<?> buscarTeachers() {
 		List<Teacher> teachers = teacherService.buscarTeachers();
@@ -154,13 +168,23 @@ public class TeacherController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Nenhum professor encontrado."));
 		}
 
-		List<TeacherDTOGet> teacherDTOs = teachers.stream().map(t -> new TeacherDTOGet(t.getId(),t.getNomeDocente(),
-				t.getDataNascimentoDocente().toString(), t.getEmailDocente(), t.getTelefoneDocente()))
+		List<TeacherDTOGet> teacherDTOs = teachers
+				.stream().map(t -> new TeacherDTOGet(t.getId(), t.getNomeDocente(),
+						t.getDataNascimentoDocente().toString(), t.getEmailDocente(), t.getTelefoneDocente()))
 				.collect(Collectors.toList());
 
 		return ResponseEntity.ok(teacherDTOs);
 	}
 
+	/**
+	 * Este método busca um único professor através do ID fornecido e retorna as
+	 * turmas que o professor leciona, com detalhes sobre o nome da turma, o ID e a
+	 * quantidade de alunos em cada turma.
+	 *
+	 * @param id O ID do professor a ser buscado.
+	 * @return ResponseEntity com os dados do professor e suas turmas, ou um erro
+	 *         404 caso o professor não seja encontrado.
+	 */
 	@GetMapping("/teacher/classes/{id}")
 	public ResponseEntity<TeacherDTOTre> buscarTeacherClassUnico(@PathVariable Long id) {
 		Teacher buscarUnico = teacherService.buscarUnicoTeacher(id);
@@ -176,6 +200,13 @@ public class TeacherController {
 
 	}
 
+	/**
+	 * Endpoint para buscar um professor e suas respectivas disciplinas, turmas e
+	 * feedbacks.
+	 * 
+	 * @param id O ID do professor a ser buscado.
+	 * @return Informações detalhadas sobre o professor.
+	 */
 	@GetMapping("/teacher/{id}")
 	public ResponseEntity<?> buscarTeacherUnico(@PathVariable Long id) {
 		Teacher teacher = teacherService.buscarUnicoTeacher(id);
@@ -188,12 +219,14 @@ public class TeacherController {
 		List<ClassDTOSimples> classes = teacher.getTeachers().stream()
 				.map(classe -> new ClassDTOSimples(classe.getNomeTurma(), classe.getId())).collect(Collectors.toList());
 		List<FeedbackDTO> feedbacks = teacher.getFeedback().stream()
-				.map(feedback -> new FeedbackDTO(feedback.getId(),feedback.getConteudo(),  new StudentDTO(feedback.getCreatedBy().getId(), feedback.getCreatedBy().getNomeAluno()), // Conversão correta
-				        new TeacherDTOFeedback(
-				        		feedback.getRecipientTeacher().getId(),
-				                feedback.getRecipientTeacher().getNomeDocente()
-				            ))).collect(Collectors.toList());
-		TeacherDTOSimples TeacherDTOSimples = new TeacherDTOSimples(teacher.getNomeDocente(), teacher.getId(), classes, feedbacks);
+				.map(feedback -> new FeedbackDTO(feedback.getId(), feedback.getConteudo(),
+						new StudentDTO(feedback.getCreatedBy().getId(), feedback.getCreatedBy().getNomeAluno()), // Conversão
+																													// correta
+						new TeacherDTOFeedback(feedback.getRecipientTeacher().getId(),
+								feedback.getRecipientTeacher().getNomeDocente())))
+				.collect(Collectors.toList());
+		TeacherDTOSimples TeacherDTOSimples = new TeacherDTOSimples(teacher.getNomeDocente(), teacher.getId(), classes,
+				feedbacks);
 
 		TeacherDTOTwoSimples teacherDTOTwoSimples = new TeacherDTOTwoSimples(teacher.getNomeDocente(),
 				teacher.getDataNascimentoDocente().toString(), teacher.getEmailDocente(), teacher.getTelefoneDocente(),
@@ -201,12 +234,25 @@ public class TeacherController {
 		return ResponseEntity.ok(teacherDTOTwoSimples);
 	}
 
+	/**
+	 * Endpoint para login de professor.
+	 * 
+	 * @param loginTeacherDTO Objeto contendo as credenciais de login.
+	 * @return Token de autenticação JWT.
+	 */
 	@PostMapping("/teacher/login")
 	public ResponseEntity<Map<String, String>> loginTeacher(@RequestBody LoginTeacherDTO loginTeacherDTO) {
 		String token = teacherService.loginTeacher(loginTeacherDTO.identifierCode(), loginTeacherDTO.password());
 		return ResponseEntity.ok(Map.of("token", token));
 	}
 
+	/**
+	 * Endpoint para editar as informações de um professor existente.
+	 * 
+	 * @param id      O ID do professor a ser editado.
+	 * @param teacher Objeto com as novas informações do professor.
+	 * @return O professor atualizado.
+	 */
 	@PutMapping("/teacher/{id}")
 	public ResponseEntity<?> editarTeacher(@PathVariable Long id, @RequestBody Teacher teacher) {
 		try {
@@ -220,6 +266,12 @@ public class TeacherController {
 		}
 	}
 
+	/**
+	 * Endpoint para deletar um professor pelo ID.
+	 * 
+	 * @param id O ID do professor a ser deletado.
+	 * @return Status da operação de exclusão.
+	 */
 	@DeleteMapping("/teacher/{id}")
 	public ResponseEntity<?> deletarTeacher(@PathVariable Long id) {
 		try {
@@ -232,68 +284,80 @@ public class TeacherController {
 			return ResponseEntity.badRequest().body(Map.of("error", "Erro ao deletar professor: " + e.getMessage()));
 		}
 	}
-	
-	
-	// Serviço que realizará o upload da imagem
-		@PostMapping("/teacher/upload-image/{id}")
-		public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestBody Map<String, String> request) {
-			try {
-				String base64Image = request.get("image");
 
-				String imageUrl = imageUploaderService.uploadBase64Image(base64Image);
+	/**
+	 * Endpoint para realizar o upload de uma imagem para um professor.
+	 * 
+	 * @param id      O ID do professor.
+	 * @param request Contém a imagem codificada em base64.
+	 * @return URL da imagem carregada.
+	 */
+	@PostMapping("/teacher/upload-image/{id}")
+	public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestBody Map<String, String> request) {
+		try {
+			String base64Image = request.get("image");
 
-				Teacher teacher = teacherService.buscarUnicoTeacher(id);
-				if (teacher == null) {
-					return new ResponseEntity<>(Map.of("error", "Professor não encontrado"), HttpStatus.NOT_FOUND);
-				}
-				teacher.setImageUrl(imageUrl);
-				teacherService.atualizarTeacher(id, teacher);
+			String imageUrl = imageUploaderService.uploadBase64Image(base64Image);
 
-				return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
-			} catch (Exception e) {
-				return new ResponseEntity<>(Map.of("error", "Erro ao fazer upload da imagem: " + e.getMessage()),
-						HttpStatus.BAD_REQUEST);
+			Teacher teacher = teacherService.buscarUnicoTeacher(id);
+			if (teacher == null) {
+				return new ResponseEntity<>(Map.of("error", "Professor não encontrado"), HttpStatus.NOT_FOUND);
 			}
+			teacher.setImageUrl(imageUrl);
+			teacherService.atualizarTeacher(id, teacher);
+
+			return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao fazer upload da imagem: " + e.getMessage()),
+					HttpStatus.BAD_REQUEST);
 		}
+	}
 
-		// Extrai o token do cabeçalho Authorization
-		@GetMapping("/teacher/image/{id}")
-		public ResponseEntity<?> getImage(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
-			try {
+	/**
+	 * Endpoint para recuperar a imagem de um professor.
+	 * 
+	 * @param id         O ID do professor.
+	 * @param authHeader Cabeçalho de autenticação contendo o token JWT.
+	 * @return A URL da imagem do professor.
+	 */
+	@GetMapping("/teacher/image/{id}")
+	public ResponseEntity<?> getImage(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
+		try {
 
-				String token = extractTokenFromHeader(authHeader);
-				if (token == null) {
-					return new ResponseEntity<>(Map.of("error", "Token não fornecido"), HttpStatus.UNAUTHORIZED);
-				}
-
-				Teacher teacher = teacherService.buscarUnicoTeacher(id);
-				if (teacher == null) {
-					return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
-				}
-
-				String imageUrl = teacher.getImageUrl();
-				if (imageUrl == null || imageUrl.isEmpty()) {
-					return new ResponseEntity<>(Map.of("error", "Imagem não encontrada"), HttpStatus.NOT_FOUND);
-				}
-
-				return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
-
-			} catch (Exception e) {
-				return new ResponseEntity<>(Map.of("error", "Erro ao recuperar a imagem: " + e.getMessage()),
-						HttpStatus.INTERNAL_SERVER_ERROR);
+			String token = extractTokenFromHeader(authHeader);
+			if (token == null) {
+				return new ResponseEntity<>(Map.of("error", "Token não fornecido"), HttpStatus.UNAUTHORIZED);
 			}
-		}
 
-		// Método para extrair o token do cabeçalho Authorization
-		private String extractTokenFromHeader(String authHeader) {
-			if (authHeader != null && authHeader.startsWith("Bearer ")) {
-				return authHeader.substring(7);
+			Teacher teacher = teacherService.buscarUnicoTeacher(id);
+			if (teacher == null) {
+				return new ResponseEntity<>(Map.of("error", "Estudante não encontrado"), HttpStatus.NOT_FOUND);
 			}
-			return null;
-		}
 
-	
-	
-	
-	
+			String imageUrl = teacher.getImageUrl();
+			if (imageUrl == null || imageUrl.isEmpty()) {
+				return new ResponseEntity<>(Map.of("error", "Imagem não encontrada"), HttpStatus.NOT_FOUND);
+			}
+
+			return new ResponseEntity<>(Map.of("imageUrl", imageUrl), HttpStatus.OK);
+
+		} catch (Exception e) {
+			return new ResponseEntity<>(Map.of("error", "Erro ao recuperar a imagem: " + e.getMessage()),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Método auxiliar para extrair o token do cabeçalho Authorization.
+	 * 
+	 * @param authHeader Cabeçalho de autenticação.
+	 * @return O token JWT ou null se não estiver presente.
+	 */
+	private String extractTokenFromHeader(String authHeader) {
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			return authHeader.substring(7);
+		}
+		return null;
+	}
+
 }
