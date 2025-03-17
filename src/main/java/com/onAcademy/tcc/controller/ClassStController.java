@@ -82,6 +82,18 @@ public class ClassStController {
 			List<DisciplineTurmaDTO> disciplines) {
 	}
 
+	/**
+	 * Cria uma nova turma e associa professores e disciplinas.
+	 * 
+	 * - Recebe os dados da turma através de um DTO. - Valida os dados fornecidos. -
+	 * Verifica se os professores e disciplinas existem. - Se algum dado estiver
+	 * incorreto, retorna erro. - Se a turma for criada com sucesso, retorna a
+	 * resposta com o status HTTP 201 (Created).
+	 * 
+	 * @param classDTO Objeto contendo os dados da turma a ser criada.
+	 * @return Resposta com a turma criada ou erro.
+	 */
+
 	@PreAuthorize("hasRole('INSTITUTION')")
 	@PostMapping("/class")
 	@Transactional
@@ -94,10 +106,9 @@ public class ClassStController {
 			if (teacher.size() != classDTO.idTeacher().size()) {
 				return new ResponseEntity<>(Map.of("error", "Professor não encontrado."), HttpStatus.BAD_REQUEST);
 			}
-			if(disciplines.size() != classDTO.disciplineId().size()) {
+			if (disciplines.size() != classDTO.disciplineId().size()) {
 				return new ResponseEntity<>(Map.of("error", "Disciplina não encontrada."), HttpStatus.BAD_REQUEST);
 			}
-			
 
 			ClassSt classSt = new ClassSt();
 			classSt.setNomeTurma(classDTO.nomeTurma);
@@ -118,6 +129,16 @@ public class ClassStController {
 		}
 	}
 
+	/**
+	 * Valida os dados fornecidos para a criação de uma turma.
+	 * 
+	 * - Verifica se os campos obrigatórios estão preenchidos corretamente. - Valida
+	 * a capacidade máxima da turma e o número de sala. - Lança exceções caso os
+	 * dados sejam inválidos.
+	 * 
+	 * @param classDTO Objeto contendo os dados da turma a ser validada.
+	 * @throws IllegalArgumentException Se algum dado estiver inválido.
+	 */
 	public void validarClassSt(ClassDTO classDTO) {
 		if (classDTO.nomeTurma.isEmpty()) {
 			throw new IllegalArgumentException("Nome da turma é obrigatório.");
@@ -138,9 +159,16 @@ public class ClassStController {
 			throw new IllegalArgumentException("Turma deve ter professores.");
 		}
 
-	
 	}
 
+	/**
+	 * Retorna todas as turmas cadastradas com seus respectivos professores.
+	 * 
+	 * - Consulta todas as turmas no sistema. - Converte as turmas para o formato de
+	 * resposta utilizando DTOs. - Retorna a lista de turmas no formato JSON.
+	 * 
+	 * @return Resposta com a lista de turmas.
+	 */
 	@GetMapping("/class")
 	public ResponseEntity<?> buscarTodasClasses() {
 		try {
@@ -159,6 +187,15 @@ public class ClassStController {
 		}
 	}
 
+	/**
+	 * Retorna todas as turmas com suas respectivas disciplinas.
+	 * 
+	 * - Consulta todas as turmas no sistema. - Converte as turmas e disciplinas
+	 * para o formato de resposta utilizando DTOs. - Retorna a lista de turmas com
+	 * suas disciplinas.
+	 * 
+	 * @return Resposta com a lista de turmas e disciplinas.
+	 */
 	@GetMapping("/class/discipline")
 	public ResponseEntity<List<ClassDTODisciplina>> buscarTodasClassesDisciplines() {
 		List<ClassSt> classSt = classStService.buscarTodasClasses();
@@ -177,6 +214,15 @@ public class ClassStController {
 		return ResponseEntity.ok(classDTos);
 	}
 
+	/**
+	 * Retorna a lista de alunos de uma turma específica.
+	 * 
+	 * - Recebe o ID de uma turma. - Busca a turma e converte os alunos para o
+	 * formato de resposta. - Se a turma não for encontrada, retorna erro HTTP 404.
+	 * 
+	 * @param id ID da turma.
+	 * @return Resposta com a lista de alunos da turma.
+	 */
 	@GetMapping("/class/students/{id}")
 	public ResponseEntity<?> buscarClasseStudentsUnica(@PathVariable Long id) {
 		try {
@@ -204,6 +250,16 @@ public class ClassStController {
 		}
 	}
 
+	/**
+	 * Retorna a lista de professores e disciplinas de uma turma específica.
+	 * 
+	 * - Recebe o ID de uma turma. - Busca a turma e converte os professores e
+	 * disciplinas para o formato de resposta. - Se a turma não for encontrada,
+	 * retorna erro HTTP 404.
+	 * 
+	 * @param id ID da turma.
+	 * @return Resposta com os professores e disciplinas da turma.
+	 */
 	@GetMapping("/class/teacher/disciplinas/{id}")
 	public ResponseEntity<?> buscarClasseTeachersUnica(@PathVariable Long id) {
 		try {
@@ -228,6 +284,17 @@ public class ClassStController {
 		}
 	}
 
+	/**
+	 * Atualiza os dados de uma turma existente.
+	 * 
+	 * - Recebe o ID da turma e os novos dados. - Se a turma existir, atualiza as
+	 * informações e retorna a turma atualizada. - Se a turma não for encontrada,
+	 * retorna erro HTTP 404.
+	 * 
+	 * @param id      ID da turma a ser atualizada.
+	 * @param classSt Objeto com os novos dados da turma.
+	 * @return Resposta com a turma atualizada ou erro.
+	 */
 	@PutMapping("/class/{id}")
 	public ResponseEntity<?> atualizarClasse(@PathVariable Long id, @RequestBody ClassSt classSt) {
 		try {
@@ -242,6 +309,15 @@ public class ClassStController {
 		}
 	}
 
+	/**
+	 * Deleta uma turma existente.
+	 * 
+	 * - Recebe o ID da turma a ser deletada. - Se a turma existir, a deleta do
+	 * sistema. - Se a turma não for encontrada, retorna erro HTTP 404.
+	 * 
+	 * @param id ID da turma a ser deletada.
+	 * @return Resposta indicando sucesso ou erro.
+	 */
 	@DeleteMapping("/class/{id}")
 	@Transactional
 	public ResponseEntity<?> deletarClasse(@PathVariable Long id) {
