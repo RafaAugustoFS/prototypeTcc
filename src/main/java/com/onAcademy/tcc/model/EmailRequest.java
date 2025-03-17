@@ -1,5 +1,14 @@
 package com.onAcademy.tcc.model;
 
+/**
+ * Representa uma solicitação de envio de e-mail.
+ * Esta classe é usada para encapsular os dados necessários para enviar um e-mail,
+ * como o destinatário, o assunto e o corpo da mensagem.
+ *
+ * @param to      Endereço de e-mail do destinatário.
+ * @param subject Assunto do e-mail.
+ * @param body    Corpo da mensagem do e-mail.
+ */
 public class EmailRequest {
     private String to;
     private String subject;
