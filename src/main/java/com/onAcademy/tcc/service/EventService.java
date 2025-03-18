@@ -1,65 +1,82 @@
 package com.onAcademy.tcc.service;
 
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.onAcademy.tcc.model.Event;
 import com.onAcademy.tcc.repository.EventRepo;
 
+/**
+ * Serviço responsável por operações relacionadas a eventos.
+ */
 @Service
 public class EventService {
-	@Autowired
-	private EventRepo eventRepo;
 
-	
-	public Event criarEvento(Event event) {
-		Event criarEvento = eventRepo.save(event);
-		return criarEvento;
-	}
+    @Autowired
+    private EventRepo eventRepo;
 
-	
-	public List<Event> buscarEventos() {
-		List<Event> buscarEventos = eventRepo.findAll();
-		return buscarEventos;
-	}
+    /**
+     * Cria um novo evento.
+     *
+     * @param event O evento a ser criado.
+     * @return O evento salvo.
+     */
+    public Event criarEvento(Event event) {
+        return eventRepo.save(event);
+    }
 
-	
-	public Event buscarEventoUnico(Long id) {
-		Optional<Event> existEvent = eventRepo.findById(id);
-		if (existEvent.isPresent()) {
-			return existEvent.get();
-		}
-		return null;
-	}
+    /**
+     * Retorna uma lista de todos os eventos cadastrados.
+     *
+     * @return Lista de eventos.
+     */
+    public List<Event> buscarEventos() {
+        return eventRepo.findAll();
+    }
 
-	
-	public Event atualizarEvento(Long id, Event event) {
-		Optional<Event> existEvent = eventRepo.findById(id);
-		if (existEvent.isPresent()) {
-			Event atualizarEvento = existEvent.get();
-			atualizarEvento.setTituloEvento(event.getTituloEvento());
-			atualizarEvento.setLocalEvento(event.getLocalEvento());
-			atualizarEvento.setDataEvento(event.getDataEvento());
-			atualizarEvento.setHorarioEvento(event.getHorarioEvento());
-			atualizarEvento.setDescricaoEvento(event.getDescricaoEvento());
-			eventRepo.save(atualizarEvento);
-			return atualizarEvento;
-		}
+    /**
+     * Busca um evento pelo seu ID.
+     *
+     * @param id O ID do evento a ser buscado.
+     * @return O evento encontrado ou null se não existir.
+     */
+    public Event buscarEventoUnico(Long id) {
+        return eventRepo.findById(id).orElse(null);
+    }
 
-		return null;
-	}
+    /**
+     * Atualiza os dados de um evento existente.
+     *
+     * @param id    O ID do evento a ser atualizado.
+     * @param event Objeto contendo os novos dados do evento.
+     * @return O evento atualizado ou null se o evento não existir.
+     */
+    public Event atualizarEvento(Long id, Event event) {
+        return eventRepo.findById(id)
+                .map(existingEvent -> {
+                    existingEvent.setTituloEvento(event.getTituloEvento());
+                    existingEvent.setLocalEvento(event.getLocalEvento());
+                    existingEvent.setDataEvento(event.getDataEvento());
+                    existingEvent.setHorarioEvento(event.getHorarioEvento());
+                    existingEvent.setDescricaoEvento(event.getDescricaoEvento());
+                    return eventRepo.save(existingEvent);
+                })
+                .orElse(null);
+    }
 
-	
-	public Event deletarEvent(Long id) {
-		Optional<Event> existEvent = eventRepo.findById(id);
-		if (existEvent.isPresent()) {
-			Event deletarEvent = existEvent.get();
-			eventRepo.delete(deletarEvent);
-			return deletarEvent;
-		}
-
-		return null;
-	}
-
+    /**
+     * Remove um evento pelo seu ID.
+     *
+     * @param id O ID do evento a ser removido.
+     * @return O evento removido ou null se o evento não existir.
+     */
+    public Event deletarEvent(Long id) {
+        return eventRepo.findById(id)
+                .map(existingEvent -> {
+                    eventRepo.delete(existingEvent);
+                    return existingEvent;
+                })
+                .orElse(null);
+    }
 }
