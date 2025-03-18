@@ -19,6 +19,20 @@ import com.onAcademy.tcc.repository.TeacherRepo;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 
+/**
+ * Serviço responsável pela gestão dos estudantes no sistema.
+ * 
+ * - Este serviço permite realizar operações como login, criação, atualização,
+ * exclusão e busca de estudantes. - Também oferece funcionalidade para gerar
+ * senhas aleatórias para os estudantes e enviar emails com as credenciais de
+ * acesso.
+ * 
+ * @see com.onAcademy.tcc.model.Student
+ * @see com.onAcademy.tcc.repository.StudentRepo
+ * @see com.onAcademy.tcc.repository.ClassStRepo
+ * @see com.onAcademy.tcc.repository.TeacherRepo
+ */
+
 @Service
 public class StudentService {
 	private static final String ENROLLMENT_PREFIX = "a";
@@ -41,8 +55,14 @@ public class StudentService {
 	@Autowired
 	private TokenProvider tokenProvider;
 
-	
-
+	/**
+	 * Gera uma senha aleatória para o estudante, utilizando seu nome e um número
+	 * aleatório.
+	 * 
+	 * @param length O comprimento da parte numérica da senha.
+	 * @param nome   O nome do estudante, que será incluído na senha.
+	 * @return A senha gerada com números aleatórios e o nome do estudante.
+	 */
 	private String generateRandomPasswordWithName(int length, String nome) {
 		String numbers = "0123456789";
 		StringBuilder sb = new StringBuilder();
@@ -52,13 +72,19 @@ public class StudentService {
 			sb.append(numbers.charAt(random.nextInt(numbers.length())));
 		}
 
-		
 		String nomeFormatado = nome.replaceAll("\\s+", "");
-		sb.append(nomeFormatado); 
+		sb.append(nomeFormatado);
 
 		return sb.toString();
 	}
 
+	/**
+	 * Realiza o login do estudante no sistema.
+	 * 
+	 * @param identifierCode O código de matrícula do estudante.
+	 * @param password       A senha fornecida pelo estudante.
+	 * @return Um token JWT gerado para o estudante logado.
+	 */
 	public String loginStudent(String identifierCode, String password) {
 		Student student = studentRepo.findByIdentifierCode(identifierCode)
 				.filter(s -> passwordEncoder.matches(password, s.getPassword()))
@@ -66,11 +92,63 @@ public class StudentService {
 		return tokenProvider.generate(student.getId().toString(), List.of("student"));
 	}
 
+	/**
+	 * Cria um novo estudante no sistema.
+	 * 
+	 * - Valida os dados fornecidos pelo usuário (nome, email, telefone, etc.). -
+	 * Gera uma senha aleatória e envia um e-mail de boas-vindas com as credenciais.
+	 * 
+	 * @param studentDTO O objeto `StudentClassDTO` contendo os dados do estudante e
+	 *                   da turma.
+	 * @return O estudante criado e salvo no banco de dados.
+	 * @throws MessagingException Caso ocorra um erro ao enviar o e-mail.
+	 */
 	@Transactional
 	public Student criarEstudante(StudentClassDTO studentDTO) throws MessagingException {
 		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
 				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 
+		validarStudent(studentDTO);
+		Student student = new Student();
+		String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
+		student.setNomeAluno(studentDTO.getNomeAluno());
+		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
+		student.setEmailAluno(studentDTO.getEmailAluno());
+		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
+
+		String rawPassword = Student.generateRandomPassword(studentDTO, classSt);
+		String encodedPassword = passwordEncoder.encode(rawPassword);
+		student.setPassword(encodedPassword);
+
+		student.setTurmaId(classSt.getId());
+		student.setPassword(encodedPassword);
+		student.setImageUrl(studentDTO.getImageUrl());
+		Student savedStudent = studentRepo.save(student);
+
+		String emailSubject = "Bem-vindo ao OnAcademy - Seu cadastro foi realizado com sucesso!";
+
+		String emailText = "<html>" + "<body style='font-family: Arial, sans-serif; color: #333;'>"
+				+ "<div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>"
+				+ "<h1 style='color: #007BFF;'>Olá, " + savedStudent.getNomeAluno() + "!</h1>"
+				+ "<p style='font-size: 16px;'>Seja muito bem-vindo(a) ao <strong>OnAcademy</strong>! Estamos felizes em tê-lo(a) conosco.</p>"
+				+ "<p style='font-size: 16px;'>Seu cadastro foi realizado com sucesso. Abaixo estão suas credenciais de acesso:</p>"
+				+ "<div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>"
+				+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Código de Matrícula:</strong> "
+				+ savedStudent.getIdentifierCode() + "</p>"
+				+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Senha:</strong> " + rawPassword + "</p>"
+				+ "</div>"
+				+ "<p style='font-size: 16px;'>Por favor, mantenha essas informações em local seguro e não as compartilhe com terceiros.</p>"
+				+ "<p style='font-size: 16px;'>Se precisar de ajuda ou tiver alguma dúvida, entre em contato conosco.</p>"
+				+ "<p style='font-size: 16px;'>Atenciosamente,<br/><strong>Equipe OnAcademy</strong></p>"
+				+ "<p style='font-size: 14px; color: #777;'>Este é um e-mail automático, por favor não responda.</p>"
+				+ "</div>" + "</body>" + "</html>";
+
+		emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
+
+		return savedStudent;
+	}
+
+	public void validarStudent(StudentClassDTO studentDTO) {
 		if (studentDTO.getNomeAluno().isEmpty()) {
 			throw new IllegalArgumentException("Por favor preencha com um nome.");
 		}
@@ -107,51 +185,27 @@ public class StudentService {
 			throw new IllegalArgumentException("Por favor preencha o campo de turma.");
 		}
 
-		Student student = new Student();
-		String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
-		student.setNomeAluno(studentDTO.getNomeAluno());
-		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
-		student.setEmailAluno(studentDTO.getEmailAluno());
-		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
-
-		String rawPassword = Student.generateRandomPassword(studentDTO, classSt);
-		String encodedPassword = passwordEncoder.encode(rawPassword);
-		student.setPassword(encodedPassword);
-
-		student.setTurmaId(classSt.getId());
-		student.setPassword(encodedPassword);
-		student.setImageUrl(studentDTO.getImageUrl());
-		Student savedStudent = studentRepo.save(student);
-
-		String emailSubject = "Bem-vindo ao OnAcademy - Seu cadastro foi realizado com sucesso!";
-
-		String emailText = "<html>"
-		    + "<body style='font-family: Arial, sans-serif; color: #333;'>"
-		    + "<div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>"
-		    + "<h1 style='color: #007BFF;'>Olá, " + savedStudent.getNomeAluno() + "!</h1>"
-		    + "<p style='font-size: 16px;'>Seja muito bem-vindo(a) ao <strong>OnAcademy</strong>! Estamos felizes em tê-lo(a) conosco.</p>"
-		    + "<p style='font-size: 16px;'>Seu cadastro foi realizado com sucesso. Abaixo estão suas credenciais de acesso:</p>"
-		    + "<div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>"
-		    + "<p style='font-size: 14px; margin: 5px 0;'><strong>Código de Matrícula:</strong> " + savedStudent.getIdentifierCode() + "</p>"
-		    + "<p style='font-size: 14px; margin: 5px 0;'><strong>Senha:</strong> " + rawPassword + "</p>"
-		    + "</div>"
-		    + "<p style='font-size: 16px;'>Por favor, mantenha essas informações em local seguro e não as compartilhe com terceiros.</p>"
-		    + "<p style='font-size: 16px;'>Se precisar de ajuda ou tiver alguma dúvida, entre em contato conosco.</p>"
-		    + "<p style='font-size: 16px;'>Atenciosamente,<br/><strong>Equipe OnAcademy</strong></p>"
-		    + "<p style='font-size: 14px; color: #777;'>Este é um e-mail automático, por favor não responda.</p>"
-		    + "</div>"
-		    + "</body>"
-		    + "</html>";
-
-		emailService.sendEmail(savedStudent.getEmailAluno(), emailSubject, emailText);
-
-		return savedStudent;
 	}
 
+	/**
+	 * Busca todos os estudantes cadastrados no sistema.
+	 * 
+	 * @return Uma lista de todos os estudantes.
+	 */
 	public List<Student> buscarTodosEstudantes() {
 		return studentRepo.findAll();
 	}
 
+	/**
+	 * Atualiza os dados de um estudante existente no sistema.
+	 * 
+	 * - Gera uma nova senha e envia um e-mail notificando o estudante sobre a
+	 * atualização.
+	 * 
+	 * @param id      O ID do estudante a ser atualizado.
+	 * @param student O objeto `Student` contendo os novos dados do estudante.
+	 * @return O estudante atualizado e salvo no banco de dados.
+	 */
 	public Student atualizarEstudante(Long id, Student student) {
 		Optional<Student> existStudentOpt = studentRepo.findById(id);
 		if (existStudentOpt.isPresent()) {
@@ -163,8 +217,7 @@ public class StudentService {
 			existStudent.setTelefoneAluno(student.getTelefoneAluno());
 			existStudent.setImageUrl(student.getImageUrl());
 
-
-			String rawPassword = generateRandomPasswordWithName(6, existStudent.getNomeAluno()); 
+			String rawPassword = generateRandomPasswordWithName(6, existStudent.getNomeAluno());
 			String encodedPassword = passwordEncoder.encode(rawPassword);
 			existStudent.setPassword(encodedPassword);
 
@@ -175,8 +228,7 @@ public class StudentService {
 					+ "<h1 style='color: #007BFF;'>Olá, " + existStudent.getNomeAluno() + "!</h1>"
 					+ "<p style='font-size: 16px;'>Seus dados de acesso foram atualizados com sucesso. Abaixo estão suas novas credenciais:</p>"
 					+ "<div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>"
-					+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Código de Matrícula:</strong> "
-					+"</p>"
+					+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Código de Matrícula:</strong> " + "</p>"
 					+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Nova Senha:</strong> " + rawPassword + "</p>"
 					+ "</div>"
 					+ "<p style='font-size: 16px;'>Por favor, mantenha essas informações em local seguro e não as compartilhe com terceiros.</p>"
@@ -195,11 +247,23 @@ public class StudentService {
 		return null;
 	}
 
+	/**
+	 * Busca um estudante específico pelo ID.
+	 * 
+	 * @param id O ID do estudante.
+	 * @return O estudante encontrado, ou `null` caso não exista.
+	 */
 	public Student buscarEstudanteUnico(Long id) {
 		Optional<Student> existStudent = studentRepo.findById(id);
 		return existStudent.orElse(null);
 	}
 
+	/**
+	 * Exclui um estudante do sistema.
+	 * 
+	 * @param id O ID do estudante a ser excluído.
+	 * @return O estudante excluído, ou `null` caso não exista.
+	 */
 	public Student deletarEstudante(Long id) {
 		Optional<Student> existStudent = studentRepo.findById(id);
 		if (existStudent.isPresent()) {
