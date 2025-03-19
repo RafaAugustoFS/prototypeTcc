@@ -1,5 +1,6 @@
 package com.onAcademy.tcc.service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -9,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.onAcademy.tcc.config.TokenProvider;
+import com.onAcademy.tcc.model.ClassSt;
 import com.onAcademy.tcc.model.Teacher;
 import com.onAcademy.tcc.repository.TeacherRepo;
 
@@ -204,9 +206,19 @@ public class TeacherService {
 	public Teacher deletarTeacher(Long id) {
 		Optional<Teacher> existingTeacher = teacherRepo.findById(id);
 		if (existingTeacher.isPresent()) {
-			Teacher deletarTeacher = existingTeacher.get();
-			teacherRepo.delete(deletarTeacher);
-			return deletarTeacher;
+			Teacher teacher = existingTeacher.get();
+			teacher.setDisciplines(Collections.emptyList()); // Remover as disciplinas associadas
+			teacher.setFeedback(Collections.emptyList()); // Remover os feedbacks recebidos
+			teacher.setFeedbackProfessor(Collections.emptyList()); // Remover os feedbacks enviados
+			teacher.setFeedbackForm(Collections.emptyList()); // Remover os formulários de feedback
+			teacher.setReminder(Collections.emptyList());
+
+			for (ClassSt turma : teacher.getTeachers()) {
+				turma.getClasses().remove(teacher); // Remove o professor da turma
+			}
+			teacher.setTeachers(Collections.emptyList());
+			teacherRepo.delete(teacher);
+			return teacher;
 		}
 		return null;
 	}
