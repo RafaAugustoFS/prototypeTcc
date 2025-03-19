@@ -44,7 +44,7 @@ public class TeacherController {
 	}
 
 	record TeacherDTOGet(Long id, String nomeDocente, String dataNascimentoDocente, String emailDocente,
-			String telefoneDocente) {
+			String telefoneDocente, String imageUrl) {
 	}
 
 	record TeacherDTOTwo(String nomeDocente, String dataNascimentoDocente, String emailDocente, String telefoneDocente,
@@ -56,13 +56,13 @@ public class TeacherController {
 			List<ClassDTOSimples> classes, List<FeedbackDTO> feedbacks) {
 	}
 
-	record TeacherDTOTre(String nomeDocente, Long id, List<ClassDTO> classes) {
+	record TeacherDTOTre(String nomeDocente, Long id, String imageUrl, List<ClassDTO> classes) {
 	}
 
 	record FeedbackDTO(Long id, String conteudo, StudentDTO createdBy, TeacherDTOFeedback recipientTeacher) {
 	}
 
-	record TeacherDTOSimples(String nomeDocente, Long id, List<ClassDTOSimples> classes, List<FeedbackDTO> feedback) {
+	record TeacherDTOSimples(String nomeDocente, Long id, String imageUrl, List<ClassDTOSimples> classes, List<FeedbackDTO> feedback) {
 	}
 
 	@Autowired
@@ -87,36 +87,47 @@ public class TeacherController {
 	 * @return Status da criação do professor.
 	 */
 	@PostMapping("/teacher")
-	@PreAuthorize("hasRole('INSTITUTION')")
-	public ResponseEntity<?> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
-		try {
-			validarTeacherDTO(teacherDTO);
+    @PreAuthorize("hasRole('INSTITUTION')")
+    public ResponseEntity<?> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
+        try {
+            validarTeacherDTO(teacherDTO);
 
-			List<Discipline> disciplines = disciplineRepo.findAllById(teacherDTO.disciplineId());
-			if (disciplines.size() != teacherDTO.disciplineId().size()) {
-				return ResponseEntity.badRequest().body(Map.of("error", "Algumas disciplinas não foram encontradas"));
-			}
+            List<Discipline> disciplines = disciplineRepo.findAllById(teacherDTO.disciplineId());
+            if (disciplines.size() != teacherDTO.disciplineId().size()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Algumas disciplinas não foram encontradas"));
+            }
 
-			Teacher teacher = new Teacher();
-			teacher.setNomeDocente(teacherDTO.nomeDocente());
-			teacher.setDataNascimentoDocente(teacherDTO.dataNascimentoDocente());
-			teacher.setEmailDocente(teacherDTO.emailDocente());
-			teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
-			teacher.setIdentifierCode(teacherDTO.identifierCode());
-			teacher.setImageUrl(teacherDTO.imageUrl());
-			teacher.setPassword(teacherDTO.password());
-			teacher.setDisciplines(new ArrayList<>(disciplines));
+            // Verifica se há uma imagem em Base64 no DTO
+            String imageUrl = null;
+            if (teacherDTO.imageUrl() != null && !teacherDTO.imageUrl().isEmpty()) {
+                imageUrl = imageUploaderService.uploadBase64Image(teacherDTO.imageUrl());
+            }
 
-			Teacher savedTeacher = teacherService.criarTeacher(teacher);
+            // Criar e definir atributos do professor
+            Teacher teacher = new Teacher();
+            teacher.setNomeDocente(teacherDTO.nomeDocente());
+            teacher.setDataNascimentoDocente(teacherDTO.dataNascimentoDocente());
+            teacher.setEmailDocente(teacherDTO.emailDocente());
+            teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
+            teacher.setIdentifierCode(teacherDTO.identifierCode());
+            teacher.setPassword(teacherDTO.password());
+            teacher.setDisciplines(new ArrayList<>(disciplines));
 
-			return ResponseEntity.status(HttpStatus.CREATED).body(savedTeacher);
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-		} catch (Exception e) {
-			return ResponseEntity.internalServerError()
-					.body(Map.of("error", "Erro ao criar professor: " + e.getMessage()));
-		}
-	}
+            // Define a URL da imagem após o upload
+            if (imageUrl != null) {
+                teacher.setImageUrl(imageUrl);
+            }
+
+            Teacher savedTeacher = teacherService.criarTeacher(teacher);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedTeacher);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "Erro ao criar professor: " + e.getMessage()));
+        }
+    }
+
 
 	/**
 	 * Valida os campos do DTO do professor.
@@ -170,7 +181,7 @@ public class TeacherController {
 
 		List<TeacherDTOGet> teacherDTOs = teachers
 				.stream().map(t -> new TeacherDTOGet(t.getId(), t.getNomeDocente(),
-						t.getDataNascimentoDocente().toString(), t.getEmailDocente(), t.getTelefoneDocente()))
+						t.getDataNascimentoDocente().toString(), t.getEmailDocente(), t.getTelefoneDocente(), t.getImageUrl()))
 				.collect(Collectors.toList());
 
 		return ResponseEntity.ok(teacherDTOs);
@@ -193,7 +204,7 @@ public class TeacherController {
 			List<ClassDTO> classes = buscarUnico.getTeachers().stream()
 					.map(classe -> new ClassDTO(classe.getNomeTurma(), classe.getId(), classe.getStudents().size()))
 					.collect(Collectors.toList());
-			TeacherDTOTre teacherTree = new TeacherDTOTre(buscarUnico.getNomeDocente(), buscarUnico.getId(), classes);
+			TeacherDTOTre teacherTree = new TeacherDTOTre(buscarUnico.getNomeDocente(), buscarUnico.getId(), buscarUnico.getImageUrl(), classes);
 			return ResponseEntity.ok(teacherTree);
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -225,7 +236,7 @@ public class TeacherController {
 						new TeacherDTOFeedback(feedback.getRecipientTeacher().getId(),
 								feedback.getRecipientTeacher().getNomeDocente())))
 				.collect(Collectors.toList());
-		TeacherDTOSimples TeacherDTOSimples = new TeacherDTOSimples(teacher.getNomeDocente(), teacher.getId(), classes,
+		TeacherDTOSimples TeacherDTOSimples = new TeacherDTOSimples(teacher.getNomeDocente(), teacher.getId(), teacher.getImageUrl(), classes,
 				feedbacks);
 
 		TeacherDTOTwoSimples teacherDTOTwoSimples = new TeacherDTOTwoSimples(teacher.getNomeDocente(),
