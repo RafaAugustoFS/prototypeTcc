@@ -3,11 +3,13 @@ package com.onAcademy.tcc.model;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import jakarta.persistence.JoinColumn;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
@@ -53,7 +55,7 @@ public class Teacher {
     public static final String ENROLLMENT_PREFIX = "p";
     private static final int IDENTIFIER_CODE_LENGTH = 10;
 
-    @OneToMany(mappedBy = "recipientTeacher")
+    @OneToMany(mappedBy = "recipientTeacher", cascade = CascadeType.REMOVE)
     private List<FeedBackByStudent> feedback;
 
     @ManyToMany
