@@ -96,9 +96,11 @@ public class FeedbackFormController {
 		if (feedbackByStudent.getBimestre() > 4 || feedbackByStudent.getBimestre() < 1) {
 			throw new IllegalArgumentException("Bimestre inválido. Deve estar entre 1 e 4.");
 		}
-		boolean feedbackExists = feedbackFormRepo.existsByCreatedByAndRecipientStudentAndBimestre(
+		boolean feedbackExists = feedbackFormRepo.existsByCreatedByAndRecipientStudentAndBimestreAndDiscipline(
 				feedbackByStudent.getCreatedBy(), feedbackByStudent.getRecipientStudent(),
-				feedbackByStudent.getBimestre());
+				feedbackByStudent.getBimestre(), feedbackByStudent.getDiscipline());
+		
+		
 		if (feedbackExists) {
 			throw new RuntimeException("Já existe um feedback para este aluno nesse bimestre.");
 		}

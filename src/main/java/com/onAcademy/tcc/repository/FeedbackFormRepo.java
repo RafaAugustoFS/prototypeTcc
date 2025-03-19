@@ -2,6 +2,8 @@ package com.onAcademy.tcc.repository;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.onAcademy.tcc.model.Discipline;
 import com.onAcademy.tcc.model.FeedbackForm;
 import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.model.Teacher;
@@ -19,6 +21,8 @@ import com.onAcademy.tcc.model.Teacher;
 public interface FeedbackFormRepo extends JpaRepository<FeedbackForm, Long> {
 
     /**
+     * 
+     * 
      * Verifica se já existe um formulário de feedback criado por um professor específico,
      * para um estudante específico e em um determinado bimestre.
      *
@@ -27,7 +31,7 @@ public interface FeedbackFormRepo extends JpaRepository<FeedbackForm, Long> {
      * @param bimestre         Bimestre ao qual o formulário se refere.
      * @return `true` se o formulário existir, `false` caso contrário.
      */
-    boolean existsByCreatedByAndRecipientStudentAndBimestre(Teacher createdBy, Student recipientStudent, int bimestre);
+    boolean existsByCreatedByAndRecipientStudentAndBimestreAndDiscipline(Teacher createdBy, Student recipientStudent, int bimestre, Discipline discipline);
 
     /**
      * Busca todos os formulários de feedback associados a um estudante específico.
@@ -36,4 +40,8 @@ public interface FeedbackFormRepo extends JpaRepository<FeedbackForm, Long> {
      * @return Uma lista de formulários de feedback associados ao estudante.
      */
     List<FeedbackForm> findByRecipientStudentId(Long id);
+    
+    
+    
+    
 }
