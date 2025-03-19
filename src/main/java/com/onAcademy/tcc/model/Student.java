@@ -80,7 +80,7 @@ public class Student {
 	private String imageUrl;
 
 	private static final String ENROLLMENT_PREFIX = "a";
-	private static final int IDENTIFIER_CODE_LENGTH = 10;
+	private static final int IDENTIFIER_CODE_LENGTH = 100;
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
 	private List<FeedbackByTeacher> feedback;
 
@@ -108,10 +108,12 @@ public class Student {
 		String numbers = "0123456789";
 		StringBuilder sb = new StringBuilder();
 		Random random = new Random();
+		sb.append(ENROLLMENT_PREFIX);
 		for (int i = 0; i < IDENTIFIER_CODE_LENGTH; i++) {
-
+		
 			sb.append(numbers.charAt(random.nextInt(numbers.length())));
 		}
+		
 		this.identifierCode = sb.toString();
 	}
 
