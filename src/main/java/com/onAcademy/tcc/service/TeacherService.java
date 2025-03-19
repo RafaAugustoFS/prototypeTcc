@@ -100,6 +100,7 @@ public class TeacherService {
 		teacher1.setDataNascimentoDocente(teacher.getDataNascimentoDocente());
 		teacher1.setEmailDocente(teacher.getEmailDocente());
 		teacher1.setTelefoneDocente(teacher.getTelefoneDocente());
+		teacher1.setImageUrl(teacher.getImageUrl());
 
 		String year = String.valueOf(teacher.getDataNascimentoDocente().getYear());
 		teacher1.setPassword(ENROLLMENT_PREFIX + year + teacher1.getNomeDocente().toLowerCase());
