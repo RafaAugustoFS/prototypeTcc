@@ -54,6 +54,10 @@ public class StudentService {
 
 	@Autowired
 	private TokenProvider tokenProvider;
+	
+
+	@Autowired
+	private ImageUploaderService imageUploaderService;
 
 	/**
 	 * Gera uma senha aleatória para o estudante, utilizando seu nome e um número
@@ -108,12 +112,18 @@ public class StudentService {
 		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
 				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 		validarStudent(studentDTO);
+		   // Verifica se há uma imagem em Base64 no DTO
+        String imageUrl = null;
+        if (studentDTO.getImageUrl() != null && !studentDTO.getImageUrl().isEmpty()) {
+            imageUrl = imageUploaderService.uploadBase64Image(studentDTO.getImageUrl());
+        }
 		Student student = new Student();
 		String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
 		student.setNomeAluno(studentDTO.getNomeAluno());
 		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
 		student.setEmailAluno(studentDTO.getEmailAluno());
 		student.setTelefoneAluno(studentDTO.getTelefoneAluno());
+		student.setImageUrl(studentDTO.getImageUrl());
 
 		String rawPassword = Student.generateRandomPassword(studentDTO, classSt);
 		String encodedPassword = passwordEncoder.encode(rawPassword);
@@ -122,6 +132,11 @@ public class StudentService {
 		student.setTurmaId(classSt.getId());
 		student.setPassword(encodedPassword);
 		student.setImageUrl(studentDTO.getImageUrl());
+		
+		// Define a URL da imagem após o upload
+        if (imageUrl != null) {
+            student.setImageUrl(imageUrl);
+        }
 		Student savedStudent = studentRepo.save(student);
 
 		String emailSubject = "Bem-vindo ao OnAcademy - Seu cadastro foi realizado com sucesso!";

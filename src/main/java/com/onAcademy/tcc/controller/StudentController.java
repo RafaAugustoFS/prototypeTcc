@@ -45,7 +45,7 @@ public class StudentController {
      * DTO para representar um estudante de forma simplificada.
      */
     record StudentDTO(String nome, String dataNascimentoAluno, String telefoneAluno, String emailAluno,
-                      String matriculaAluno, ClassDTO turma, List<NoteDTO> notas) {
+                      String matriculaAluno, String imageUrl, ClassDTO turma, List<NoteDTO> notas) {
     }
 
     /**
@@ -121,6 +121,7 @@ public class StudentController {
                 estudante.getTelefoneAluno(),
                 estudante.getEmailAluno(),
                 estudante.getIdentifierCode(),
+                estudante.getImageUrl(),
                 turma,
                 notas
             );
