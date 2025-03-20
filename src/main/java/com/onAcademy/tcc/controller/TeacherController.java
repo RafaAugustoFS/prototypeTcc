@@ -52,7 +52,7 @@ public class TeacherController {
 	}
 
 	record TeacherDTOTwoSimples(String nomeDocente, String dataNascimentoDocente, String emailDocente,
-			String telefoneDocente, String identifierCode, Long id, List<DisciplineDTO> disciplinas,
+			String telefoneDocente, String identifierCode, Long id, String imageUrl, List<DisciplineDTO> disciplinas,
 			List<ClassDTOSimples> classes, List<FeedbackDTO> feedbacks) {
 	}
 
@@ -241,7 +241,7 @@ public class TeacherController {
 
 		TeacherDTOTwoSimples teacherDTOTwoSimples = new TeacherDTOTwoSimples(teacher.getNomeDocente(),
 				teacher.getDataNascimentoDocente().toString(), teacher.getEmailDocente(), teacher.getTelefoneDocente(),
-				teacher.getIdentifierCode(), teacher.getId(), disciplines, classes, feedbacks);
+				teacher.getIdentifierCode(), teacher.getId(), teacher.getImageUrl(), disciplines, classes, feedbacks);
 		return ResponseEntity.ok(teacherDTOTwoSimples);
 	}
 
