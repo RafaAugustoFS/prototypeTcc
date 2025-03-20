@@ -32,7 +32,7 @@ public class FeedBackByStudentController {
 	record FeedbackDTO(String conteudo, CreatedByDTO createdBy, TeacherDTO teacher) {
 	}
 
-	record RecipientDTO(Long id, TeacherDTO teacher, String conteudo) {
+	record RecipientDTO(Long id, CreatedByDTO aluno, String conteudo) {
 	}
 
 	/**
@@ -144,9 +144,9 @@ public class FeedBackByStudentController {
 		}
 
 		List<RecipientDTO> recipientDTO = feedbacks.stream().map(feedback -> {
-			TeacherDTO teacherDTO = new TeacherDTO(
-					feedback.getRecipientTeacher() != null ? feedback.getRecipientTeacher().getNomeDocente() : null,
-					feedback.getRecipientTeacher() != null ? feedback.getRecipientTeacher().getId() : null);
+			CreatedByDTO teacherDTO = new CreatedByDTO(
+					feedback.getCreatedBy().getNomeAluno() != null ? feedback.getCreatedBy().getNomeAluno() : null,
+					feedback.getCreatedBy() != null ? feedback.getCreatedBy().getId() : null);
 			return new RecipientDTO(feedback.getId(), teacherDTO, feedback.getConteudo());
 		}).collect(Collectors.toList());
 

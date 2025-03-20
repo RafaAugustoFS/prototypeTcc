@@ -1,7 +1,10 @@
 package com.onAcademy.tcc.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.onAcademy.tcc.model.FeedBackByStudent;
 import com.onAcademy.tcc.model.FeedbackByTeacher;
 
 /**
@@ -27,4 +30,12 @@ import com.onAcademy.tcc.model.FeedbackByTeacher;
 
 public interface FeedbackByTeacherRepo extends JpaRepository<FeedbackByTeacher, Long> {
 
+	/**
+	 * Método personalizado para buscar feedbacks dados por professores para um
+	 * determinado estudante, baseado no ID do estudante.
+	 * 
+	 * @param RecipientStudentId ID do estudante destinatário do feedback
+	 * @return Lista de feedbacks dados ao estudante identificado
+	 */
+	List<FeedbackByTeacher> findByRecipientStudent_Id(Long RecipientStudentId);
 }
