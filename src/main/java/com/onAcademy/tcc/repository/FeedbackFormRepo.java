@@ -31,7 +31,7 @@ public interface FeedbackFormRepo extends JpaRepository<FeedbackForm, Long> {
      * @param bimestre         Bimestre ao qual o formulário se refere.
      * @return `true` se o formulário existir, `false` caso contrário.
      */
-    boolean existsByCreatedByAndRecipientStudentAndBimestreAndDiscipline(Teacher createdBy, Student recipientStudent, int bimestre, Discipline discipline);
+    boolean existsByCreatedByAndRecipientStudentAndBimestre(Teacher createdBy, Student recipientStudent, int bimestre);
 
     /**
      * Busca todos os formulários de feedback associados a um estudante específico.
@@ -40,7 +40,7 @@ public interface FeedbackFormRepo extends JpaRepository<FeedbackForm, Long> {
      * @return Uma lista de formulários de feedback associados ao estudante.
      */
     List<FeedbackForm> findByRecipientStudentId(Long id);
-    
+    List<FeedbackForm> findByRecipientStudent_ClassSt_Id(Long idTurma);
     
     
     

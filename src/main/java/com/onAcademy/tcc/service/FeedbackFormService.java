@@ -1,5 +1,7 @@
 package com.onAcademy.tcc.service;
 
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,5 +78,51 @@ public class FeedbackFormService {
 	public List<FeedbackForm> buscarFeedbackPorAluno(Long id) {
 		return feedbackFormRepo.findByRecipientStudentId(id);
 	}
+	
+	
+	   public List<Double> gerarFeedbackGeralDaTurma(Long idTurma) {
+	        // Busca todos os feedbacks da turma
+	        List<FeedbackForm> feedbacks = feedbackFormRepo.findByRecipientStudent_ClassSt_Id(idTurma);
+
+	        if (feedbacks.isEmpty()) {
+	        	  throw new IllegalArgumentException("Não há feedbacks para esta turma!");
+	        }
+
+	        // Variáveis para calcular as médias
+	        double somaResposta1 = 0;
+	        double somaResposta2 = 0;
+	        double somaResposta3 = 0;
+	        double somaResposta4 = 0;
+	        double somaResposta5 = 0;
+
+	        // Processa cada feedback
+	        for (FeedbackForm feedback : feedbacks) {
+	            somaResposta1 += feedback.getResposta1();
+	            somaResposta2 += feedback.getResposta2();
+	            somaResposta3 += feedback.getResposta3();
+	            somaResposta4 += feedback.getResposta4();
+	            somaResposta5 += feedback.getResposta5();
+	        }
+
+	        // Calcula as médias
+	        int totalFeedbacks = feedbacks.size();
+	        double mediaResposta1 = somaResposta1 / totalFeedbacks;
+	        double mediaResposta2 = somaResposta2 / totalFeedbacks;
+	        double mediaResposta3 = somaResposta3 / totalFeedbacks;
+	        double mediaResposta4 = somaResposta4 / totalFeedbacks;
+	        double mediaResposta5 = somaResposta5 / totalFeedbacks;
+	        
+	        List<Double> mediaDeRespostas = new ArrayList<>();
+	        mediaDeRespostas.add(mediaResposta1);
+	        mediaDeRespostas.add(mediaResposta2);
+	        mediaDeRespostas.add(mediaResposta3);
+	        mediaDeRespostas.add(mediaResposta4);
+	        mediaDeRespostas.add(mediaResposta5);
+	        return mediaDeRespostas;
+	   }
+	
+	 
+	
+	
 
 }

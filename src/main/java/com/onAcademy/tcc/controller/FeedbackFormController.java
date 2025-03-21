@@ -96,9 +96,9 @@ public class FeedbackFormController {
 		if (feedbackByStudent.getBimestre() > 4 || feedbackByStudent.getBimestre() < 1) {
 			throw new IllegalArgumentException("Bimestre inválido. Deve estar entre 1 e 4.");
 		}
-		boolean feedbackExists = feedbackFormRepo.existsByCreatedByAndRecipientStudentAndBimestreAndDiscipline(
+		boolean feedbackExists = feedbackFormRepo.existsByCreatedByAndRecipientStudentAndBimestre(
 				feedbackByStudent.getCreatedBy(), feedbackByStudent.getRecipientStudent(),
-				feedbackByStudent.getBimestre(), feedbackByStudent.getDiscipline());
+				feedbackByStudent.getBimestre());
 		
 		
 		if (feedbackExists) {
@@ -133,5 +133,22 @@ public class FeedbackFormController {
 		}
 		return null;
 	}
+	
+	
+	@GetMapping("/class/feedback/{id}")
+    public ResponseEntity<?> gerarFeedbackGeralDaTurma(@PathVariable Long idTurma) {
+        try {
+            List<Double> mediaDeRespostas = feedbackFormService.gerarFeedbackGeralDaTurma(idTurma);
+            return ResponseEntity.ok(mediaDeRespostas); 
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage()); 
+        }
+    }
+	
+	
+	
+	
+	
+	
 
 }
