@@ -1,7 +1,10 @@
 package com.onAcademy.tcc.repository;
 
+import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import com.onAcademy.tcc.model.Student;
 
 /**
@@ -39,4 +42,6 @@ public interface StudentRepo extends JpaRepository<Student, Long> {
      * @return `true` se o telefone já estiver em uso, `false` caso contrário.
      */
     boolean existsByTelefoneAluno(String telefoneAluno);
+    
+    List<Student> findByTurmaId(Long turmaId);
 }
