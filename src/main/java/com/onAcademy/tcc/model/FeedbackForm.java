@@ -45,9 +45,14 @@ public class FeedbackForm {
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student recipientStudent;
+        
+    // Método para obter o idTurma do recipientStudent
+    public Long getIdTurma() {
+        if (this.recipientStudent != null && this.recipientStudent.getClassSt() != null) {
+            return this.recipientStudent.getClassSt().getId();
+        }
+        return null;
+    }
     
-    @ManyToOne
-    @JoinColumn(name = "discipline_id" )
-    private Discipline discipline;
  
 }
