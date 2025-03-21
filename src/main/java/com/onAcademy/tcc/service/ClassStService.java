@@ -1,14 +1,15 @@
 package com.onAcademy.tcc.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.onAcademy.tcc.model.ClassSt;
+import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.repository.ClassStRepo;
+import com.onAcademy.tcc.repository.StudentRepo;
 
 /**
  * Serviço responsável por gerenciar operações relacionadas a turmas (ClassSt).
@@ -18,6 +19,10 @@ public class ClassStService {
 
     @Autowired
     private ClassStRepo classStRepo;
+    
+
+    @Autowired
+    private StudentRepo studentRepo;
 
     /**
      * Retorna uma lista de todas as turmas cadastradas.
@@ -68,6 +73,12 @@ public class ClassStService {
     public ClassSt deletarClasse(Long id) {
         return classStRepo.findById(id)
                 .map(existClass -> {
+                	 List<Student> students = studentRepo.findByTurmaId(id);
+                     for (Student student : students) {
+                         student.setTurmaId(null); // Desassocia a turma dos alunos
+                         student.setClassSt(null); // Se estiver utilizando relacionamento bidirecional
+                         studentRepo.save(student); // Salva a atualização
+                     }
                     classStRepo.delete(existClass);
                     return existClass;
                 })
