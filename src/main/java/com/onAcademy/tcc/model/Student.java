@@ -92,7 +92,7 @@ public class Student {
 	private List<FeedBackByStudent> feedbackAluno;
 
 	@ManyToOne
-	@JoinColumn(name = "turmaId", insertable = false, updatable = false)
+	@JoinColumn(name = "class_st_id")
 	private ClassSt classSt;
 
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
@@ -110,10 +110,10 @@ public class Student {
 		Random random = new Random();
 		sb.append(ENROLLMENT_PREFIX);
 		for (int i = 0; i < IDENTIFIER_CODE_LENGTH; i++) {
-		
+
 			sb.append(numbers.charAt(random.nextInt(numbers.length())));
 		}
-		
+
 		this.identifierCode = sb.toString();
 	}
 
