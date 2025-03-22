@@ -37,7 +37,6 @@ public class ClassSt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nomeTurma;
     private Date anoLetivoTurma;
     private String periodoTurma;
@@ -65,7 +64,7 @@ public class ClassSt {
 
     @OneToMany(mappedBy = "classSt")
     private List<Student> students;
-
+    
     @OneToMany(mappedBy = "classSt")
     private List<Reminder> reminder;
 }

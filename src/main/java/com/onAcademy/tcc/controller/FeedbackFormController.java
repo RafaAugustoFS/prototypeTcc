@@ -134,16 +134,21 @@ public class FeedbackFormController {
 		return null;
 	}
 	
+
+	    @GetMapping("/class/feedback/{idTurma}")
+	    public ResponseEntity<?> gerarFeedbackGeralDaTurma(@PathVariable Long idTurma) {
+	    	
+	    	System.out.println("Id que esta vindo de turma:" + idTurma );
 	
-	@GetMapping("/class/feedback/{id}")
-    public ResponseEntity<?> gerarFeedbackGeralDaTurma(@PathVariable Long idTurma) {
-        try {
-            List<Double> mediaDeRespostas = feedbackFormService.gerarFeedbackGeralDaTurma(idTurma);
-            return ResponseEntity.ok(mediaDeRespostas); 
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage()); 
-        }
-    }
+	        try {
+	            List<Double> mediaDeRespostas = feedbackFormService.gerarFeedbackGeralDaTurma(idTurma);
+	            return ResponseEntity.ok(mediaDeRespostas);
+	        } catch (IllegalArgumentException ex) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+	        }
+	    }
+	    
+	}
 	
 	
 	
@@ -151,4 +156,4 @@ public class FeedbackFormController {
 	
 	
 
-}
+

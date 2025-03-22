@@ -80,12 +80,11 @@ public class FeedbackFormService {
 	}
 	
 	
-	   public List<Double> gerarFeedbackGeralDaTurma(Long idTurma) {
-	        // Busca todos os feedbacks da turma
+	 public List<Double> gerarFeedbackGeralDaTurma(Long idTurma) {
 	        List<FeedbackForm> feedbacks = feedbackFormRepo.findByRecipientStudent_ClassSt_Id(idTurma);
-
+	        System.out.println("Lista de feedbacks:" + feedbacks);
 	        if (feedbacks.isEmpty()) {
-	        	  throw new IllegalArgumentException("Não há feedbacks para esta turma!");
+	            throw new IllegalArgumentException("Não há feedbacks para esta turma!");
 	        }
 
 	        // Variáveis para calcular as médias
@@ -111,7 +110,8 @@ public class FeedbackFormService {
 	        double mediaResposta3 = somaResposta3 / totalFeedbacks;
 	        double mediaResposta4 = somaResposta4 / totalFeedbacks;
 	        double mediaResposta5 = somaResposta5 / totalFeedbacks;
-	        
+
+	        // Retorna as médias
 	        List<Double> mediaDeRespostas = new ArrayList<>();
 	        mediaDeRespostas.add(mediaResposta1);
 	        mediaDeRespostas.add(mediaResposta2);
@@ -119,10 +119,8 @@ public class FeedbackFormService {
 	        mediaDeRespostas.add(mediaResposta4);
 	        mediaDeRespostas.add(mediaResposta5);
 	        return mediaDeRespostas;
-	   }
-	
-	 
-	
+	    }
+
 	
 
 }
