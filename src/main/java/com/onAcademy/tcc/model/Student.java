@@ -92,7 +92,7 @@ public class Student {
 	private List<FeedBackByStudent> feedbackAluno;
 
 	@ManyToOne
-	@JoinColumn(name = "class_st_id")
+	@JoinColumn(name = "turmaId", insertable = false, updatable = false)
 	private ClassSt classSt;
 
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
