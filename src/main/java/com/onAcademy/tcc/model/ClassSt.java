@@ -3,6 +3,7 @@ package com.onAcademy.tcc.model;
 import java.sql.Date;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -62,7 +63,11 @@ public class ClassSt {
     )
     private List<Teacher> classes;
 
-    @OneToMany(mappedBy = "classSt")
+    @OneToMany(
+    	    mappedBy = "classSt",
+    	    cascade = CascadeType.ALL,
+    	    orphanRemoval = true
+    	)
     private List<Student> students;
     
     @OneToMany(mappedBy = "classSt")

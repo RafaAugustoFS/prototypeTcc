@@ -1,5 +1,6 @@
 package com.onAcademy.tcc.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -135,25 +136,15 @@ public class FeedbackFormController {
 	}
 	
 
-	    @GetMapping("/class/feedback/{idTurma}")
-	    public ResponseEntity<?> gerarFeedbackGeralDaTurma(@PathVariable Long idTurma) {
-	    	
-	    	System.out.println("Id que esta vindo de turma:" + idTurma );
-	
-	        try {
-	            List<Double> mediaDeRespostas = feedbackFormService.gerarFeedbackGeralDaTurma(idTurma);
-	            return ResponseEntity.ok(mediaDeRespostas);
-	        } catch (IllegalArgumentException ex) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-	        }
-	    }
+	    @GetMapping("/class/feedback/{turmaId}")
+	    public List<FeedbackForm> listarFeedbacksPorTurma(@PathVariable Long turmaId) {
+		        return feedbackFormService.buscarFeedbacksComRespostasPorTurma(turmaId);
+		    }
+	    
+	    
+	    
+	    
+	    
+	    
 	    
 	}
-	
-	
-	
-	
-	
-	
-
-
