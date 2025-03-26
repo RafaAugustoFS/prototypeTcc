@@ -38,11 +38,18 @@ public class FeedbackFormController {
 	record StudentDTO(String nomeAluno, Long id) {
 	}
 
+	record StudentDTOTurma(String nomeAluno, Long id, Long turmaId) {
+	}
+
 	record CreatedByDTO(String nomeDocente, Long id) {
 	}
 
 	record FeedbackDTO(int resposta1, int resposta2, int resposta3, int resposta4, int resposta5, int bimestre,
 			CreatedByDTO createdByDTO, StudentDTO student) {
+	}
+
+	record FeedbackDTOTurma(int resposta1, int resposta2, int resposta3, int resposta4, int resposta5,
+			CreatedByDTO createdByDTO, StudentDTOTurma student) {
 	}
 
 	/**
@@ -100,8 +107,7 @@ public class FeedbackFormController {
 		boolean feedbackExists = feedbackFormRepo.existsByCreatedByAndRecipientStudentAndBimestre(
 				feedbackByStudent.getCreatedBy(), feedbackByStudent.getRecipientStudent(),
 				feedbackByStudent.getBimestre());
-		
-		
+
 		if (feedbackExists) {
 			throw new RuntimeException("Já existe um feedback para este aluno nesse bimestre.");
 		}
@@ -134,17 +140,20 @@ public class FeedbackFormController {
 		}
 		return null;
 	}
-	
 
-	    @GetMapping("/class/feedback/{turmaId}")
-	    public List<FeedbackForm> listarFeedbacksPorTurma(@PathVariable Long turmaId) {
-		        return feedbackFormService.buscarFeedbacksComRespostasPorTurma(turmaId);
-		    }
-	    
-	    
-	    
-	    
-	    
-	    
-	    
+	@GetMapping("/class/feedback/{turmaId}")
+	public ResponseEntity<List<FeedbackDTOTurma>> listarFeedbacksPorTurma(@PathVariable Long turmaId) {
+		List<FeedbackForm> feedbacks = feedbackFormService.buscarFeedbacksComRespostasPorTurma(turmaId);
+
+		List<FeedbackDTOTurma> feedbackDtos = feedbacks.stream()
+				.map(feedback -> new FeedbackDTOTurma(feedback.getResposta1(), feedback.getResposta2(),
+						feedback.getResposta3(), feedback.getResposta4(), feedback.getResposta5(),
+						new CreatedByDTO(feedback.getCreatedBy().getNomeDocente(), feedback.getCreatedBy().getId()),
+						new StudentDTOTurma(feedback.getRecipientStudent().getNomeAluno(),
+								feedback.getRecipientStudent().getId(), feedback.getRecipientStudent().getTurmaId())))
+				.toList();
+
+		return new ResponseEntity<>(feedbackDtos, HttpStatus.OK);
 	}
+
+}
