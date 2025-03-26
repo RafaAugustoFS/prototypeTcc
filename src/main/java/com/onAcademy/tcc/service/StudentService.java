@@ -35,7 +35,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class StudentService {
-	private static final String ENROLLMENT_PREFIX = "a";
+
 
 	@Autowired
 	private EmailService emailService;

@@ -81,6 +81,7 @@ public class Student {
 
 	private static final String ENROLLMENT_PREFIX = "a";
 	private static final int IDENTIFIER_CODE_LENGTH = 10;
+	
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
 	private List<FeedbackByTeacher> feedback;
 
@@ -91,9 +92,9 @@ public class Student {
 	@OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
 	private List<FeedBackByStudent> feedbackAluno;
 
-	@ManyToOne
-	@JoinColumn(name = "turmaId", insertable = false, updatable = false)
-	private ClassSt classSt;
+	  @ManyToOne
+	    @JoinColumn(name = "class_st_id", insertable = false, updatable = false)
+	    private ClassSt classSt;
 
 	@OneToMany(mappedBy = "recipientStudent", fetch = FetchType.EAGER)
 	private List<FeedbackForm> feedbackForm;
