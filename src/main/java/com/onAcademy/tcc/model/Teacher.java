@@ -85,6 +85,7 @@ public class Teacher {
     public static String generateRandomPassword(Teacher teacher) {
         String year = String.valueOf(teacher.getDataNascimentoDocente().getYear());
         return ENROLLMENT_PREFIX + year + teacher.getNomeDocente().replaceAll("\\s", "").toLowerCase();
+
     }
 
     /**
