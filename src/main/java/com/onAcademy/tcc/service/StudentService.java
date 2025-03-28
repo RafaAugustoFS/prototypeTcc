@@ -118,7 +118,6 @@ public class StudentService {
             imageUrl = imageUploaderService.uploadBase64Image(studentDTO.getImageUrl());
         }
 		Student student = new Student();
-		String year = String.valueOf(studentDTO.getDataNascimentoAluno().getYear());
 		student.setNomeAluno(studentDTO.getNomeAluno());
 		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
 		student.setEmailAluno(studentDTO.getEmailAluno());
@@ -130,7 +129,6 @@ public class StudentService {
 		student.setPassword(encodedPassword);
 
 		student.setTurmaId(classSt.getId());
-		student.setPassword(encodedPassword);
 		student.setImageUrl(studentDTO.getImageUrl());
 		
 		// Define a URL da imagem após o upload
