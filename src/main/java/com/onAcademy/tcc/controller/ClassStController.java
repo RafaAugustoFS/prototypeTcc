@@ -62,7 +62,7 @@ public class ClassStController {
 	record TeacherDTO(String nome, Long id) {
 	}
 
-	record ClassDTO(String nomeTurma, Date anoLetivoTurma, int capacidadeMaximaTurma, int salaTurma,
+	record ClassDTO(String nomeTurma, int anoLetivoTurma, int capacidadeMaximaTurma, int salaTurma,
 			String periodoTurma, List<Long> idTeacher, List<Long> disciplineId) {
 	}
 
@@ -77,7 +77,7 @@ public class ClassStController {
 			List<TeacherTurmaDTO> teachers) {
 	}
 
-	record ClassDisciplinasTeacherDTO(Long id, String nomeTurma, Date anoLetivoTurma, String periodoTurma,
+	record ClassDisciplinasTeacherDTO(Long id, String nomeTurma, int anoLetivoTurma, String periodoTurma,
 			int capacidadeMaximaTurma, int salaTurma, int quantidadeAlunos, List<TeacherTurmaDTO> teachers,
 			List<DisciplineTurmaDTO> disciplines) {
 	}
@@ -143,8 +143,8 @@ public class ClassStController {
 		if (classDTO.nomeTurma.isEmpty()) {
 			throw new IllegalArgumentException("Nome da turma é obrigatório.");
 		}
-		if (classDTO.anoLetivoTurma == null) {
-			throw new IllegalArgumentException("Ano letivo da turma é obrigatório.");
+		if (classDTO.anoLetivoTurma <= 2023) {
+			throw new IllegalArgumentException("Ano letivo da turma inválido.");
 		}
 		if (classDTO.periodoTurma.isEmpty()) {
 			throw new IllegalArgumentException("Periodo da turma é obrigatório.");

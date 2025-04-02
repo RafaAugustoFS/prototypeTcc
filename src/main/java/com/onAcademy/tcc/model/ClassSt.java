@@ -39,7 +39,7 @@ public class ClassSt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nomeTurma;
-    private Date anoLetivoTurma;
+    private int anoLetivoTurma;
     private String periodoTurma;
     private int capacidadeMaximaTurma;
     private int salaTurma;
