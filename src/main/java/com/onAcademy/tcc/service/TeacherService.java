@@ -211,7 +211,6 @@ public class TeacherService {
 			teacher.setFeedback(Collections.emptyList()); // Remover os feedbacks recebidos
 			teacher.setFeedbackProfessor(Collections.emptyList()); // Remover os feedbacks enviados
 			teacher.setFeedbackForm(Collections.emptyList()); // Remover os formulários de feedback
-			teacher.setReminder(Collections.emptyList());
 
 			for (ClassSt turma : teacher.getTeachers()) {
 				turma.getClasses().remove(teacher); // Remove o professor da turma
