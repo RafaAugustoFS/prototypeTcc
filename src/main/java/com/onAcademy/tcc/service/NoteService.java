@@ -88,13 +88,24 @@ public class NoteService {
 	 * @return A nota atualizada, ou `null` se a nota não for encontrada.
 	 */
 	public Note atualizarNotas(Long id, Note note) {
+		boolean noteExists = noteRepo.existsByStudentIdAndDisciplineIdAndBimestre(note.getStudentId(),
+				note.getDisciplineId(), note.getBimestre());	
+		
+		if (noteExists) {
+			throw new RuntimeException("Já existe uma nota para este aluno, disciplina e bimestre.");
+		}
+
+	
 		Optional<Note> existNote = noteRepo.findById(id);
 		if (existNote.isPresent()) {
 			Note atualizarNota = existNote.get();
 			atualizarNota.setDisciplineId(note.getDisciplineId());
 			atualizarNota.setNota(note.getNota());
+			atualizarNota.setBimestre(note.getBimestre());			
 			atualizarNota.setStatus(note.getStatus());
 			atualizarNota.setStudentId(note.getStudentId());
+			
+			return noteRepo.save(atualizarNota);
 		}
 
 		return null;

@@ -123,18 +123,43 @@ public class NotesController {
      * @return ResponseEntity com a nota atualizada ou uma mensagem de erro.
      */
     @PutMapping("/note/{id}")
-    public ResponseEntity<?> atualizarNota(@PathVariable Long id, @RequestBody Note note) {
+    public ResponseEntity<?> atualizarNota(@PathVariable Long id, @RequestBody NoteDTO noteDTO) {
         try {
-            Note notaAtualizada = noteService.atualizarNotas(id, note);
-            if (notaAtualizada == null) {
+            validarNoteDTO(noteDTO);
+            
+            Note existingNote = noteService.buscarNotaUnica(id);
+            if (existingNote == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nota não encontrada.");
             }
+
+            // Atualizar entidades relacionadas se necessário
+            if (!existingNote.getStudentId().getId().equals(noteDTO.getStudentId())) {
+                Student student = studentRepo.findById(noteDTO.getStudentId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado."));
+                existingNote.setStudentId(student);
+            }
+
+            if (!existingNote.getDisciplineId().getId().equals(noteDTO.getDisciplineId())) {
+                Discipline discipline = disciplineRepo.findById(noteDTO.getDisciplineId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Disciplina não encontrada."));
+                existingNote.setDisciplineId(discipline);
+            }
+
+            // Atualizar campos simples
+            existingNote.setNota(noteDTO.getNota());
+            existingNote.setBimestre(noteDTO.getBimestre());
+            existingNote.setStatus(noteDTO.getNota() > 5 ? "Aprovado" : "Reprovado");
+
+            Note notaAtualizada = noteService.atualizarNotas(id, existingNote);
             return ResponseEntity.ok(notaAtualizada);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao atualizar nota: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Erro ao atualizar nota: " + e.getMessage());
         }
     }
-
+   
     /**
      * Exclui uma nota pelo ID.
      *
