@@ -36,7 +36,6 @@ import jakarta.transaction.Transactional;
 @Service
 public class StudentService {
 
-
 	@Autowired
 	private EmailService emailService;
 
@@ -54,7 +53,6 @@ public class StudentService {
 
 	@Autowired
 	private TokenProvider tokenProvider;
-	
 
 	@Autowired
 	private ImageUploaderService imageUploaderService;
@@ -112,11 +110,11 @@ public class StudentService {
 		ClassSt classSt = classStRepo.findById(studentDTO.getTurmaId())
 				.orElseThrow(() -> new RuntimeException("Turma não encontrada"));
 		validarStudent(studentDTO);
-		   // Verifica se há uma imagem em Base64 no DTO
-        String imageUrl = null;
-        if (studentDTO.getImageUrl() != null && !studentDTO.getImageUrl().isEmpty()) {
-            imageUrl = imageUploaderService.uploadBase64Image(studentDTO.getImageUrl());
-        }
+		// Verifica se há uma imagem em Base64 no DTO
+		String imageUrl = null;
+		if (studentDTO.getImageUrl() != null && !studentDTO.getImageUrl().isEmpty()) {
+			imageUrl = imageUploaderService.uploadBase64Image(studentDTO.getImageUrl());
+		}
 		Student student = new Student();
 		student.setNomeAluno(studentDTO.getNomeAluno());
 		student.setDataNascimentoAluno(studentDTO.getDataNascimentoAluno());
@@ -130,11 +128,11 @@ public class StudentService {
 
 		student.setTurmaId(classSt.getId());
 		student.setImageUrl(studentDTO.getImageUrl());
-		
+
 		// Define a URL da imagem após o upload
-        if (imageUrl != null) {
-            student.setImageUrl(imageUrl);
-        }
+		if (imageUrl != null) {
+			student.setImageUrl(imageUrl);
+		}
 		Student savedStudent = studentRepo.save(student);
 
 		String emailSubject = "Bem-vindo ao OnAcademy - Seu cadastro foi realizado com sucesso!";
@@ -165,6 +163,14 @@ public class StudentService {
 		if (studentDTO.getNomeAluno().isEmpty()) {
 			throw new IllegalArgumentException("Por favor preencha com um nome.");
 		}
+		if (!studentDTO.getNomeAluno().matches("[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\\s]+")) {
+			throw new IllegalArgumentException("O nome deve conter apenas letras.");
+		}
+
+		if (studentDTO.getNomeAluno().length() < 2 || studentDTO.getNomeAluno().length() > 30) {
+			throw new IllegalArgumentException("O nome deve ter entre 2 e 100 caracteres.");
+		}
+
 		if (studentDTO.getDataNascimentoAluno() == null) {
 			throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
 		}
