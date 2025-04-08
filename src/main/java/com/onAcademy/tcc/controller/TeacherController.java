@@ -139,6 +139,15 @@ public class TeacherController {
 		if (teacherDTO.nomeDocente.isEmpty()) {
 			throw new IllegalArgumentException("Por favor preencha com um nome.");
 		}
+		
+		if (!teacherDTO.nomeDocente().matches("[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\\s]+")) {
+			throw new IllegalArgumentException("O nome deve conter apenas letras.");
+		}
+		
+		if(teacherDTO.nomeDocente.length() < 2 || teacherDTO.nomeDocente.length() > 30) {
+			throw new IllegalArgumentException("O nome deve ter entre 2 e 30 caracteres.");
+		}
+		
 		if (teacherDTO.dataNascimentoDocente == null) {
 			throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
 		}
