@@ -62,8 +62,8 @@ public class ClassStController {
 	record TeacherDTO(String nome, Long id) {
 	}
 
-	record ClassDTO(String nomeTurma, int anoLetivoTurma, int capacidadeMaximaTurma, int salaTurma,
-			String periodoTurma, List<Long> idTeacher, List<Long> disciplineId) {
+	record ClassDTO(String nomeTurma, int anoLetivoTurma, int capacidadeMaximaTurma, int salaTurma, String periodoTurma,
+			List<Long> idTeacher, List<Long> disciplineId) {
 	}
 
 	record ClassDTODisciplina(String nomeTurma, String periodoTurma, List<Long> disciplineId,
@@ -157,6 +157,11 @@ public class ClassStController {
 		}
 		if (classDTO.idTeacher.isEmpty()) {
 			throw new IllegalArgumentException("Turma deve ter professores.");
+		}
+
+		if (classDTO.disciplineId().isEmpty()) {
+			throw new IllegalArgumentException("Turma deve ter disciplinas.");
+
 		}
 
 	}
