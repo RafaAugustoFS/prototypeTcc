@@ -39,6 +39,10 @@ public class TeacherController {
 	record ClassDTOSimples(String nomeTurma, Long id) {
 	}
 
+	record TeacherDisciplineDTO(String nomeDocente, String emailDocente, String telefoneDocente,
+			List<DisciplineDTO> disciplines) {
+	}
+
 	record TeacherDTO(String nomeDocente, Date dataNascimentoDocente, String emailDocente, String telefoneDocente,
 			String identifierCode, String password, List<Long> disciplineId, String imageUrl) {
 	}
@@ -62,7 +66,8 @@ public class TeacherController {
 	record FeedbackDTO(Long id, String conteudo, StudentDTO createdBy, TeacherDTOFeedback recipientTeacher) {
 	}
 
-	record TeacherDTOSimples(String nomeDocente, Long id, String imageUrl, List<ClassDTOSimples> classes, List<FeedbackDTO> feedback) {
+	record TeacherDTOSimples(String nomeDocente, Long id, String imageUrl, List<ClassDTOSimples> classes,
+			List<FeedbackDTO> feedback) {
 	}
 
 	@Autowired
@@ -87,47 +92,47 @@ public class TeacherController {
 	 * @return Status da criação do professor.
 	 */
 	@PostMapping("/teacher")
-    @PreAuthorize("hasRole('INSTITUTION')")
-    public ResponseEntity<?> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
-        try {
-            validarTeacherDTO(teacherDTO);
+	@PreAuthorize("hasRole('INSTITUTION')")
+	public ResponseEntity<?> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
+		try {
+			validarTeacherDTO(teacherDTO);
 
-            List<Discipline> disciplines = disciplineRepo.findAllById(teacherDTO.disciplineId());
-            if (disciplines.size() != teacherDTO.disciplineId().size()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Algumas disciplinas não foram encontradas"));
-            }
+			List<Discipline> disciplines = disciplineRepo.findAllById(teacherDTO.disciplineId());
+			if (disciplines.size() != teacherDTO.disciplineId().size()) {
+				return ResponseEntity.badRequest().body(Map.of("error", "Algumas disciplinas não foram encontradas"));
+			}
 
-            // Verifica se há uma imagem em Base64 no DTO
-            String imageUrl = null;
-            if (teacherDTO.imageUrl() != null && !teacherDTO.imageUrl().isEmpty()) {
-                imageUrl = imageUploaderService.uploadBase64Image(teacherDTO.imageUrl());
-            }
+			// Verifica se há uma imagem em Base64 no DTO
+			String imageUrl = null;
+			if (teacherDTO.imageUrl() != null && !teacherDTO.imageUrl().isEmpty()) {
+				imageUrl = imageUploaderService.uploadBase64Image(teacherDTO.imageUrl());
+			}
 
-            // Criar e definir atributos do professor
-            Teacher teacher = new Teacher();
-            teacher.setNomeDocente(teacherDTO.nomeDocente());
-            teacher.setDataNascimentoDocente(teacherDTO.dataNascimentoDocente());
-            teacher.setEmailDocente(teacherDTO.emailDocente());
-            teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
-            teacher.setIdentifierCode(teacherDTO.identifierCode());
-            teacher.setPassword(teacherDTO.password());
-            teacher.setDisciplines(new ArrayList<>(disciplines));
+			// Criar e definir atributos do professor
+			Teacher teacher = new Teacher();
+			teacher.setNomeDocente(teacherDTO.nomeDocente());
+			teacher.setDataNascimentoDocente(teacherDTO.dataNascimentoDocente());
+			teacher.setEmailDocente(teacherDTO.emailDocente());
+			teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
+			teacher.setIdentifierCode(teacherDTO.identifierCode());
+			teacher.setPassword(teacherDTO.password());
 
-            // Define a URL da imagem após o upload
-            if (imageUrl != null) {
-                teacher.setImageUrl(imageUrl);
-            }
+			if (imageUrl != null) {
+				teacher.setImageUrl(imageUrl);
+			}
 
-            Teacher savedTeacher = teacherService.criarTeacher(teacher);
+			teacher.setDisciplines(disciplines);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedTeacher);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", "Erro ao criar professor: " + e.getMessage()));
-        }
-    }
+			teacherRepo.save(teacher);
 
+			return ResponseEntity.status(HttpStatus.CREATED).body(teacher);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError()
+					.body(Map.of("error", "Erro ao criar professor: " + e.getMessage()));
+		}
+	}
 
 	/**
 	 * Valida os campos do DTO do professor.
@@ -139,15 +144,15 @@ public class TeacherController {
 		if (teacherDTO.nomeDocente.isEmpty()) {
 			throw new IllegalArgumentException("Por favor preencha com um nome.");
 		}
-		
+
 		if (!teacherDTO.nomeDocente().matches("[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\\s]+")) {
 			throw new IllegalArgumentException("O nome deve conter apenas letras.");
 		}
-		
-		if(teacherDTO.nomeDocente.length() < 2 || teacherDTO.nomeDocente.length() > 30) {
+
+		if (teacherDTO.nomeDocente.length() < 2 || teacherDTO.nomeDocente.length() > 30) {
 			throw new IllegalArgumentException("O nome deve ter entre 2 e 30 caracteres.");
 		}
-		
+
 		if (teacherDTO.dataNascimentoDocente == null) {
 			throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
 		}
@@ -188,9 +193,8 @@ public class TeacherController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Nenhum professor encontrado."));
 		}
 
-		List<TeacherDTOGet> teacherDTOs = teachers
-				.stream().map(t -> new TeacherDTOGet(t.getId(), t.getNomeDocente(),
-						t.getDataNascimentoDocente().toString(), t.getEmailDocente(), t.getTelefoneDocente(), t.getImageUrl()))
+		List<TeacherDTOGet> teacherDTOs = teachers.stream().map(t -> new TeacherDTOGet(t.getId(), t.getNomeDocente(),
+				t.getDataNascimentoDocente().toString(), t.getEmailDocente(), t.getTelefoneDocente(), t.getImageUrl()))
 				.collect(Collectors.toList());
 
 		return ResponseEntity.ok(teacherDTOs);
@@ -213,7 +217,8 @@ public class TeacherController {
 			List<ClassDTO> classes = buscarUnico.getTeachers().stream()
 					.map(classe -> new ClassDTO(classe.getNomeTurma(), classe.getId(), classe.getStudents().size()))
 					.collect(Collectors.toList());
-			TeacherDTOTre teacherTree = new TeacherDTOTre(buscarUnico.getNomeDocente(), buscarUnico.getId(), buscarUnico.getImageUrl(), classes);
+			TeacherDTOTre teacherTree = new TeacherDTOTre(buscarUnico.getNomeDocente(), buscarUnico.getId(),
+					buscarUnico.getImageUrl(), classes);
 			return ResponseEntity.ok(teacherTree);
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -245,13 +250,25 @@ public class TeacherController {
 						new TeacherDTOFeedback(feedback.getRecipientTeacher().getId(),
 								feedback.getRecipientTeacher().getNomeDocente())))
 				.collect(Collectors.toList());
-		TeacherDTOSimples TeacherDTOSimples = new TeacherDTOSimples(teacher.getNomeDocente(), teacher.getId(), teacher.getImageUrl(), classes,
-				feedbacks);
 
 		TeacherDTOTwoSimples teacherDTOTwoSimples = new TeacherDTOTwoSimples(teacher.getNomeDocente(),
 				teacher.getDataNascimentoDocente().toString(), teacher.getEmailDocente(), teacher.getTelefoneDocente(),
 				teacher.getIdentifierCode(), teacher.getId(), teacher.getImageUrl(), disciplines, classes, feedbacks);
 		return ResponseEntity.ok(teacherDTOTwoSimples);
+	}
+
+	@GetMapping("/teacher/discipline/{id}")
+	public ResponseEntity<?> buscarTeacherUnicoDiscipline(@PathVariable Long id) {
+		Teacher teacher = teacherService.buscarUnicoTeacher(id);
+		if (teacher == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Professor não encontrado"));
+		}
+		List<DisciplineDTO> disciplines = teacher.getDisciplines().stream()
+				.map(d -> new DisciplineDTO(d.getNomeDisciplina(), teacher.getId())).collect(Collectors.toList());
+
+		TeacherDisciplineDTO teacherDisciplineDTO = new TeacherDisciplineDTO(teacher.getNomeDocente(),
+				teacher.getEmailDocente(), teacher.getTelefoneDocente(), disciplines);
+		return ResponseEntity.ok(teacherDisciplineDTO);
 	}
 
 	/**
