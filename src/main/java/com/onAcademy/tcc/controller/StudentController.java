@@ -32,7 +32,9 @@ public class StudentController {
 	/**
 	 * DTO para representar uma turma de forma simplificada.
 	 */
-	record ClassDTO(String nomeTurma, Long idTurma) {
+	record DisciplinaDTO(Long id, String nomeDisciplina) {}
+	
+	record ClassDTO(String nomeTurma, Long idTurma, List<DisciplinaDTO> disciplinaTurmas) {
 	}
 
 	/**
@@ -119,8 +121,20 @@ public class StudentController {
 					nota.getBimestre(), nota.getStatus(), nota.getDisciplineId().getNomeDisciplina()))
 					.collect(Collectors.toList());
 
-			ClassDTO turma = new ClassDTO(estudante.getClassSt() != null ? estudante.getClassSt().getNomeTurma() : null,
-					estudante.getClassSt() != null ? estudante.getClassSt().getId() : null);
+			ClassDTO turma = null;
+			if (estudante.getClassSt() != null) {
+			    List<DisciplinaDTO> disciplinasDTO = estudante.getClassSt().getDisciplinaTurmas()
+			        .stream()
+			        .map(d -> new DisciplinaDTO(d.getId(), d.getNomeDisciplina()))
+			        .collect(Collectors.toList());
+
+			    turma = new ClassDTO(
+			        estudante.getClassSt().getNomeTurma(),
+			        estudante.getClassSt().getId(),
+			        disciplinasDTO
+			    );
+			}
+
 			StudentDTO studentDTO = new StudentDTO(estudante.getNomeAluno(),
 					estudante.getDataNascimentoAluno().toString(), estudante.getTelefoneAluno(),
 					estudante.getEmailAluno(), estudante.getIdentifierCode(), estudante.getImageUrl(), turma, notas);
