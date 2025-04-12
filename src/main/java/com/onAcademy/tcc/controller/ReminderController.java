@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,6 +47,7 @@ public class ReminderController {
 	 * @param reminder Objeto contendo os dados do lembrete a ser criado.
 	 * @return Resposta HTTP com o lembrete criado.
 	 */
+	@PreAuthorize("hasAnyRole('INSTITUTION','TEACHER')")
 	@PostMapping("/reminder")
 	public ResponseEntity<Reminder> criarLembrete(@RequestBody Reminder reminder) {
 		if (reminder.getConteudo().isEmpty()) {
