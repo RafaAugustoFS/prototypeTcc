@@ -4,7 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.onAcademy.tcc.model.Note;
 import com.onAcademy.tcc.repository.NoteRepo;
 
@@ -44,7 +47,7 @@ public class NoteService {
 				note.getDisciplineId(), note.getBimestre());
 
 		if (noteExists) {
-			throw new RuntimeException("Já existe uma nota para este aluno, disciplina e bimestre.");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe uma nota para este aluno, disciplina e bimestre.");
 		}
 		return noteRepo.save(note);
 	}
