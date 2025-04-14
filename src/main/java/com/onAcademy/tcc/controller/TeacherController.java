@@ -181,6 +181,47 @@ public class TeacherController {
 
 	}
 
+	private void validarTeacherPutDTO(Teacher teacher) {
+		if (teacher.getNomeDocente().isEmpty()) {
+			throw new IllegalArgumentException("Por favor preencha com um nome.");
+		}
+
+		if (!teacher.getNomeDocente().matches("[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\\s]+")) {
+			throw new IllegalArgumentException("O nome deve conter apenas letras.");
+		}
+
+		if (teacher.getNomeDocente().length() < 2 || teacher.getNomeDocente().length() > 30) {
+			throw new IllegalArgumentException("O nome deve ter entre 2 e 30 caracteres.");
+		}
+
+		if (teacher.getDataNascimentoDocente() == null) {
+			throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
+		}
+		if (teacher.getEmailDocente().isEmpty()) {
+			throw new IllegalArgumentException("Por favor preencha o campo email.");
+		}
+		if (!teacher.getEmailDocente().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+			throw new IllegalArgumentException("O email fornecido não tem formato válido.");
+		}
+		if (teacherRepo.existsByEmailDocente(teacher.getEmailDocente())) {
+			throw new IllegalArgumentException("Email já cadastrado.");
+		} else if (studentRepo.existsByEmailAluno(teacher.getEmailDocente())) {
+			throw new IllegalArgumentException("Email já cadastrado.");
+		}
+
+		if (!teacher.getTelefoneDocente().matches("\\d{11}")) {
+			throw new IllegalArgumentException("Telefone deve conter exatamente 11 dígitos numéricos.");
+		}
+		if (teacherRepo.existsByTelefoneDocente(teacher.getTelefoneDocente())) {
+			throw new IllegalArgumentException("Telefone já cadastrado.");
+		}
+
+		if (teacher.getDisciplines().isEmpty()) {
+			throw new IllegalArgumentException("Por favor preencha com no mínimo uma disciplina.");
+		}
+
+	}
+
 	/**
 	 * Endpoint para buscar todos os professores.
 	 * 
@@ -290,14 +331,18 @@ public class TeacherController {
 	 * @param teacher Objeto com as novas informações do professor.
 	 * @return O professor atualizado.
 	 */
+
 	@PutMapping("/teacher/{id}")
 	public ResponseEntity<?> editarTeacher(@PathVariable Long id, @RequestBody Teacher teacher) {
 		try {
+			validarTeacherPutDTO(teacher);
 			Teacher atualizado = teacherService.atualizarTeacher(id, teacher);
 			if (atualizado == null) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Professor não encontrado"));
 			}
 			return ResponseEntity.ok(atualizado);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(Map.of("erro", "Dados inválidos", "detalhes", e.getMessage()));
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(Map.of("error", "Erro ao atualizar professor: " + e.getMessage()));
 		}
