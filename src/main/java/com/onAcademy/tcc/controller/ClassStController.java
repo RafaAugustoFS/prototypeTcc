@@ -1,6 +1,8 @@
 package com.onAcademy.tcc.controller;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -64,6 +66,10 @@ public class ClassStController {
 
 	record ClassDTO(String nomeTurma, int anoLetivoTurma, int capacidadeMaximaTurma, int salaTurma, String periodoTurma,
 			List<Long> idTeacher, List<Long> disciplineId) {
+	}
+
+	record ClassUpdateDTO(String nomeTurma, int anoLetivoTurma, int capacidadeMaximaTurma, int salaTurma,
+			String periodoTurma, List<Long> idTeacher, List<Long> disciplineId) {
 	}
 
 	record ClassDTODisciplina(String nomeTurma, String periodoTurma, List<Long> disciplineId,
@@ -140,6 +146,13 @@ public class ClassStController {
 	 * @throws IllegalArgumentException Se algum dado estiver inválido.
 	 */
 	public void validarClassSt(ClassDTO classDTO) {
+
+		List<String> lista = new ArrayList<>();
+		lista.add("Vespertino");
+		lista.add("Matutino");
+		lista.add("Noturno");
+		lista.add("Integral");
+
 		if (classDTO.nomeTurma.isEmpty()) {
 			throw new IllegalArgumentException("Nome da turma é obrigatório.");
 		}
@@ -149,6 +162,49 @@ public class ClassStController {
 		if (classDTO.periodoTurma.isEmpty()) {
 			throw new IllegalArgumentException("Periodo da turma é obrigatório.");
 		}
+
+		if (lista.stream().noneMatch(p -> p.equalsIgnoreCase(classDTO.periodoTurma))) {
+			throw new IllegalArgumentException("Período inválido. Os períodos permitidos são: " + lista);
+		}
+
+		if (classDTO.capacidadeMaximaTurma <= 10 || classDTO.capacidadeMaximaTurma > 60) {
+			throw new IllegalArgumentException("Por favor insira uma capacidade válida.");
+		}
+		if (classDTO.salaTurma <= 0) {
+			throw new IllegalArgumentException("Por favor insira uma sala válida.");
+		}
+		if (classDTO.idTeacher.isEmpty()) {
+			throw new IllegalArgumentException("Turma deve ter professores.");
+		}
+
+		if (classDTO.disciplineId().isEmpty()) {
+			throw new IllegalArgumentException("Turma deve ter disciplinas.");
+
+		}
+
+	}
+
+	public void validarClassStUpdate(ClassUpdateDTO classDTO) {
+		List<String> lista = new ArrayList<>();
+		lista.add("Vespertino");
+		lista.add("Matutino");
+		lista.add("Noturno");
+		lista.add("Integral");
+
+		if (classDTO.nomeTurma.isEmpty()) {
+			throw new IllegalArgumentException("Nome da turma é obrigatório.");
+		}
+		if (classDTO.anoLetivoTurma <= 2023) {
+			throw new IllegalArgumentException("Ano letivo da turma inválido.");
+		}
+		if (classDTO.periodoTurma.isEmpty()) {
+			throw new IllegalArgumentException("Periodo da turma é obrigatório.");
+		}
+
+		if (lista.stream().noneMatch(p -> p.equalsIgnoreCase(classDTO.periodoTurma))) {
+			throw new IllegalArgumentException("Período inválido. Os períodos permitidos são: " + lista);
+		}
+
 		if (classDTO.capacidadeMaximaTurma <= 10 || classDTO.capacidadeMaximaTurma > 60) {
 			throw new IllegalArgumentException("Por favor insira uma capacidade válida.");
 		}
@@ -301,13 +357,33 @@ public class ClassStController {
 	 * @return Resposta com a turma atualizada ou erro.
 	 */
 	@PutMapping("/class/{id}")
-	public ResponseEntity<?> atualizarClasse(@PathVariable Long id, @RequestBody ClassSt classSt) {
+	public ResponseEntity<?> atualizarClasse(@PathVariable Long id, @RequestBody ClassUpdateDTO classUpdate) {
 		try {
-			ClassSt atualizarClasse = classStService.atualizarClasse(id, classSt);
-			if (atualizarClasse != null) {
-				return new ResponseEntity<>(atualizarClasse, HttpStatus.OK);
+			List<Teacher> teacher = teacherRepo.findAllById(classUpdate.idTeacher());
+			List<Discipline> disciplines = disRepo.findAllById(classUpdate.disciplineId());
+			validarClassStUpdate(classUpdate);
+
+			if (teacher.size() != classUpdate.idTeacher().size()) {
+				return new ResponseEntity<>(Map.of("error", "Professor não encontrado."), HttpStatus.BAD_REQUEST);
 			}
-			return new ResponseEntity<>(Map.of("error", "Classe não encontrada"), HttpStatus.NOT_FOUND);
+			if (disciplines.size() != classUpdate.disciplineId().size()) {
+				return new ResponseEntity<>(Map.of("error", "Disciplina não encontrada."), HttpStatus.BAD_REQUEST);
+			}
+
+			ClassSt classSt = new ClassSt();
+			classSt.setNomeTurma(classUpdate.nomeTurma);
+			classSt.setAnoLetivoTurma(classUpdate.anoLetivoTurma);
+			classSt.setPeriodoTurma(classUpdate.periodoTurma);
+			classSt.setCapacidadeMaximaTurma(classUpdate.capacidadeMaximaTurma);
+			classSt.setSalaTurma(classUpdate.salaTurma);
+
+			classSt.setDisciplinaTurmas(disciplines);
+			classSt.setClasses(teacher);
+
+			ClassSt atualizado = classStService.atualizarClasse(id, classSt);
+
+			return new ResponseEntity<>(atualizado, HttpStatus.OK);
+
 		} catch (Exception e) {
 			return new ResponseEntity<>(Map.of("error", "Erro ao atualizar classe: " + e.getMessage()),
 					HttpStatus.BAD_REQUEST);
