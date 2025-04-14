@@ -226,45 +226,95 @@ public class StudentService {
 	 * @return O estudante atualizado e salvo no banco de dados.
 	 */
 	public Student atualizarEstudante(Long id, Student student) {
-		Optional<Student> existStudentOpt = studentRepo.findById(id);
-		if (existStudentOpt.isPresent()) {
-			Student existStudent = existStudentOpt.get();
+	    Optional<Student> existStudentOpt = studentRepo.findById(id);
+	    if (existStudentOpt.isPresent()) {
+	        Student existStudent = existStudentOpt.get();
+	        
+	        // Validate the updated student data
+	        validarAtualizacaoStudent(student, existStudent.getId());
 
-			existStudent.setNomeAluno(student.getNomeAluno());
-			existStudent.setEmailAluno(student.getEmailAluno());
-			existStudent.setDataNascimentoAluno(student.getDataNascimentoAluno());
-			existStudent.setTelefoneAluno(student.getTelefoneAluno());
-			existStudent.setImageUrl(student.getImageUrl());
+	        existStudent.setNomeAluno(student.getNomeAluno());
+	        existStudent.setEmailAluno(student.getEmailAluno());
+	        existStudent.setDataNascimentoAluno(student.getDataNascimentoAluno());
+	        existStudent.setTelefoneAluno(student.getTelefoneAluno());
+	        existStudent.setImageUrl(student.getImageUrl());
 
-			String rawPassword = generateRandomPasswordWithName(6, existStudent.getNomeAluno());
-			String encodedPassword = passwordEncoder.encode(rawPassword);
-			existStudent.setPassword(encodedPassword);
+	        String rawPassword = generateRandomPasswordWithName(6, existStudent.getNomeAluno());
+	        String encodedPassword = passwordEncoder.encode(rawPassword);
+	        existStudent.setPassword(encodedPassword);
 
-			String emailSubject = "Atualização dos seus dados de acesso - Confira as novas informações!";
+	        String emailSubject = "Atualização dos seus dados de acesso - Confira as novas informações!";
 
-			String emailText = "<html>" + "<body style='font-family: Arial, sans-serif; color: #333;'>"
-					+ "<div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>"
-					+ "<h1 style='color: #007BFF;'>Olá, " + existStudent.getNomeAluno() + "!</h1>"
-					+ "<p style='font-size: 16px;'>Seus dados de acesso foram atualizados com sucesso. Abaixo estão suas novas credenciais:</p>"
-					+ "<div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>"
-					+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Código de Matrícula:</strong> " + "</p>"
-					+ "<p style='font-size: 14px; margin: 5px 0;'><strong>Nova Senha:</strong> " + rawPassword + "</p>"
-					+ "</div>"
-					+ "<p style='font-size: 16px;'>Por favor, mantenha essas informações em local seguro e não as compartilhe com terceiros.</p>"
-					+ "<p style='font-size: 16px;'>Se você não solicitou essa alteração ou tem alguma dúvida, entre em contato conosco imediatamente.</p>"
-					+ "<p style='font-size: 16px;'>Atenciosamente,<br/><strong>Equipe OnAcademy</strong></p>"
-					+ "<p style='font-size: 14px; color: #777;'>Este é um e-mail automático, por favor não responda.</p>"
-					+ "</div>" + "</body>" + "</html>";
-			try {
-				emailService.sendEmail(existStudent.getEmailAluno(), emailSubject, emailText);
-			} catch (MessagingException e) {
-				throw new RuntimeException("Erro ao enviar email com os novos dados de acesso.", e);
-			}
+	        String emailText = "<html>" + "<body style='font-family: Arial, sans-serif; color: #333;'>"
+	                + "<div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>"
+	                + "<h1 style='color: #007BFF;'>Olá, " + existStudent.getNomeAluno() + "!</h1>"
+	                + "<p style='font-size: 16px;'>Seus dados de acesso foram atualizados com sucesso. Abaixo estão suas novas credenciais:</p>"
+	                + "<div style='background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>"
+	                + "<p style='font-size: 14px; margin: 5px 0;'><strong>Código de Matrícula:</strong> " + "</p>"
+	                + "<p style='font-size: 14px; margin: 5px 0;'><strong>Nova Senha:</strong> " + rawPassword + "</p>"
+	                + "</div>"
+	                + "<p style='font-size: 16px;'>Por favor, mantenha essas informações em local seguro e não as compartilhe com terceiros.</p>"
+	                + "<p style='font-size: 16px;'>Se você não solicitou essa alteração ou tem alguma dúvida, entre em contato conosco imediatamente.</p>"
+	                + "<p style='font-size: 16px;'>Atenciosamente,<br/><strong>Equipe OnAcademy</strong></p>"
+	                + "<p style='font-size: 14px; color: #777;'>Este é um e-mail automático, por favor não responda.</p>"
+	                + "</div>" + "</body>" + "</html>";
+	        try {
+	            emailService.sendEmail(existStudent.getEmailAluno(), emailSubject, emailText);
+	        } catch (MessagingException e) {
+	            throw new RuntimeException("Erro ao enviar email com os novos dados de acesso.", e);
+	        }
 
-			return studentRepo.save(existStudent);
-		}
-		return null;
+	        return studentRepo.save(existStudent);
+	    }
+	    return null;
 	}
+
+	
+	private void validarAtualizacaoStudent(Student student, Long studentId) {
+	    if (student.getNomeAluno().isEmpty()) {
+	        throw new IllegalArgumentException("Por favor preencha com um nome.");
+	    }
+	    if (!student.getNomeAluno().matches("[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\\s]+")) {
+	        throw new IllegalArgumentException("O nome deve conter apenas letras.");
+	    }
+
+	    if (student.getNomeAluno().length() < 2 || student.getNomeAluno().length() > 30) {
+	        throw new IllegalArgumentException("O nome deve ter entre 2 e 100 caracteres.");
+	    }
+
+	    if (student.getDataNascimentoAluno() == null) {
+	        throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
+	    }
+
+	    if (student.getEmailAluno().isEmpty()) {
+	        throw new IllegalArgumentException("Por favor preencha o campo email.");
+	    }
+	    if (!student.getEmailAluno().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+	        throw new IllegalArgumentException("O email fornecido não tem formato válido.");
+	    }
+	    
+	    
+	    Optional<Student> studentWithEmail = studentRepo.findByEmailAluno(student.getEmailAluno());
+	    if (studentWithEmail.isPresent() && !studentWithEmail.get().getId().equals(studentId)) {
+	        throw new IllegalArgumentException("Email já cadastrado por outro estudante.");
+	    }
+	    
+
+	    
+	    Optional<Student> studentWithPhone = studentRepo.findByTelefoneAluno(student.getTelefoneAluno());
+	    if (studentWithPhone.isPresent() && !studentWithPhone.get().getId().equals(studentId)) {
+	        throw new IllegalArgumentException("Telefone já cadastrado por outro estudante.");
+	    }
+
+	    if (!student.getTelefoneAluno().matches("[0-9]+")) {
+	        throw new IllegalArgumentException("Telefone deve conter somente números.");
+	    }
+
+	    if (student.getTelefoneAluno().length() != 11) {
+	        throw new IllegalArgumentException("Telefone deve ter 11 dígitos.");
+	    }
+	}
+	
 
 	/**
 	 * Busca um estudante específico pelo ID.

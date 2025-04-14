@@ -44,4 +44,8 @@ public interface StudentRepo extends JpaRepository<Student, Long> {
     boolean existsByTelefoneAluno(String telefoneAluno);
     
     List<Student> findByTurmaId(Long turmaId);
+
+	Optional<Student> findByEmailAluno(String emailAluno);
+
+	Optional<Student> findByTelefoneAluno(String telefoneAluno);
 }
