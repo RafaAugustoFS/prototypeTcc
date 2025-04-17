@@ -3,6 +3,9 @@ package com.onAcademy.tcc.model;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+
+import com.onAcademy.tcc.dto.TeacherDTO;
+
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -80,12 +83,12 @@ public class Teacher {
     /**
      * Gera uma senha aleatória para o professor com base no nome e ano de nascimento.
      *
-     * @param teacher O professor para o qual a senha será gerada.
+     * @param teacherDTO O professor para o qual a senha será gerada.
      * @return A senha gerada.
      */
-    public static String generateRandomPassword(Teacher teacher) {
-        String year = String.valueOf(teacher.getDataNascimentoDocente().getYear());
-        return ENROLLMENT_PREFIX + year + teacher.getNomeDocente().replaceAll("\\s", "").toLowerCase();
+    public static String generateRandomPassword(TeacherDTO teacherDTO) {
+        String year = String.valueOf(teacherDTO.getDataNascimentoDocente().getYear());
+        return ENROLLMENT_PREFIX + year + teacherDTO.getNomeDocente().replaceAll("\\s", "").toLowerCase();
 
     }
 
