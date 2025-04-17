@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.onAcademy.tcc.dto.LoginTeacherDTO;
+import com.onAcademy.tcc.dto.TeacherDTO;
 import com.onAcademy.tcc.model.Discipline;
 import com.onAcademy.tcc.model.Student;
 import com.onAcademy.tcc.model.Teacher;
@@ -43,9 +44,6 @@ public class TeacherController {
 			List<DisciplineDTO> disciplines) {
 	}
 
-	record TeacherDTO(String nomeDocente, Date dataNascimentoDocente, String emailDocente, String telefoneDocente,
-			String identifierCode, String password, List<Long> disciplineId, String imageUrl) {
-	}
 
 	record TeacherDTOGet(Long id, String nomeDocente, String dataNascimentoDocente, String emailDocente,
 			String telefoneDocente, String imageUrl) {
@@ -91,41 +89,12 @@ public class TeacherController {
 	 * @param teacherDTO Objeto contendo as informações do professor a ser criado.
 	 * @return Status da criação do professor.
 	 */
-	@PostMapping("/teacher")
 	@PreAuthorize("hasRole('INSTITUTION')")
+	@PostMapping("/teacher")
 	public ResponseEntity<?> criarTeacher(@RequestBody TeacherDTO teacherDTO) {
 		try {
-			validarTeacherDTO(teacherDTO);
-
-			List<Discipline> disciplines = disciplineRepo.findAllById(teacherDTO.disciplineId());
-			if (disciplines.size() != teacherDTO.disciplineId().size()) {
-				return ResponseEntity.badRequest().body(Map.of("error", "Algumas disciplinas não foram encontradas"));
-			}
-
-			// Verifica se há uma imagem em Base64 no DTO
-			String imageUrl = null;
-			if (teacherDTO.imageUrl() != null && !teacherDTO.imageUrl().isEmpty()) {
-				imageUrl = imageUploaderService.uploadBase64Image(teacherDTO.imageUrl());
-			}
-
-			// Criar e definir atributos do professor
-			Teacher teacher = new Teacher();
-			teacher.setNomeDocente(teacherDTO.nomeDocente());
-			teacher.setDataNascimentoDocente(teacherDTO.dataNascimentoDocente());
-			teacher.setEmailDocente(teacherDTO.emailDocente());
-			teacher.setTelefoneDocente(teacherDTO.telefoneDocente());
-			teacher.setIdentifierCode(teacherDTO.identifierCode());
-			teacher.setPassword(teacherDTO.password());
-
-			if (imageUrl != null) {
-				teacher.setImageUrl(imageUrl);
-			}
-
-			teacher.setDisciplines(disciplines);
-
-			teacherRepo.save(teacher);
-
-			return ResponseEntity.status(HttpStatus.CREATED).body(teacher);
+			Teacher teacherCriado = teacherService.criarTeacher(teacherDTO);
+			return ResponseEntity.status(HttpStatus.CREATED).body(teacherCriado);
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
 		} catch (Exception e) {
@@ -133,53 +102,12 @@ public class TeacherController {
 					.body(Map.of("error", "Erro ao criar professor: " + e.getMessage()));
 		}
 	}
-
 	/**
 	 * Valida os campos do DTO do professor.
 	 * 
 	 * @param teacherDTO O DTO do professor a ser validado.
 	 * @throws IllegalArgumentException Se algum campo estiver inválido.
 	 */
-	private void validarTeacherDTO(TeacherDTO teacherDTO) {
-		if (teacherDTO.nomeDocente.isEmpty()) {
-			throw new IllegalArgumentException("Por favor preencha com um nome.");
-		}
-
-		if (!teacherDTO.nomeDocente().matches("[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\\s]+")) {
-			throw new IllegalArgumentException("O nome deve conter apenas letras.");
-		}
-
-		if (teacherDTO.nomeDocente.length() < 2 || teacherDTO.nomeDocente.length() > 30) {
-			throw new IllegalArgumentException("O nome deve ter entre 2 e 30 caracteres.");
-		}
-
-		if (teacherDTO.dataNascimentoDocente == null) {
-			throw new IllegalArgumentException("Por favor preencha a data de nascimento.");
-		}
-		if (teacherDTO.emailDocente.isEmpty()) {
-			throw new IllegalArgumentException("Por favor preencha o campo email.");
-		}
-		if (!teacherDTO.emailDocente.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-			throw new IllegalArgumentException("O email fornecido não tem formato válido.");
-		}
-		if (teacherRepo.existsByEmailDocente(teacherDTO.emailDocente())) {
-			throw new IllegalArgumentException("Email já cadastrado.");
-		} else if (studentRepo.existsByEmailAluno(teacherDTO.emailDocente())) {
-			throw new IllegalArgumentException("Email já cadastrado.");
-		}
-
-		if (!teacherDTO.telefoneDocente().matches("\\d{11}")) {
-			throw new IllegalArgumentException("Telefone deve conter exatamente 11 dígitos numéricos.");
-		}
-		if (teacherRepo.existsByTelefoneDocente(teacherDTO.telefoneDocente())) {
-			throw new IllegalArgumentException("Telefone já cadastrado.");
-		}
-
-		if (teacherDTO.disciplineId.isEmpty()) {
-			throw new IllegalArgumentException("Por favor preencha com no mínimo uma disciplina.");
-		}
-
-	}
 
 	private void validarTeacherPutDTO(Teacher teacher) {
 		if (teacher.getNomeDocente().isEmpty()) {
